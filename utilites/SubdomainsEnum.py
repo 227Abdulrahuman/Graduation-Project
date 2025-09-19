@@ -91,12 +91,12 @@ if __name__ == "__main__":
 
     results_file = output_dir / f"SUBS_{domain}.json"
 
-    naabuCMD = [
+    subfinderCMD = [
         "subfinder", "-d", domain, "-silent", "-all", "-o", str(subfinder_file)
     ]
-    naabuPorcess = subprocess.run(naabuCMD, capture_output=True, text=True)
-    if naabuPorcess.returncode != 0:
-        print("Subfinder failed:", naabuPorcess.stderr)
+    subfinderCMD = subprocess.run(subfinderCMD, capture_output=True, text=True)
+    if subfinderCMD.returncode != 0:
+        print("Subfinder failed:", subfinderCMD.stderr)
 
     purednsCMD = [
         "puredns", "resolve", str(subfinder_file),
@@ -110,6 +110,11 @@ if __name__ == "__main__":
 
     massdns_data = parse_massdns(dns_file)
     result = build_json(live_file, massdns_data)
+
+    with open(results_file, "w") as f:
+        json.dump(result, f, indent=4)
+
+    subprocess.run(f"cat {str(results_file)} | jq '.[] | .ip'  > {str(ips_file)}", shell=True, capture_output=True, text=True)
 
     naabuCMD = [
         "naabu", "-list", str(ips_file), "-silent", "-Pn", "-o", str(ports_file)
