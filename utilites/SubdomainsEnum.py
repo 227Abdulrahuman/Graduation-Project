@@ -4,6 +4,19 @@ import argparse
 from pathlib import Path
 import socket
 
+def parse_ports(ports_file):
+    ip_ports = {}
+    with open(ports_file, "r") as f:
+        for line in f:
+            line = line.strip()
+            if not line or ":" not in line:
+                continue
+            ip, port = line.split(":")
+            if ip not in ip_ports:
+                ip_ports[ip] = []
+            if port not in ip_ports[ip]:
+                ip_ports[ip].append(port)
+    return ip_ports
 
 def parse_massdns(massdns_file):
     results = {}
@@ -45,7 +58,7 @@ def build_json(live_file, massdns_data):
             domain = line.strip()
             if not domain:
                 continue
-            if domain not in output:  # ensure uniqueness
+            if domain not in output:
                 output[domain] = {"ip": None, "cname": None}
                 if domain in massdns_data:
                     output[domain].update(massdns_data[domain])
@@ -73,14 +86,17 @@ if __name__ == "__main__":
     live_file = output_dir / "live.txt"
     dns_file = output_dir / "dns.txt"
     resolvers_file = data_dir / "resolvers.txt"
-    results_file = output_dir / "subdomains.json"
+    ips_file = data_dir / "ips.txt"
+    ports_file = data_dir / "ports.txt"
 
-    subfinderCMD = [
+    results_file = output_dir / f"SUBS_{domain}.json"
+
+    naabuCMD = [
         "subfinder", "-d", domain, "-silent", "-all", "-o", str(subfinder_file)
     ]
-    subfinderProcess = subprocess.run(subfinderCMD, capture_output=True, text=True)
-    if subfinderProcess.returncode != 0:
-        print("Subfinder failed:", subfinderProcess.stderr)
+    naabuPorcess = subprocess.run(naabuCMD, capture_output=True, text=True)
+    if naabuPorcess.returncode != 0:
+        print("Subfinder failed:", naabuPorcess.stderr)
 
     purednsCMD = [
         "puredns", "resolve", str(subfinder_file),
@@ -94,6 +110,21 @@ if __name__ == "__main__":
 
     massdns_data = parse_massdns(dns_file)
     result = build_json(live_file, massdns_data)
+
+    naabuCMD = [
+        "naabu", "-list", str(ips_file), "-silent", "-Pn", "-o", str(ports_file)
+    ]
+    naabuPorcess = subprocess.run(naabuCMD, capture_output=True, text=True)
+    if naabuPorcess.returncode != 0:
+        print("naabu failed:", naabuPorcess.stderr)
+
+    ip_ports = parse_ports(ports_file)
+    for domain, data in result.items():
+        ip = data.get("ip")
+        if ip and ip in ip_ports:
+            data["ports"] = ip_ports[ip]
+        else:
+            data["ports"] = []
 
     with open(results_file, "w") as f:
         json.dump(result, f, indent=4)
