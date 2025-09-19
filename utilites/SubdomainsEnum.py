@@ -86,8 +86,8 @@ if __name__ == "__main__":
     live_file = output_dir / "live.txt"
     dns_file = output_dir / "dns.txt"
     resolvers_file = data_dir / "resolvers.txt"
-    ips_file = data_dir / "ips.txt"
-    ports_file = data_dir / "ports.txt"
+    ips_file = output_dir / "ips.txt"
+    ports_file = output_dir / "ports.txt"
 
     results_file = output_dir / f"SUBS_{domain}.json"
 
