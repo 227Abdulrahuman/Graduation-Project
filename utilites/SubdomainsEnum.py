@@ -4,19 +4,22 @@ import argparse
 from pathlib import Path
 import socket
 
-def parse_ports(ports_file):
-    ip_ports = {}
-    with open(ports_file, "r") as f:
-        for line in f:
-            line = line.strip()
-            if not line or ":" not in line:
-                continue
-            ip, port = line.split(":")
-            if ip not in ip_ports:
-                ip_ports[ip] = []
-            if port not in ip_ports[ip]:
-                ip_ports[ip].append(port)
-    return ip_ports
+def extract_ips(json_file, output_file="ips.txt"):
+    # Step 1: Load the JSON file
+    with open(json_file, "r") as f:
+        data = json.load(f)
+
+    # Step 2: Extract IPs
+    ips = []
+    for domain, info in data.items():
+        ip = info.get("ip")
+        if ip:  # skip None/null
+            ips.append(ip)
+
+    # Step 3: Write IPs to file
+    with open(output_file, "w") as f:
+        for ip in ips:
+            f.write(ip + "\n")
 
 def parse_massdns(massdns_file):
     results = {}
@@ -43,13 +46,11 @@ def parse_massdns(massdns_file):
                 results[domain]["cname"] = value.rstrip(".")
     return results
 
-
 def dig_ip(hostname):
     try:
         return socket.gethostbyname(hostname)
     except Exception:
         return None
-
 
 def build_json(live_file, massdns_data):
     output = {}
@@ -70,24 +71,25 @@ def build_json(live_file, massdns_data):
                         output[domain]["ip"] = resolved_ip
     return output
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("domain", help="Target domain")
     args = parser.parse_args()
     domain = args.domain
 
-    base = Path("~/pieces").expanduser()
+    base = Path("../pieces")
     output_dir = base / "output"
     data_dir = base / "data"
+    temp_dir = base / "tmp"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    subfinder_file = output_dir / "subfinder.txt"
-    live_file = output_dir / "live.txt"
-    dns_file = output_dir / "dns.txt"
+    subfinder_file = temp_dir / "subfinder.txt"
+    live_file = temp_dir / "live.txt"
+    dns_file = temp_dir / "dns.txt"
+    ips_file = temp_dir / "ips.txt"
+    port_file = temp_dir / "ports.txt"
+
     resolvers_file = data_dir / "resolvers.txt"
-    ips_file = output_dir / "ips.txt"
-    ports_file = output_dir / "ports.txt"
 
     results_file = output_dir / f"SUBS_{domain}.json"
 
@@ -114,24 +116,15 @@ if __name__ == "__main__":
     with open(results_file, "w") as f:
         json.dump(result, f, indent=4)
 
-    subprocess.run(f"cat {str(results_file)} | jq '.[] | .ip'  > {str(ips_file)}", shell=True, capture_output=True, text=True)
+    extract_ips(results_file,str(ips_file))
 
     naabuCMD = [
-        "naabu", "-list", str(ips_file), "-silent", "-Pn", "-o", str(ports_file)
+        "naabu", "-list", str(ips_file),
+        "-Pn",
+        "-o", str(port_file)
     ]
-    naabuPorcess = subprocess.run(naabuCMD, capture_output=True, text=True)
-    if naabuPorcess.returncode != 0:
-        print("naabu failed:", naabuPorcess.stderr)
-
-    ip_ports = parse_ports(ports_file)
-    for domain, data in result.items():
-        ip = data.get("ip")
-        if ip and ip in ip_ports:
-            data["ports"] = ip_ports[ip]
-        else:
-            data["ports"] = []
-
-    with open(results_file, "w") as f:
-        json.dump(result, f, indent=4)
+    naabuProcess = subprocess.run(naabuCMD, capture_output=True, text=True)
+    if naabuProcess.returncode != 0:
+        print("naabu failed:", naabuProcess.stderr)
 
     print(f"[+] Results saved to {results_file}")
