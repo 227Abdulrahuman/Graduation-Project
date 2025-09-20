@@ -71,6 +71,27 @@ def build_json(live_file, massdns_data):
                         output[domain]["ip"] = resolved_ip
     return output
 
+def enrich_with_ports(json_file, ports_file, output_file="enriched.json"):
+    with open(json_file, "r") as f:
+        data = json.load(f)
+    ip_ports = {}
+    with open(ports_file, "r") as f:
+        for line in f:
+            line = line.strip()
+            if not line or ":" not in line:
+                continue
+            ip, port = line.split(":")
+            ip_ports.setdefault(ip, set()).add(int(port))
+    for domain, info in data.items():
+        ip = info.get("ip")
+        if ip and ip in ip_ports:
+            info["ports"] = sorted(ip_ports[ip])
+        else:
+            info["ports"] = []
+    with open(output_file, "w") as f:
+        json.dump(data, f, indent=4)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("domain", help="Target domain")
@@ -88,10 +109,11 @@ if __name__ == "__main__":
     dns_file = temp_dir / "dns.txt"
     ips_file = temp_dir / "ips.txt"
     port_file = temp_dir / "ports.txt"
+    results_file = temp_dir / f"SUBS_{domain}.json"
 
     resolvers_file = data_dir / "resolvers.txt"
 
-    results_file = output_dir / f"SUBS_{domain}.json"
+    final_file = output_dir / f"SUBS_{domain}.json"
 
     subfinderCMD = [
         "subfinder", "-d", domain, "-silent", "-all", "-o", str(subfinder_file)
@@ -127,4 +149,7 @@ if __name__ == "__main__":
     if naabuProcess.returncode != 0:
         print("naabu failed:", naabuProcess.stderr)
 
-    print(f"[+] Results saved to {results_file}")
+
+    enrich_with_ports(results_file,port_file,str(final_file))
+
+    print(f"[+] Results saved to {final_file}")
