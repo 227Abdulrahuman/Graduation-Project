@@ -5,18 +5,16 @@ from pathlib import Path
 import socket
 
 def extract_ips(json_file, output_file="ips.txt"):
-    # Step 1: Load the JSON file
     with open(json_file, "r") as f:
         data = json.load(f)
 
-    # Step 2: Extract IPs
     ips = []
     for domain, info in data.items():
         ip = info.get("ip")
-        if ip:  # skip None/null
+        if ip:
             ips.append(ip)
 
-    # Step 3: Write IPs to file
+
     with open(output_file, "w") as f:
         for ip in ips:
             f.write(ip + "\n")
@@ -109,7 +107,7 @@ if __name__ == "__main__":
     dns_file = temp_dir / "dns.txt"
     ips_file = temp_dir / "ips.txt"
     port_file = temp_dir / "ports.txt"
-    results_file = temp_dir / f"SUBS_{domain}.json"
+    results_file = temp_dir / f"results.json"
 
     resolvers_file = data_dir / "resolvers.txt"
 
