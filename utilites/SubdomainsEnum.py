@@ -99,15 +99,15 @@ if __name__ == "__main__":
     base = Path("../pieces")
     output_dir = base / "output"
     data_dir = base / "data"
-    temp_dir = base / "tmp"
+    temp_dir = base / "tmp" / domain
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    subfinder_file = temp_dir / "subfinder.txt"
-    live_file = temp_dir / "live.txt"
-    dns_file = temp_dir / "dns.txt"
-    ips_file = temp_dir / "ips.txt"
-    port_file = temp_dir / "ports.txt"
-    results_file = temp_dir / f"results.json"
+    subfinder_file = temp_dir / f"{domain}.subfinder.txt"
+    live_file = temp_dir / f"{domain}.live.txt"
+    dns_file = temp_dir / f"{domain}.dns.txt"
+    ips_file = temp_dir / f"{domain}.ips.txt"
+    port_file = temp_dir / f"{domain}.ports.txt"
+    results_file = temp_dir / f"{domain}.results.json"
 
     resolvers_file = data_dir / "resolvers.txt"
 
