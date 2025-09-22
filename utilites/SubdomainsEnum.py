@@ -100,6 +100,7 @@ if __name__ == "__main__":
     output_dir = base / "output"
     data_dir = base / "data"
     temp_dir = base / "tmp" / domain
+    temp_dir.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     subfinder_file = temp_dir / f"{domain}.subfinder.txt"
