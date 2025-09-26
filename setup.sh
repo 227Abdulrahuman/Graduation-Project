@@ -1,6 +1,6 @@
 
 
 
-sudo mv ./pieces/bin/* /usr/bin/
+sudo cp ./pieces/bin/* /usr/bin/
 
 
