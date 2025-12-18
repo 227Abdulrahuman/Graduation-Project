@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 from ninja import NinjaAPI
-from backend.api.tasks import enum
+from backend.api.tasks import enum, scan
 from backend.core.models import *
 from ninja.responses import Response
 
@@ -29,10 +29,22 @@ def add_domain(request, domain_name:str, company_name:str):
 
 
 @api.get("recon")
-def start_passive_enum(request, domain:str):
-    enum.delay(domain)
-    return {"result": f"Started basic recon for {domain}" }
+def recon(request, domain:str):
+    domain = domain.lower()
+    if Domain.objects.filter(hostname=domain).exists():
+        enum.delay(domain)
+        return Response({f"success":f"started recon for {domain}"}, status=200)
+    else:
+        return Response({"error":"Domain does not exist"}, status=400)
 
+@api.get("scan")
+def vuln_scan(request, domain:str):
+    domain = domain.lower()
+    if Domain.objects.filter(hostname=domain).exists():
+        scan.delay(domain)
+        return Response({f"success":f"started scanning {domain}"}, status=200)
+    else:
+        return Response({"error":"Domain does not exist"}, status=400)
 
 urlpatterns = [
     path("admin/", admin.site.urls),

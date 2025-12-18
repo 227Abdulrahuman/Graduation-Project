@@ -4,7 +4,6 @@ from . import models
 
 admin.site.register(models.Domain)
 admin.site.register(models.Company)
-admin.site.register(models.Port)
 
 @admin.register(models.Subdomain)
 class SubdomainAdmin(admin.ModelAdmin):
@@ -13,3 +12,7 @@ class SubdomainAdmin(admin.ModelAdmin):
 @admin.register(models.HTTPX)
 class HTTPXAdmin(admin.ModelAdmin):
     list_display = ("url", "title", "status_code", "location", "tech", "content_length" )
+
+@admin.register(models.SubdomainTakeover)
+class SubdomainTakeoverAdmin(admin.ModelAdmin):
+    list_display = ('subdomain', 'severity', 'type', 'target')
