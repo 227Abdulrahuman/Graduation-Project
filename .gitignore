@@ -5,6 +5,11 @@ backend/core/migrations/*
 
 *.sqlite3
 
+
+#Keys
+.env
+
+
 # Logs
 logs
 *.log

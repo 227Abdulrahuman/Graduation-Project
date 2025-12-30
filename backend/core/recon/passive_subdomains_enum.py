@@ -3,22 +3,35 @@ from backend.core.recon.scrapers.subfinder.subfinder import scrap as subfinder
 from backend.core.recon.scrapers.virustotal.virustotal import scrap as virustotal
 from backend.core.recon.scrapers.c99.c99 import scrap as c99
 from backend.core.recon.scrapers.securitytrails_web.securitytrailsweb import scrap as securitytrailsweb
+from backend.core.recon.scrapers.bevigil.bevigil import scrap as bevigil
+from backend.core.recon.scrapers.chaos.chaos import scrap as chaos
+from backend.core.recon.scrapers.leakix.leakix import scrap as leakix
+from backend.core.recon.scrapers.netlas.netlas import scrap as netlas
+from backend.core.recon.scrapers.fullHunt.fullHunt import scrap as fullHunt
+from backend.core.recon.scrapers.shodan.shodan import scrap as shodan
+from backend.core.recon.scrapers.certspotter.certspotter import scrap as certspotter
+from backend.core.recon.scrapers.digitalyama.digitalyama import scrap as digitalyama
+from backend.core.recon.scrapers.pugrecon.pugrecon import scrap as pugrecon
+from backend.core.recon.scrapers.dnsdumpster.dnsdumpster import scrap as dnsdumpster
 
-#Intialize Django.
+
+#Connect to Django
 import os, django, subprocess
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.api.settings")
 django.setup()
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from backend.core.models import *
 
-
 def run_scraper(name, func, domain):
+    """
+    Runs a single scraper.
+    """
     try:
         result = func(domain)
 
         if result == {-1}:
             print(f"[-] {name} key expired.")
-            return
+            return {-1}
 
         print(f"[+] {name}: {len(result)} subdomains.")
 
@@ -28,7 +41,11 @@ def run_scraper(name, func, domain):
         print(f"[Error] {name}: {e}")
 
 def passive_enum(domain):
-    print(f"[+] Starting passive subdomains enumeration for {domain}")
+    """
+    Enumerates Subdomains from passive sources and saves the result to the database.
+    """
+    print(f"[*] Starting passive subdomains enumeration for {domain}")
+
     base_dir = f"/work/backend/core/recon/output/{domain}"
     os.makedirs(base_dir, exist_ok=True)
     subs_file = base_dir + "/subdomains.txt"
@@ -40,8 +57,21 @@ def passive_enum(domain):
         ("C99", c99),
         ("Subfinder", subfinder),
         ("securityTrailsWeb", securitytrailsweb),
+        ("bevigil", bevigil),
+        ("chaos",chaos),
+        ("leakix", leakix),
+        ("netlas", netlas),
+        ("fullHunt", fullHunt),
+        ("shodan", shodan),
+        ("certspotter", certspotter),
+        ("digitalyama", digitalyama),
+        ("pugrecon", pugrecon),
+        ("dnsdumpster", dnsdumpster),
+
     ]
 
+
+    #Run passive scrapers.
     with ThreadPoolExecutor(max_workers=len(scrapers)) as executor:
         futures = {
             executor.submit(run_scraper, name, func, domain): name
@@ -51,13 +81,17 @@ def passive_enum(domain):
         for future in as_completed(futures):
             result = future.result()
 
-            if result != {-1}:
+            if result != {-1} and result is not None:
                 all_subs.update(result)
 
+
+    #Save them to subdomains.txt
     with open(subs_file, "w") as f:
         for sub in all_subs:
             f.write(f"{sub}\n")
 
+
+    #Get Live subdomains and save them to live.txt
     resolvers_file = f"/work/backend/core/recon/resources/resolvers/resolvers.txt"
     cmd = ['puredns', 'resolve', subs_file, '-r', resolvers_file, '-w', live_file]
     subprocess.run(cmd, text=True, capture_output=True)
@@ -68,9 +102,10 @@ def passive_enum(domain):
         for line in lines:
             f.write(line + "\n")
 
-    #     #Insert the results into the database
+
+    #Insert the results into the database
     with open(subs_file) as f:
-         passive_subdomains = set(line.strip() for line in f if line.strip())
+        passive_subdomains = set(line.strip() for line in f if line.strip())
     with open(live_file) as f:
         live_subdomains = set(line.strip() for line in f if line.strip())
     domain_obj = Domain.objects.get(hostname=domain)
@@ -80,9 +115,6 @@ def passive_enum(domain):
             domain=domain_obj,
             hostname=sub,
             defaults={"is_alive": is_alive},
-            )
+        )
 
-    print(f"Found {len(lines)} live subdomains.")
-
-
-
+    print(f"[+] Found {len(lines)} live subdomains for {domain} from passive enumeration.")
