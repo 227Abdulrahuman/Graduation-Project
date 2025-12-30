@@ -2,6 +2,8 @@ __pycache__/
 backend/api/tools/output/*
 backend/api/tools/data/cookie.txt
 backend/core/migrations/*
+backend/core/migrations
+backend/core/migrations/
 
 *.sqlite3
 
@@ -34,6 +36,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
 
 
 
