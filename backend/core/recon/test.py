@@ -1,4 +1,4 @@
-from backend.core.recon.web_fingerprinting import web_fingerprint
+from backend.core.recon.main import recon_pipline
 
 
-web_fingerprint("jobs.ch")
+recon_pipline("jobs.ch")

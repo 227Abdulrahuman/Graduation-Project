@@ -10,7 +10,6 @@ ac-faq.industrial.panasonic.com
 ac.servicecloud.panasonic.com
 ac.smartcloud.panasonic.com
 acapi-stg.apc.panasonic.com
-acapi.apc.panasonic.com
 access.eds.panasonic.com
 access.hk.panasonic.com
 access.id.panasonic.com
@@ -90,6 +89,7 @@ afus-v2-dev.apc.panasonic.com
 afus-v2-stg1.apc.panasonic.com
 afus-v2.apc.panasonic.com
 afus.apc.panasonic.com
+ai.hrpx.jpn.panasonic.com
 aierams.aiethics-in.panasonic.com
 aies.ait.panasonic.com
 aiesdev.ait.panasonic.com
@@ -126,7 +126,7 @@ api-dev.digital.panasonic.com
 api-esl.in.panasonic.com
 api-ext-dev.digital.panasonic.com
 api-ext-stg.digital.panasonic.com
-api-ext.charge-ment.panasonic.com
+api-ext.dev-grac.panasonic.com
 api-ext.digital.panasonic.com
 api-poc.digital.panasonic.com
 api-proxy.my.eu.panasonic.com
@@ -146,6 +146,7 @@ api.dev.ope.moptimo.jpn.panasonic.com
 api.dfs-maiboard.jpn.panasonic.com
 api.driveboss-lpg.fleetmanagement.panasonic.com
 api.energy-value-added-service.eww.panasonic.com
+api.ext.voice-push.jpn.panasonic.com
 api.frdb.coldchain.panasonic.com
 api.gemba-sensing-saas.jpn.panasonic.com
 api.hvac-cloud.panasonic.com
@@ -160,13 +161,13 @@ api.public.jpn.panasonic.com
 api.rvc.apws.panasonic.com
 api.sdn.in.panasonic.com
 api.signedge.in.panasonic.com
-api.slm.na.panasonic.com
 api.staging.vixell.panasonic.com
 api.stg.milcount.jpn.panasonic.com
 api.stg.v2ork.panasonic.com
 api.stg2.v2ork.panasonic.com
 api.v2ork.panasonic.com
 api.vixell.panasonic.com
+api.voice-push.jpn.panasonic.com
 apis-poc-test.digital.panasonic.com
 apistg.ciboard.jpn.panasonic.com
 apistg.dfs-maiboard.jpn.panasonic.com
@@ -210,13 +211,11 @@ assets.na.industrial.panasonic.com
 assistive.age-free.jpn.panasonic.com
 atlas.is.jp.panasonic.com
 atlas2.is.jp.panasonic.com
-attrres-dev-mig.pcpf.panasonic.com
 attrres-dev.pcpf.panasonic.com
 attrres-trial.pcpf.panasonic.com
 attrres.pcpf.panasonic.com
 aui-dev.pcpf.panasonic.com
 aui-stg.pcpf.panasonic.com
-aui-trial.pcpf.panasonic.com
 aui.pcpf.panasonic.com
 auth-b1.digital.panasonic.com
 auth-cp.digital.panasonic.com
@@ -307,7 +306,6 @@ authui-pn-it2.digital.panasonic.com
 authui-pn-st1.digital.panasonic.com
 authui-pn-st2.digital.panasonic.com
 authui-pn-st3.digital.panasonic.com
-authui-pn-t1.digital.panasonic.com
 authutil-b1.digital.panasonic.com
 authutil-c10r1.digital.panasonic.com
 authutil-c10r2.digital.panasonic.com
@@ -360,6 +358,7 @@ autodiscover.me.eu.panasonic.com
 autodiscover.mkt-us.panasonic.com
 autodiscover.mm.panasonic.com
 autodiscover.mm.xeds.gwp.panasonic.com
+autodiscover.mx.panasonic.com
 autodiscover.my.panasonic.com
 autodiscover.ng.panasonic.com
 autodiscover.nz.panasonic.com
@@ -399,6 +398,7 @@ av.mm.panasonic.com
 av.my.panasonic.com
 av.ph.panasonic.com
 av.sg.panasonic.com
+av.th.panasonic.com
 av.tw.panasonic.com
 av.vn.panasonic.com
 avataruat.sg.panasonic.com
@@ -415,6 +415,7 @@ b2b-face-ee-v2020-fs02-tp-198307.musockets.jp.eww.panasonic.com
 b2b-face-ee-v2020-fs02-tp-235561.musockets.jp.eww.panasonic.com
 b2b-face-ee-v2020-fs02-tp-275043.musockets.jp.eww.panasonic.com
 b2b-face-ee-v2020-fs02-tp-603205.musockets.jp.eww.panasonic.com
+b2b-face-ee-v2020-fs02-tp-704868.musockets.jp.eww.panasonic.com
 b2b.cis.panasonic.com
 b2b.panasonic.com
 b2b.ph.panasonic.com
@@ -429,7 +430,6 @@ beauty.apac.panasonic.com
 beauty.panasonic.com
 beautyadmin.apac.panasonic.com
 best-uat.lsin.panasonic.com
-best.lsin.panasonic.com
 bettertopia.panasonic.com
 bg.panasonic.com
 bi0.is.jp.panasonic.com
@@ -446,6 +446,8 @@ bnavi.api.v2ork.panasonic.com
 bnc.eu.panasonic.com
 bounce.industry-information.eu.panasonic.com
 brandshop.in.panasonic.com
+bt-face-ee-v2020.musockets.jp.eww.panasonic.com
+bt-face-v2021.musockets.jp.eww.panasonic.com
 bt-face-v2021s.musockets.jp.eww.panasonic.com
 business.panasonic.com
 cad-client.v2ork.panasonic.com
@@ -519,7 +521,6 @@ clf-web-api.ai-wisocr.jpn.panasonic.com
 click.cdp.my.panasonic.com
 click.form-consumer.vn.panasonic.com
 click.mailers.in.panasonic.com
-click.reach.in.panasonic.com
 click.sf-us.panasonic.com
 climateaction.eu.panasonic.com
 cloud-dev.ebl.eu.panasonic.com
@@ -527,6 +528,7 @@ cloud.cdp.my.panasonic.com
 cloud.ebl.eu.panasonic.com
 cloud.form-consumer.vn.panasonic.com
 cloud.lanterna.panasonic.com
+cloud.mailers.in.panasonic.com
 cloud.reach.in.panasonic.com
 cloud.sf-us.panasonic.com
 cloudgw-test.jp.panasonic.com
@@ -545,7 +547,6 @@ comem-ret.pcpf.panasonic.com
 comfnc-dev-mig.pcpf.panasonic.com
 comfnc-dev.pcpf.panasonic.com
 comfnc-stg.pcpf.panasonic.com
-comfnc-trial.pcpf.panasonic.com
 comfnc.pcpf.panasonic.com
 commercial-equipment-support.jpn.panasonic.com
 commercial-equipment-systems.jpn.panasonic.com
@@ -618,6 +619,7 @@ csadm.pcpf.panasonic.com
 csapl-dev-mig.pcpf.panasonic.com
 csapl-dev.pcpf.panasonic.com
 csapl-dev2.pcpf.panasonic.com
+csapl-notice-ret.pcpf.panasonic.com
 csapl-pre.pcpf.panasonic.com
 csapl-st1.pcpf.panasonic.com
 csapl-st2.pcpf.panasonic.com
@@ -636,7 +638,6 @@ csfrdemo.work-opt.jpn.panasonic.com
 csp.is.jp.panasonic.com
 csp1.acrosign.jpn.panasonic.com
 csreport.v2ork.panasonic.com
-ctlg-tehai.jpn.panasonic.com
 ctlg.panasonic.com
 customdomain-blue.info.wkstyle-support.jpn.panasonic.com
 customdomain-blue.inhouse.wkstyle-support.jpn.panasonic.com
@@ -763,7 +764,6 @@ dev.signedge.in.panasonic.com
 dev.st.bas.pbac.panasonic.com
 dev.store-op-bi.jpn.panasonic.com
 dev.store-op.jpn.panasonic.com
-dev.tariki-lab.panasonic.com
 dev.tmg.jpn.panasonic.com
 dev.well.panasonic.com
 dev.work-opt.jpn.panasonic.com
@@ -856,6 +856,7 @@ dlvy-api.coldchain.panasonic.com
 dlvy.coldchain.panasonic.com
 dm.clearconnect.panasonic.com
 dms.in.panasonic.com
+dmsqa.in.panasonic.com
 dnstest.gg.panasonic.com
 dobook.jpn.panasonic.com
 docs.connect.panasonic.com
@@ -883,6 +884,7 @@ dr1-iweba.is.jp.panasonic.com
 dr1-jaccs-api.is.jp.panasonic.com
 dr1-kaimin-api.is.jp.panasonic.com
 dr1-luminousplannerauth.va.jp.panasonic.com
+dr1-mapdl-api.is.jp.panasonic.com
 dr1-pdd-api.is.jp.panasonic.com
 dr1-ph.is.jp.panasonic.com
 dr1-piw.is.jp.panasonic.com
@@ -918,6 +920,7 @@ e-series-faq.security.panasonic.com
 eas.eds.panasonic.com
 eas.paletex.jp.panasonic.com
 ebidding.ph.panasonic.com
+ec-biz-store.jpn.panasonic.com
 ec-trial.dashboard.jpn.panasonic.com
 ec.store-tool.jpn.panasonic.com
 ec2-kiss-test.jpn.panasonic.com
@@ -944,7 +947,6 @@ emer.is.jp.panasonic.com
 employeestore.na.panasonic.com
 ems.tr.panasonic.com
 emt.clearconnect.panasonic.com
-en-faq.security.panasonic.com
 enaio-gateway-pas.eu.panasonic.com
 enefarmapp.apfc.panasonic.com
 enefarmapp2.apfc.panasonic.com
@@ -958,6 +960,7 @@ eneloop.panasonic.com
 energy-base.jp.eww.panasonic.com
 energy-note.jpn.panasonic.com
 energy-sp.panasonic.com
+energy-value-added-service.eww.panasonic.com
 energy.na.panasonic.com
 energy.panasonic.com
 energy.sg.panasonic.com
@@ -984,6 +987,7 @@ enterpriseenrollment.sa.panasonic.com
 enterpriseenrollment.za.panasonic.com
 enterpriseregistration.adcomms.eu.panasonic.com
 enterpriseregistration.ae.panasonic.com
+enterpriseregistration.br.panasonic.com
 enterpriseregistration.eg.panasonic.com
 enterpriseregistration.eu.panasonic.com
 enterpriseregistration.ext.eu.panasonic.com
@@ -991,7 +995,6 @@ enterpriseregistration.ext.ua.panasonic.com
 enterpriseregistration.ir.panasonic.com
 enterpriseregistration.kw.panasonic.com
 enterpriseregistration.lb.panasonic.com
-enterpriseregistration.ng.panasonic.com
 enterpriseregistration.pk.panasonic.com
 enterpriseregistration.ru.panasonic.com
 enterpriseregistration.sa.panasonic.com
@@ -1030,6 +1033,7 @@ event.connect.panasonic.com
 events.eu.panasonic.com
 everest.us.panasonic.com
 evis.va.jp.panasonic.com
+ew-ai.jpn.panasonic.com
 eworkapi.eww.panasonic.com
 eworkplace-api.apac.panasonic.com
 eworkplace.apac.panasonic.com
@@ -1067,9 +1071,13 @@ extweb.tw.panasonic.com
 f1uchq6k.marketing.well.panasonic.com
 fa-agency.kr.eww.panasonic.com
 fa-spform01.industrial.panasonic.com
+face-ee-v2020-fs01-t-op00001.musockets.jp.eww.panasonic.com
+face-ee-v2020-fs02-c-op00001.musockets.jp.eww.panasonic.com
 face-ee-v2020-fs02-t-791560.musockets.jp.eww.panasonic.com
+face-ee-v2020-fs02-tp-198307.musockets.jp.eww.panasonic.com
+face-ee-v2020-fs02-tp-235561.musockets.jp.eww.panasonic.com
+face-ee-v2020-fs02-tp-275043.musockets.jp.eww.panasonic.com
 face-ee-v2020-fs02-tp-603205.musockets.jp.eww.panasonic.com
-face-ee-v2020-fs02-tp-704868.musockets.jp.eww.panasonic.com
 facebook.panasonic.com
 fallback.na.panasonic.com
 fan.my.panasonic.com
@@ -1131,7 +1139,6 @@ go.na.panasonic.com
 gohs.panasonic.com
 gorillada.automotive.panasonic.com
 grace.soft-activation.panasonic.com
-graylog-poc.digital.panasonic.com
 graylog.digital.panasonic.com
 green-living.na.panasonic.com
 grooonplus.jpn.panasonic.com
@@ -1158,6 +1165,7 @@ housing.multi-locker.panasonic.com
 hr.virtualagents.jpn.panasonic.com
 hrm-live.tr.panasonic.com
 hrm-test.tr.panasonic.com
+hs-sandbox.na.panasonic.com
 hs-vivr.jpn.panasonic.com
 hsf-reserve.jpn.panasonic.com
 hu.panasonic.com
@@ -1183,6 +1191,7 @@ ict-manager2.jpn.panasonic.com
 ict-managerdev-ap.jpn.panasonic.com
 ict-managerdev.jpn.panasonic.com
 ictdevsupport.jp.eww.panasonic.com
+id-mpc.connect.panasonic.com
 id-mpcdev.connect.panasonic.com
 ids-community.kr.panasonic.com
 idsa.panasonic.com
@@ -1267,6 +1276,7 @@ it1-auth1.is.jp.panasonic.com
 it1-auth1c.is.jp.panasonic.com
 it1-cift.is.jp.panasonic.com
 it1-ciftapi.is.jp.panasonic.com
+it1-ciftcmd-001api.is.jp.panasonic.com
 it1-clubpanasonic-api.is.jp.panasonic.com
 it1-ctssfdc-api.is.jp.panasonic.com
 it1-dimora-api.is.jp.panasonic.com
@@ -1281,7 +1291,6 @@ it1-mapdl-api.is.jp.panasonic.com
 it1-procurementsite-gsol-api.is.jp.panasonic.com
 it1-smbcgmo-api.is.jp.panasonic.com
 it1-soesgw-gsol-api.is.jp.panasonic.com
-it1-tableau1.is.jp.panasonic.com
 it1-www.is.jp.panasonic.com
 it1sftppa3afp01.is.jp.panasonic.com
 it2-assetmgt-sys-gsol-api.is.jp.panasonic.com
@@ -1324,6 +1333,8 @@ jp-devct-arm-trial.pcpf.panasonic.com
 jp-devctl-stg.pcpf.panasonic.com
 jp-devctl-trial.pcpf.panasonic.com
 jp-devctl.pcpf.panasonic.com
+jp-faq-netwkcam.security.panasonic.com
+jp-faq.security.panasonic.com
 jp-ldcctl-arm-trial.pcpf.panasonic.com
 jp-ldcctl-stg.pcpf.panasonic.com
 jp-ldcctl-trial.pcpf.panasonic.com
@@ -1346,6 +1357,7 @@ jp-logdbv2.pcpf.panasonic.com
 jp-lspif-arm-trial.pcpf.panasonic.com
 jp-lspif-stg.pcpf.panasonic.com
 jp-lspif-trial.pcpf.panasonic.com
+jp-lspif.pcpf.panasonic.com
 jp-pc-support-rf.connect.panasonic.com
 jp-pc-support.connect.panasonic.com
 jp-sasrv-apl-stg.pcpf.panasonic.com
@@ -1411,12 +1423,12 @@ ldcws-stg.pcpf.panasonic.com
 ldcws-trial.pcpf.panasonic.com
 ldcws.pcpf.panasonic.com
 ldcwsv2-arm-trial.pcpf.panasonic.com
-ldcwsv2-ot.pcpf.panasonic.com
 ldcwsv2-stg.pcpf.panasonic.com
 ldcwsv2-trial.pcpf.panasonic.com
 ldcwsv2.pcpf.panasonic.com
 learning.panasonic.com
 legacy.pdpartners.ca.panasonic.com
+legacy.pewa.panasonic.com
 legacy.shop.panasonic.com
 levelup.recipe.kitchen-pocket.jpn.panasonic.com
 license.us.panasonic.com
@@ -1427,6 +1439,7 @@ link.eu.panasonic.com
 link.miruair.jpn.panasonic.com
 link.panasonic.com
 link.rac.apws.panasonic.com
+link.well.panasonic.com
 linkplus.advance-link.panasonic.com
 linkray-content.jpn.panasonic.com
 links.shop.panasonic.com
@@ -1459,7 +1472,6 @@ localhost.rec.panasonic.com
 localhost.ru.panasonic.com
 localhost.sa.panasonic.com
 localhost.security.panasonic.com
-localhost.sf-us.panasonic.com
 localhost.tr.panasonic.com
 localhost.za.panasonic.com
 logdb-ot99.pcpf.panasonic.com
@@ -1480,7 +1492,6 @@ logix.dev.eu.panasonic.com
 logix.eu.panasonic.com
 logix.uat.eu.panasonic.com
 logstore-ot.pcpf.panasonic.com
-logstore-rt.pcpf.panasonic.com
 logstorev2-ot.pcpf.panasonic.com
 logup-stg.pcpf.panasonic.com
 logup-trial.pcpf.panasonic.com
@@ -1488,6 +1499,7 @@ logup.pcpf.panasonic.com
 lp.jpn.biz.panasonic.com
 lsin.panasonic.com
 lspif-ot.pcpf.panasonic.com
+lspif-rt.pcpf.panasonic.com
 lspif-stg.pcpf.panasonic.com
 lspif-trial.pcpf.panasonic.com
 lspif.pcpf.panasonic.com
@@ -1507,28 +1519,28 @@ lync-wac.eds.panasonic.com
 lync.eds.panasonic.com
 lyncadmin.in.panasonic.com
 lyncdiscover.ae.panasonic.com
-lyncdiscover.ar.panasonic.com
 lyncdiscover.au.panasonic.com
 lyncdiscover.ca.panasonic.com
 lyncdiscover.cl.panasonic.com
+lyncdiscover.cn.panasonic.com
 lyncdiscover.co.panasonic.com
 lyncdiscover.cr.panasonic.com
 lyncdiscover.eg.panasonic.com
 lyncdiscover.ext.kz.panasonic.com
 lyncdiscover.ext.ru.panasonic.com
-lyncdiscover.ext.us.panasonic.com
+lyncdiscover.gg.jp.panasonic.com
 lyncdiscover.gnpc.panasonic.com
+lyncdiscover.hk.panasonic.com
 lyncdiscover.id.panasonic.com
 lyncdiscover.in.panasonic.com
 lyncdiscover.ir.panasonic.com
 lyncdiscover.jp.panasonic.com
 lyncdiscover.kh.panasonic.com
+lyncdiscover.kk.jp.panasonic.com
 lyncdiscover.kw.panasonic.com
-lyncdiscover.kz.panasonic.com
-lyncdiscover.lb.panasonic.com
 lyncdiscover.lync.jp.eww.panasonic.com
-lyncdiscover.mm.panasonic.com
 lyncdiscover.mm.xeds.gwp.panasonic.com
+lyncdiscover.mx.panasonic.com
 lyncdiscover.my.panasonic.com
 lyncdiscover.ng.panasonic.com
 lyncdiscover.nz.panasonic.com
@@ -1536,8 +1548,8 @@ lyncdiscover.pa.panasonic.com
 lyncdiscover.palet.xeds.gwp.panasonic.com
 lyncdiscover.paletex.jp.panasonic.com
 lyncdiscover.pe.panasonic.com
+lyncdiscover.ph.panasonic.com
 lyncdiscover.ph.xeds.gwp.panasonic.com
-lyncdiscover.pk.panasonic.com
 lyncdiscover.poc.panasonic.com
 lyncdiscover.ru.panasonic.com
 lyncdiscover.sa.panasonic.com
@@ -1585,6 +1597,7 @@ maintenance.gpf.apws.panasonic.com
 maintenance.tr.panasonic.com
 majorflow.jpn.panasonic.com
 mango.panasonic.com
+manumal.jpn.panasonic.com
 map.7c2a3bec.fms.jpn.panasonic.com
 map.stg.fms-test.jpn.panasonic.com
 mapdl-api.is.jp.panasonic.com
@@ -1624,7 +1637,6 @@ mfttst.na.panasonic.com
 mhi.connect.panasonic.com
 mimaxcare-stg.lxc.panasonic.com
 mimaxcare.lxc.panasonic.com
-mk-link.na.industrial.panasonic.com
 ml01.mdmsv.panasonic.com
 ml11.mdmsv.panasonic.com
 ml21.mdmsv.panasonic.com
@@ -1659,6 +1671,7 @@ msoid.ext.us.panasonic.com
 msoid.gg.jp.panasonic.com
 msoid.hk.panasonic.com
 msoid.id.panasonic.com
+msoid.jp.panasonic.com
 msoid.kh.panasonic.com
 msoid.kk.jp.panasonic.com
 msoid.kw.panasonic.com
@@ -1732,6 +1745,7 @@ next-v2data.stg.voice-push.jpn.panasonic.com
 next-webhook.stg.voice-push.jpn.panasonic.com
 next-wmapi-stp.wad.apws.panasonic.com
 next-wmapi.wad.apws.panasonic.com
+next-www.stg.voice-push.jpn.panasonic.com
 next.lar.apws.panasonic.com
 next.recipe.kitchen-pocket.jpn.panasonic.com
 next2-cot.wad.apws.panasonic.com
@@ -1747,7 +1761,6 @@ ns5.panasonic.com
 ns6.panasonic.com
 ns7.panasonic.com
 nxt-matlas.bpr.panasonic.com
-nxt-tcxcompass.bpr.panasonic.com
 o1.pdp.sender.digital.panasonic.com
 o1.ptr2663.ml.jp.panasonic.com
 o1.ptr5209.sender.pcpf.panasonic.com
@@ -1759,12 +1772,12 @@ o2.sender2.auth.digital.panasonic.com
 o47.ptr6866.mail.b2bcloud.jpn.panasonic.com
 oasys.na.panasonic.com
 oc.connect.panasonic.com
-ocpp.dev.cirrus.panasonic.com
 odeme.tr.panasonic.com
 officewebapps.lync.jp.eww.panasonic.com
 oftp2-pas.eu.panasonic.com
 olympics.panasonic.com
 on4care.panasonic.com
+on4today.panasonic.com
 ondu-docs.software.panasonic.com
 ope.moptimo.jpn.panasonic.com
 openam-opendj.dev.milcount.jpn.panasonic.com
@@ -1779,6 +1792,7 @@ org-case.hvac.panasonic.com
 org-cid.connect.panasonic.com
 org-dev-smaap.jpn.panasonic.com
 org-dev001.integrated-id.jpn.panasonic.com
+org-next-simple-log-store.apc.panasonic.com
 org-next-smaap.jpn.panasonic.com
 org-p3.support.panasonic.com
 org-recruit-stg.jpn.panasonic.com
@@ -1809,7 +1823,6 @@ org.hvac-service-cloud.jpn.panasonic.com
 org.ireporter.jpn.panasonic.com
 org.licensee.panasonic.com
 org.meitokukai.jp.eww.panasonic.com
-org.p-forward.jpn.panasonic.com
 org.pockets.jpn.panasonic.com
 org.prod-cms.news.panasonic.com
 org.ps-miraiz.jpn.panasonic.com
@@ -1853,7 +1866,6 @@ origin-dwstage.panasonic.com
 origin-insurance.jpn.panasonic.com
 origin-rd1-www.is.jp.panasonic.com
 origin-rms.apfc.panasonic.com
-origin-rmsapi.apfc.panasonic.com
 origin-rmsapib1a.apfc.panasonic.com
 origin-rmsapib1b.apfc.panasonic.com
 origin-rmsapit1.apfc.panasonic.com
@@ -1862,11 +1874,11 @@ origin-rmsb1apre.apfc.panasonic.com
 origin-rmsb1b.apfc.panasonic.com
 origin-rmst1a.apfc.panasonic.com
 origin-scdn.panasonic.com
-origin-shop.panasonic.com
 origin-tdcollabo.jpn.panasonic.com
 origin-tgpfinder.jpn.panasonic.com
 origin-uis.apfc.panasonic.com
 origin-us.panasonic.com
+origin-ut1-www.va.jp.panasonic.com
 origin-www.is.jp.panasonic.com
 origin.aquarea-service.panasonic.com
 origin.grooonplus.jpn.panasonic.com
@@ -1900,7 +1912,6 @@ ot2-assetmgt-sys-gsol-api.is.jp.panasonic.com
 ot2-auth1.is.jp.panasonic.com
 ot2-auth1c.is.jp.panasonic.com
 ot2-cift.is.jp.panasonic.com
-ot2-ciftapi.is.jp.panasonic.com
 ot2-ciftcmd-001api.is.jp.panasonic.com
 ot2-clubpanasonic-api.is.jp.panasonic.com
 ot2-dimora-api.is.jp.panasonic.com
@@ -1970,12 +1981,13 @@ pco-mulesoft-alb-mtls.etl1-lb-mtls-proxy.connect.panasonic.com
 pco-mulesoft-alb.etl1-lb-proxy.connect.panasonic.com
 pco.hr.virtualagents.jpn.panasonic.com
 pcona.hs-sandbox.na.panasonic.com
-pd-api.is.jp.panasonic.com
+pcwp-crm.connect.panasonic.com
 pdf-search.gpf.apws.panasonic.com
 pdp-auth-dev1.digital.panasonic.com
 pdpartners.ca.panasonic.com
 pdpartners.na.panasonic.com
 pebridge.eww.panasonic.com
+pena.us.panasonic.com
 penaservicedesk.america.gds.panasonic.com
 perovskite-pv.panasonic.com
 pewa.panasonic.com
@@ -2025,7 +2037,6 @@ poc-data.stg.voice-push.jpn.panasonic.com
 poc-hdmifaq.bpr.panasonic.com
 poc-matlas.bpr.panasonic.com
 poc-meistersearch.bpr.panasonic.com
-poc-proc-ohto.bpr.panasonic.com
 poc-tcxcompass.bpr.panasonic.com
 poc-v2data.stg.voice-push.jpn.panasonic.com
 poc-webhook.stg.voice-push.jpn.panasonic.com
@@ -2114,6 +2125,7 @@ proxy08.proxy.jp.panasonic.com
 proxy09.proxy.jp.panasonic.com
 proxy10.proxy.jp.panasonic.com
 proxy11.proxy.jp.panasonic.com
+proxy12.proxy.jp.panasonic.com
 ps-hp.jpn.panasonic.com
 ps-miraiz.jpn.panasonic.com
 ps-plan.jp.eww.panasonic.com
@@ -2126,6 +2138,7 @@ psh-stg.lxc.panasonic.com
 psh.lxc.panasonic.com
 pstc-old.panasonic.com
 pstc.panasonic.com
+pt1sftppa3afp01.is.jp.panasonic.com
 ptw.panasonic.com
 ptz.eu.panasonic.com
 pub.prod.aem.panasonic.com
@@ -2170,12 +2183,14 @@ recruit.jpn.panasonic.com
 recruit.operational-excellence.panasonic.com
 recycle.jpn.panasonic.com
 reform-club.panasonic.com
+registry-stg.asfpt.panasonic.com
 registry-test.asfpt.panasonic.com
 registry.asfpt.panasonic.com
 relay.smart-energy.jpn.panasonic.com
 render.ewxr.jpn.panasonic.com
 render2.ewxr.jpn.panasonic.com
 render3.ewxr.jpn.panasonic.com
+reproduction-app.rvc.apws.panasonic.com
 res-esl.in.panasonic.com
 research.sg.panasonic.com
 reset.gsp.eww.panasonic.com
@@ -2184,6 +2199,7 @@ rest-api.dev.cirrus.panasonic.com
 rest-api.qa.cirrus.panasonic.com
 restrict.stg.fms-test.jpn.panasonic.com
 retail.cytis-shift.jpn.panasonic.com
+reviews.panasonic.com
 rhcds00.kdc.jp.eww.panasonic.com
 ridm-ws-uat.sg.panasonic.com
 ridm-ws.sg.panasonic.com
@@ -2208,7 +2224,6 @@ rmsapit1apre.apfc.panasonic.com
 rmsapit1b.apfc.panasonic.com
 rmsapit1pre.apfc.panasonic.com
 rmsb1.apfc.panasonic.com
-rmsb1a.apfc.panasonic.com
 rmsb1apre.apfc.panasonic.com
 rmsb1b.apfc.panasonic.com
 rmsb1bpre.apfc.panasonic.com
@@ -2242,9 +2257,9 @@ sasrvv2-ot-apl.pcpf.panasonic.com
 sasrvv2-ot-dev.pcpf.panasonic.com
 sbox.jpn.panasonic.com
 sched-rt.pcpf.panasonic.com
-sched-stg.pcpf.panasonic.com
 sched-trial.pcpf.panasonic.com
 sched.pcpf.panasonic.com
+scuik5-industrial.panasonic.com
 sd-internal-portal.jpn.panasonic.com
 sdn.in.panasonic.com
 sds.jpn.panasonic.com
@@ -2261,6 +2276,7 @@ select-dev.apc.panasonic.com
 select-stg.apc.panasonic.com
 select-stg2.apc.panasonic.com
 select.apc.panasonic.com
+sender.auth.digital.panasonic.com
 sender11.cus.is.jp.panasonic.com
 sender12.cus.is.jp.panasonic.com
 sender13.cus.is.jp.panasonic.com
@@ -2275,6 +2291,7 @@ service.is-c.jpn.panasonic.com
 service.us-old.panasonic.com
 service.us.panasonic.com
 servicedesk.tr.panasonic.com
+services.panasonic.com
 servify.qa.seekit.panasonic.com
 servify.seekit.panasonic.com
 set.charge-ment.panasonic.com
@@ -2306,30 +2323,31 @@ signedgeuat.in.panasonic.com
 simple-log-store.apc.panasonic.com
 simplemdg.us.panasonic.com
 sip.ae.panasonic.com
-sip.au.panasonic.com
 sip.ca.panasonic.com
 sip.cn.panasonic.com
 sip.eg.panasonic.com
 sip.ext.ru.panasonic.com
 sip.ext.us.panasonic.com
+sip.gg.jp.panasonic.com
 sip.hk.panasonic.com
 sip.hk.xeds.gwp.panasonic.com
 sip.id.panasonic.com
 sip.id.xeds.gwp.panasonic.com
 sip.in.panasonic.com
 sip.ir.panasonic.com
-sip.jp.panasonic.com
 sip.kh.panasonic.com
 sip.kh.xeds.gwp.panasonic.com
 sip.kk.jp.panasonic.com
 sip.kr.panasonic.com
 sip.kw.panasonic.com
+sip.kz.panasonic.com
 sip.lb.panasonic.com
 sip.mm.panasonic.com
 sip.mx.panasonic.com
 sip.my.panasonic.com
 sip.my.xeds.gwp.panasonic.com
 sip.ng.panasonic.com
+sip.nz.panasonic.com
 sip.palet.xeds.gwp.panasonic.com
 sip.paletex.jp.panasonic.com
 sip.ph.panasonic.com
@@ -2337,16 +2355,17 @@ sip.ph.xeds.gwp.panasonic.com
 sip.pk.panasonic.com
 sip.poc.panasonic.com
 sip.ru.panasonic.com
+sip.sa.panasonic.com
 sip.sg.panasonic.com
 sip.sg.xeds.gwp.panasonic.com
 sip.tds.panasonic.com
-sip.th.panasonic.com
 sip.th.xeds.gwp.panasonic.com
+sip.tr.panasonic.com
 sip.tw.panasonic.com
 sip.us.panasonic.com
+sip.vn.panasonic.com
 sip.vn.xeds.gwp.panasonic.com
 sip.xeds.gwp.panasonic.com
-sip.za.panasonic.com
 sipexternal.in.panasonic.com
 sitess-origin.laboratory.jpn.panasonic.com
 sitess-origin.tech.panasonic.com
@@ -2369,7 +2388,6 @@ slave-web.stg.v2ork.panasonic.com
 sleep-dev.apc.panasonic.com
 sleep-stg.apc.panasonic.com
 sleep-stg2.apc.panasonic.com
-sleep-stg3.apc.panasonic.com
 sleep.apc.panasonic.com
 sleep.rac.apws.panasonic.com
 slm.na.panasonic.com
@@ -2387,6 +2405,7 @@ smt.connect.na.panasonic.com
 smtp-poc.dev.hvac-cloud.panasonic.com
 smtp.dev.hvac-cloud.panasonic.com
 smtp.hvac-cloud.panasonic.com
+snm-admin.my.panasonic.com
 snm.my.panasonic.com
 soainds-prod.sg.panasonic.com
 soainds-qa.sg.panasonic.com
@@ -2406,7 +2425,6 @@ spaisfait.is.jp.panasonic.com
 spc.jp.eww.panasonic.com
 spcom-rt.pcpf.panasonic.com
 spcom-stg.pcpf.panasonic.com
-spcom-trial.pcpf.panasonic.com
 spcom.pcpf.panasonic.com
 spdggit.eww.panasonic.com
 spdoadmin.eww.panasonic.com
@@ -2500,7 +2518,6 @@ stg-cdn.gpf.apws.panasonic.com
 stg-comem-trial.pcpf.panasonic.com
 stg-comfnc-stg.pcpf.panasonic.com
 stg-comfnc-trial.pcpf.panasonic.com
-stg-cot.wad.apws.panasonic.com
 stg-csadm-stg.pcpf.panasonic.com
 stg-csadm-trial.pcpf.panasonic.com
 stg-csapl-stg.pcpf.panasonic.com
@@ -2515,7 +2532,6 @@ stg-devct-ot.pcpf.panasonic.com
 stg-devctl-stg.pcpf.panasonic.com
 stg-devctl-trial.pcpf.panasonic.com
 stg-devctl.pcpf.panasonic.com
-stg-devstore.panasonic.com
 stg-dlvy-api.coldchain.panasonic.com
 stg-dlvy.coldchain.panasonic.com
 stg-edit.wcs.jp.eww.panasonic.com
@@ -2527,6 +2543,7 @@ stg-eu-ldcws.pcpf.panasonic.com
 stg-eu-ldcwsv2.pcpf.panasonic.com
 stg-eu-logdb.pcpf.panasonic.com
 stg-eu-lspif.pcpf.panasonic.com
+stg-eu-spcom.pcpf.panasonic.com
 stg-grac.panasonic.com
 stg-hxd.digital.panasonic.com
 stg-int-api.nicobo.panasonic.com
@@ -2559,6 +2576,7 @@ stg-jp-sasrv-dev.pcpf.panasonic.com
 stg-jp-spcom-stg.pcpf.panasonic.com
 stg-jp-spcom-trial.pcpf.panasonic.com
 stg-jp-spcom.pcpf.panasonic.com
+stg-ldcctl-ot.pcpf.panasonic.com
 stg-ldcctl-stg.pcpf.panasonic.com
 stg-ldcctl-trial.pcpf.panasonic.com
 stg-ldcctl.pcpf.panasonic.com
@@ -2585,6 +2603,7 @@ stg-lspif-trial.pcpf.panasonic.com
 stg-lspif.pcpf.panasonic.com
 stg-m2m-ap-southeast-1.gpf.apws.panasonic.com
 stg-maintenance.gpf.apws.panasonic.com
+stg-marketplace.panasonic.com
 stg-matlas.bpr.panasonic.com
 stg-mnt1-acpf.apc.panasonic.com
 stg-pbxmobile.panasonic.com
@@ -2768,7 +2787,6 @@ tableau3.is.jp.panasonic.com
 tableau4.is.jp.panasonic.com
 tableau5.is.jp.panasonic.com
 tablet-roombookplus.in.panasonic.com
-tariki-lab.panasonic.com
 tcxcompass.bpr.panasonic.com
 tdcollabo.jpn.panasonic.com
 te.eu.panasonic.com
@@ -2776,6 +2794,7 @@ tech-ai.panasonic.com
 tech-survey.jpn.panasonic.com
 tech.panasonic.com
 technics.mcstaging-shop.apac.panasonic.com
+techsummit.sg.panasonic.com
 tenantpost2.eww.panasonic.com
 terminal-stg.asfpt.panasonic.com
 terminal-test.asfpt.panasonic.com
@@ -2817,6 +2836,7 @@ testepochapi.hr.virtualagents.jpn.panasonic.com
 testgenerativeai.hr.virtualagents.jpn.panasonic.com
 tgpfinder.jpn.panasonic.com
 thebarikan.panasonic.com
+thelivingexperience.eu.panasonic.com
 things.api.v2ork.panasonic.com
 thuthachdaudam.vn.panasonic.com
 time-phvac.eu.panasonic.com
@@ -2846,6 +2866,7 @@ track.tr.eu.panasonic.com
 tradein.panasonic.com
 training.eu.panasonic.com
 tram.panasonic.com
+transport.voice-push.jpn.panasonic.com
 trial-api.nicobo.panasonic.com
 trial.integrated-id.jpn.panasonic.com
 trial1-acpf-api.apc.panasonic.com
@@ -2921,7 +2942,7 @@ ut1-ecoffice.is.jp.panasonic.com
 ut1-emer.is.jp.panasonic.com
 ut1-eww-np-shop.is.jp.panasonic.com
 ut1-gec.is.jp.panasonic.com
-ut1-gencho-srv.va.jp.panasonic.com
+ut1-gmo-api.is.jp.panasonic.com
 ut1-isbase-api.is.jp.panasonic.com
 ut1-iweb.is.jp.panasonic.com
 ut1-iweba.is.jp.panasonic.com
@@ -2929,6 +2950,7 @@ ut1-jaccs-api.is.jp.panasonic.com
 ut1-kadendmp-srv.is.jp.panasonic.com
 ut1-kaimin-api.is.jp.panasonic.com
 ut1-luminousplanner.va.jp.panasonic.com
+ut1-luminousplannerauth.va.jp.panasonic.com
 ut1-mapdl-api.is.jp.panasonic.com
 ut1-ncb-api.is.jp.panasonic.com
 ut1-pd-api.is.jp.panasonic.com
@@ -3007,6 +3029,7 @@ verify-app.rvc.apws.panasonic.com
 vieratv.my.panasonic.com
 view.cdp.my.panasonic.com
 view.form-consumer.vn.panasonic.com
+view.mailers.in.panasonic.com
 view.reach.in.panasonic.com
 view.sf-us.panasonic.com
 viko.panasonic.com
@@ -3071,6 +3094,7 @@ ws.v2n.dev.cirrus.panasonic.com
 ws.v2n.qa.cirrus.panasonic.com
 ws1uag.is.jp.panasonic.com
 www-dev.tvpa.panasonic.com
+www-images.panasonic.com
 www-stg.tvpa.panasonic.com
 www-test.industrial.panasonic.com
 www.523075988846.jss.jpn.panasonic.com
@@ -3121,6 +3145,7 @@ www.interios.na.panasonic.com
 www.is.jp.panasonic.com
 www.is.sg.panasonic.com
 www.kitchen.shop.panasonic.com
+www.kmsupplier.my.panasonic.com
 www.link.panasonic.com
 www.logistics.na.panasonic.com
 www.lsin.panasonic.com

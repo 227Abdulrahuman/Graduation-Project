@@ -21,10 +21,14 @@ services:
       - NET_ADMIN
       - NET_RAW
     restart: unless-stopped
+    env_file:
+      - .env
 
   redis:
     image: redis:latest
     container_name: redis
+    env_file:
+      - .env
 
   celery:
     build:
@@ -43,7 +47,8 @@ services:
     depends_on:
       - redis
       - automator
-
+    env_file:
+      - .env
 
 volumes:
   automator-history:

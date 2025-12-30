@@ -1,0 +1,24 @@
+id: information-disclosure
+
+info:
+  name: information-disclosure
+  author: 227abdulrahman
+  severity: high
+  description: information-disclosure
+
+requests:
+  - method: GET
+    path:
+
+      - "{{BaseURL}}/env"
+      - "{{BaseURL}}/.env"
+      - "{{BaseURL}}/git"
+      - "{{BaseURL}}/actuator"
+      - "{{BaseURL}}/actuators"
+      - "{{BaseURL}}/admin"
+      - "{{BaseURL}}/upload"
+
+    matchers:
+      - type: status
+        status:
+          - 200
