@@ -13,6 +13,7 @@ services:
       - automator-history:/root
     environment:
       - PYTHONUNBUFFERED=1
+      - PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/work/backend/core/bins:/usr/local/go/bin:/go/bin
       - TERM=xterm-256color
     working_dir: /work
     stdin_open: true
@@ -43,6 +44,7 @@ services:
       - PYTHONUNBUFFERED=1
       - PYTHONPATH=/work/backend
       - TERM=xterm-256color
+      - PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/work/backend/core/bins:/usr/local/go/bin:/go/bin
     working_dir: /work
     depends_on:
       - redis

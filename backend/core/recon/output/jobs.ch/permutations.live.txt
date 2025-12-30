@@ -35,6 +35,7 @@ crm.jobs.ch
 dip-data.gipfeli.spotted.jobs.ch
 dip-data.spotted.jobs.ch
 enterpriseenrollment.jobs.ch
+enterpriseregistration.jobs.ch
 image.my.jobs.ch
 img.jobs.ch
 img.stage.jobs.ch
