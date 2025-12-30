@@ -6,12 +6,11 @@ client = genai.Client()
 
 def generate_permutations(domain):
     """
-    Takes a domain and generates permutations and saves them to permutations.txt
+    Takes subdomains from passive.txt and generates permutations in permutations.txt
     """
     #Load the subdomains from the database.
     passive_file = f"/work/backend/core/recon/output/{domain}/passive.txt"
     out_file = f"/work/backend/core/recon/output/{domain}/permutations.txt"
-    load_subdomains(domain, passive_file)
 
     #Clear the permutations file.
     with open(out_file, 'w') as file:
@@ -45,8 +44,3 @@ def generate_permutations(domain):
         with open(out_file, 'a') as file:
             for i in response.text:
                 file.write(i)
-
-
-domain = "panasonic.com"
-
-generate_permutations(domain)

@@ -48,7 +48,7 @@ def passive_enum(domain):
 
     base_dir = f"/work/backend/core/recon/output/{domain}"
     os.makedirs(base_dir, exist_ok=True)
-    subs_file = base_dir + "/subdomains.txt"
+    subs_file = base_dir + "/passive.txt"
     live_file = base_dir + "/live.txt"
     all_subs = set()
 
@@ -85,7 +85,6 @@ def passive_enum(domain):
                 all_subs.update(result)
 
 
-    #Save them to subdomains.txt
     with open(subs_file, "w") as f:
         for sub in all_subs:
             f.write(f"{sub}\n")
@@ -104,13 +103,11 @@ def passive_enum(domain):
 
 
     #Insert the results into the database
-    with open(subs_file) as f:
-        passive_subdomains = set(line.strip() for line in f if line.strip())
     with open(live_file) as f:
         live_subdomains = set(line.strip() for line in f if line.strip())
     domain_obj = Domain.objects.get(hostname=domain)
-    for sub in passive_subdomains:
-        is_alive = sub in live_subdomains
+    for sub in live_subdomains:
+        is_alive = True
         Subdomain.objects.update_or_create(
             domain=domain_obj,
             hostname=sub,

@@ -1,11 +1,7 @@
-import yaml
-import requests
+import requests, os
 
-with open('/work/backend/.config/provider.yaml') as file:
-    data = yaml.safe_load(file)
 
-data = data['VirusTotal']
-key = data['apiKey']
+key = os.getenv("VIRUSTOTAL_KEY")
 headers = {'X-Apikey': key}
 params = {'limit': 40}
 
