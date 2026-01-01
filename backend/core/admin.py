@@ -16,3 +16,7 @@ class HTTPXAdmin(admin.ModelAdmin):
 @admin.register(models.SubdomainTakeover)
 class SubdomainTakeoverAdmin(admin.ModelAdmin):
     list_display = ('subdomain', 'severity', 'type', 'target')
+
+@admin.register(models.Nmap)
+class NmapAdmin(admin.ModelAdmin):
+    list_display = ('subdomain', 'port_number', 'state', 'service_name', 'product_name')

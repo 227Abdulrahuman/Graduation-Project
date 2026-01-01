@@ -47,3 +47,13 @@ class SubdomainTakeover(models.Model):
     type = models.CharField(max_length=1000, null=True, blank=True)
     severity = models.CharField(max_length=1000, null=True, blank=True)
     target = models.JSONField(default=list,null=True, blank=True)
+
+class Nmap(models.Model):
+    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="nmap")
+    port_number = models.IntegerField(null=True,blank=True)
+    state = models.CharField(max_length=1000, null=True, blank=True)
+    service_name = models.CharField(max_length=1000, null=True, blank=True)
+    product_name = models.CharField(max_length=1000, null=True, blank=True)
+
+    class Meta:
+        unique_together = ("subdomain", "port_number")
