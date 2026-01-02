@@ -4,7 +4,12 @@ backend/api/tools/data/cookie.txt
 backend/core/migrations/*
 backend/core/migrations
 backend/core/migrations/
-
+backend/core/recon/output/*
+/backend/core/recon/output/
+/backend/core/recon/output
+/backend/core/enum/output/*
+/backend/core/enum/output/
+/backend/core/enum/output
 *.sqlite3
 
 
@@ -36,6 +41,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
 
 
 
