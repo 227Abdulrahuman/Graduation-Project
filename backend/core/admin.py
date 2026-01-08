@@ -20,3 +20,7 @@ class SubdomainTakeoverAdmin(admin.ModelAdmin):
 @admin.register(models.Nmap)
 class NmapAdmin(admin.ModelAdmin):
     list_display = ('subdomain', 'port_number', 'state', 'service_name', 'product_name')
+
+@admin.register(models.Katana)
+class KatanaAdmin(admin.ModelAdmin):
+    list_display = ('subdomain', 'uri')
