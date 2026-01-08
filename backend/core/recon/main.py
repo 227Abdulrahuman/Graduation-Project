@@ -1,7 +1,6 @@
 from backend.core.recon.passive_subdomains_enum import passive_enum
 from backend.core.recon.llm_permutations import generate_permutations
 from backend.core.recon.subdomains_bruteforce import bruteforce
-from backend.core.utilities.load_subdomains import load_subdomains
 from backend.core.recon.dns_enum import dns_enum
 from backend.core.recon.web_fingerprinting import web_fingerprint
 from backend.core.models import *
@@ -10,7 +9,7 @@ import subprocess
 
 def recon_pipline(domain):
     print("###############################################")
-    print(f"[*] Starting full recon pipline for {domain}")
+    print(f"[*] Starting full recon pipeline for {domain}")
     print("###############################################")
 
     passive_enum(domain)
@@ -18,9 +17,19 @@ def recon_pipline(domain):
     print(f"[*] Generating LLM Permutations for {domain}")
     generate_permutations(domain)
     perm_file = f"/work/backend/core/recon/output/{domain}/permutations.txt"
+
+    perms = set()
     with open(perm_file, 'r') as fp:
-        line_count = sum(1 for line in fp)
-    print(f"[+]Generating {line_count} Permutations for {domain}")
+        for line in fp:
+            line = line.strip()
+            if line.endswith(f".{domain}"):
+                perms.add(line)
+
+    with open(perm_file, 'w') as f:
+        for line in perms:
+            f.write(f"{line}\n")
+
+    print(f"[+]Generating {len(perms)} Permutations for {domain}")
 
     print(f"[*] Bruteforce permutations for {domain}")
     perm_file = f"/work/backend/core/recon/output/{domain}/permutations.txt"

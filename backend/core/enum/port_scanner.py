@@ -51,8 +51,8 @@ def port_scan(url):
     parsed_url = urlparse(url)
     hostname = parsed_url.hostname
 
-    out_dir = f'/work/backend/core/enum/{hostname}'
-    out_file = f'/work/backend/core/enum/{hostname}/nmap.xml'
+    out_dir = f'/work/backend/core/enum/output/{hostname}'
+    out_file = f'/work/backend/core/enum/output/{hostname}/nmap.xml'
     os.makedirs(out_dir,exist_ok=True)
 
     print(f"[*] Starting nmap scan on {hostname}")
