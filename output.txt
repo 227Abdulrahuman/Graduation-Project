@@ -1,8 +1,0 @@
-setup.php
-phpinfo.php
-logout.php
-instructions.php
-security.php
-/dvwa/js/add_event_listeners.js
-about.php
-dvwa/js/dvwaPage.js
