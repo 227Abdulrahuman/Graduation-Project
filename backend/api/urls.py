@@ -8,6 +8,7 @@ from ninja.errors import HttpError
 from backend.api.tasks import enum
 from backend.core.models import *
 from ninja.responses import Response
+from celery.result import AsyncResult
 
 api = NinjaAPI()
 
@@ -46,20 +47,32 @@ def add_domain(request, domain_name:str, company_name:str):
         Domain.objects.create(hostname=domain_name, company=company)
         return Response({"status":"success"}, status=201)
 
-
 @api.get("startRecon")
-def recon(request, domain:str):
+def recon(request, domain: str):
     domain = domain.lower()
     if Domain.objects.filter(hostname=domain).exists():
-        enum.delay(domain)
-        return Response({f"success":f"started recon pipline on {domain}"}, status=200)
+        task = enum.delay(domain)
+        return Response({
+            "success": f"started recon pipeline on {domain}",
+            "task_id": task.id
+        }, status=200)
     else:
-        return Response({"error":"Domain does not exist"}, status=400)
+        return Response({"error": "Domain does not exist"}, status=400)
 
+
+@api.get("getReconStatus")
+def get_recon_status(request, task_id: str):
+    task_result = AsyncResult(task_id)
+    return {
+        "task_id": task_id,
+        "status": task_result.status,
+        "result": str(task_result.result) if task_result.failed() else task_result.result
+    }
 
 @api.get("getReconData", response={200: List[SubdomainSchema], 404: dict})
 @paginate(PageNumberPagination, page_size=50)
 def get_recon_data(request, domain_name: str):
+    domain_name = domain_name.lower()
     if not Domain.objects.filter(hostname=domain_name).exists():
         raise HttpError(404, f"Domain '{domain_name}' not found in database.")
 
