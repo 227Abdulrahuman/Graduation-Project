@@ -58,25 +58,21 @@ class Nmap(models.Model):
     class Meta:
         unique_together = ("subdomain", "port_number")
 
-class Katana(models.Model):
-    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="katana")
-    uri = models.CharField(max_length=1000, null=True, blank=True)
 
-    class Meta:
-        unique_together = ("subdomain", "uri")
-
-class EndPoint(models.Model):
-    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="endpoint")
-    path = models.CharField(max_length=1000, null=True, blank=True)
+class URL(models.Model):
+    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="URL")
+    endpoint = models.CharField(max_length=1000, null=True, blank=True)
     status_code = models.IntegerField(null=True, blank=True)
+    content_type = models.CharField(max_length=1000, null=True, blank=True)
+    location = models.CharField(max_length=1000, null=True, blank=True)
 
     class Meta:
-        unique_together = ("subdomain", "path")
+        unique_together = ("subdomain", "endpoint")
 
 class Parameter(models.Model):
-    endpoint = models.ForeignKey(EndPoint, on_delete=models.CASCADE, related_name="parameter")
+    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="param")
     key = models.CharField(max_length=1000, null=True, blank=True)
     value = models.CharField(max_length=1000, null=True, blank=True)
 
     class Meta:
-        unique_together = ("key", "endpoint")
+        unique_together = ("subdomain", "key")
