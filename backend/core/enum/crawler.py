@@ -146,4 +146,4 @@ def crawl(url, auth_headers=None, logout=None):
 
 
 if __name__ == "__main__":
-    crawl("http://dvwa.com/index.php", ["Cookie: PHPSESSID=ifugcco9sf7kg9qnsourfobu70"], "logout.php")
+    crawl("http://dvwa.com/index.php", ["Cookie: PHPSESSID=3b627brfhp7kblp364ofsnhi15"], "logout.php")
