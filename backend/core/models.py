@@ -1,7 +1,6 @@
 from django.db import models
 
 
-
 class Company(models.Model):
     name = models.CharField(max_length=10000, unique=True)
 
@@ -76,3 +75,11 @@ class Parameter(models.Model):
 
     class Meta:
         unique_together = ("subdomain", "key")
+
+class ArchivedURLs(models.Model):
+    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="ArchivedUrls")
+    url = models.CharField(max_length=1000, null=True, blank=True)
+    source = models.CharField(max_length=300, null=True, blank=True)
+
+    class Meta:
+        unique_together = ("subdomain", "url")

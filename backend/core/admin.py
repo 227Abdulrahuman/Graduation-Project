@@ -28,3 +28,7 @@ class URLAdmin(admin.ModelAdmin):
 @admin.register(models.Parameter)
 class ParameterAdmin(admin.ModelAdmin):
     list_display = ('subdomain', 'key', 'value')
+
+@admin.register(models.ArchivedURLs)
+class ArchivedURLsAdmin(admin.ModelAdmin):
+    list_display = ('subdomain', 'url', 'source')

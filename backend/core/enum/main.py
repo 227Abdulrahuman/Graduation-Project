@@ -1,10 +1,15 @@
-from backend.core.enum.parameter_discovery import parameter_extractor
+import os, django, requests, subprocess
+from urllib.parse import urlparse
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.api.settings")
+django.setup()
+from backend.core.models import *
+from pathlib import Path
 
-url = 'http://dvwa.com/'
 
-h = [
-    'Cookie: PHPSESSID=3b627brfhp7kblp364ofsnhi15'
-    ]
+sub = "seikitoriatsukaiten.jp.eww.panasonic.com"
 
-parameter_extractor(url, h)
+obj = Subdomain.objects.get(hostname=sub)
 
+print(obj.hostname)
+print(obj.ip)
+print(obj.cname)
