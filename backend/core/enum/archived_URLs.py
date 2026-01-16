@@ -1,4 +1,5 @@
 import os, django, requests, subprocess
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import urlparse
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.api.settings")
 django.setup()
@@ -12,6 +13,7 @@ intlex_key = os.getenv("INTELX_API_KEY")
 def virus_total(subdomain):
     """
     Takes a subdomain & Gets urls from VirusTotal and saves it to the database.
+    Returns the length of the found URLs.
     """
 
     out_dir = f'/work/backend/core/enum/output/{subdomain}'
@@ -43,9 +45,13 @@ def virus_total(subdomain):
             }
         )
 
-    print(f"[+] Found {len(urls_set)} URLs from VirusTotal.")
+    return len(urls_set)
 
 def url_scan(subdomain):
+    """
+    Takes a subdomain extracts urls from urlscan and saves the result to the database.
+    returns the length of the found urls.
+    """
     config_dir = "/root/.config/waymore"
     os.makedirs(config_dir, exist_ok=True)
 
@@ -82,6 +88,7 @@ def url_scan(subdomain):
 
     if result.returncode != 0:
         print(f"[-] URLScan hit quota when searching for {subdomain}")
+        return 0
     else:
         urls = set()
         with open(out_file, 'r') as file:
@@ -99,6 +106,8 @@ def url_scan(subdomain):
                     'source': 'URLSCAN'
                 }
             )
+
+        return len(urls)
 
 def intelx(subdomain):
     config_dir = "/root/.config/waymore"
@@ -136,6 +145,7 @@ INTELX_API_KEY: {intlex_key}
 
     if result.returncode != 0:
         print(f"[-] Intelix hit quota when searching for {subdomain}")
+        return 0
     else:
         urls = set()
         with open(out_file,'r') as file:
@@ -153,6 +163,7 @@ INTELX_API_KEY: {intlex_key}
                     'source': 'INTELIX'
                 }
             )
+        return len(urls)
 
 def common_crawl(subdomain):
     config_dir = "/root/.config/waymore"
@@ -190,7 +201,8 @@ def common_crawl(subdomain):
     sub_obj = Subdomain.objects.get(hostname=subdomain)
 
     if result.returncode != 0:
-        print(f"[-] URLScan hit quota when searching for {subdomain}")
+        print(f"[-] CommonCrawl hit quota when searching for {subdomain}")
+        return 0
     else:
         urls = set()
         with open(out_file, 'r') as file:
@@ -208,6 +220,7 @@ def common_crawl(subdomain):
                     'source': 'COMMON_CRAWL'
                 }
             )
+        return len(urls)
 
 def alien_vault(subdomain):
     config_dir = "/root/.config/waymore"
@@ -245,7 +258,8 @@ def alien_vault(subdomain):
     sub_obj = Subdomain.objects.get(hostname=subdomain)
 
     if result.returncode != 0:
-        print(f"[-] URLScan hit quota when searching for {subdomain}")
+        print(f"[-] AlienVault hit quota when searching for {subdomain}")
+        return 0
     else:
         urls = set()
         with open(out_file, 'r') as file:
@@ -263,9 +277,34 @@ def alien_vault(subdomain):
                     'source': 'ALIEN_VAULT'
                 }
             )
+        return len(urls)
+
+def get_from_source(name, func, subdomain):
+    try:
+        result = func(subdomain)
+        print(f"[+] {name}: {result} URLs.")
+
+
+    except Exception as e:
+        print(f"[Error] {name}: {e}")
 
 
 def get_archived_urls(subdomain):
-    
-    pass
+    sources = [
+        ("Virus Total", virus_total),
+        ("Url Scan", url_scan),
+        ("Intelix", intelx),
+        ("Common Crawl", common_crawl),
+        ("Alien Vault", alien_vault),
+    ]
+
+    with ThreadPoolExecutor(max_workers=len(sources)) as executor:
+        futures = {
+            executor.submit(get_from_source, name, func, subdomain): name
+            for name, func in sources
+        }
+
+
+
+get_archived_urls('www.jobscout24.ch')
 
