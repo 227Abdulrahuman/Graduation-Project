@@ -32,3 +32,8 @@ class ParameterAdmin(admin.ModelAdmin):
 @admin.register(models.ArchivedURLs)
 class ArchivedURLsAdmin(admin.ModelAdmin):
     list_display = ('subdomain', 'url', 'source')
+
+@admin.register(models.RXSS)
+class RXSSAdmin(admin.ModelAdmin):
+    list_display = ('subdomain', 'vuln_endpoint')
+

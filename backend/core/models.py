@@ -83,3 +83,11 @@ class ArchivedURLs(models.Model):
 
     class Meta:
         unique_together = ("subdomain", "url")
+
+
+class RXSS(models.Model):
+    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="rxss")
+    vuln_endpoint = models.CharField(max_length=1000, null=True, blank=True)
+
+    class Meta:
+        unique_together = ("subdomain", "vuln_endpoint")

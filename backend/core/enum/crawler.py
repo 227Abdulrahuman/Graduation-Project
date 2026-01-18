@@ -10,8 +10,6 @@ def crawl(url, auth_headers=None, logout=None):
     """
     Crawl a target webapp, and saves endpoints and parameters to the database.
     """
-
-
     try:
         parsed = urlparse(url)
         hostname = parsed.hostname
@@ -42,11 +40,13 @@ def crawl(url, auth_headers=None, logout=None):
         for line in file:
             data = json.loads(line)
 
-            url = data["request"].get("endpoint")
+            u = data["request"].get("endpoint")
 
             try:
-                urlparse(url)
-                all_urls.add(url)
+                p = urlparse(u)
+                #Check if the crawled url belongs to our target.
+                if p.hostname == hostname:
+                    all_urls.add(u)
             except:
                 pass
 
@@ -138,7 +138,7 @@ def crawl(url, auth_headers=None, logout=None):
                 "location": rl,
             }
         )
-
+    print(f"[+] Done Crawling {url}")
 
 
 
