@@ -303,8 +303,3 @@ def get_archived_urls(subdomain):
             executor.submit(get_from_source, name, func, subdomain): name
             for name, func in sources
         }
-
-
-
-get_archived_urls('www.jobscout24.ch')
-
