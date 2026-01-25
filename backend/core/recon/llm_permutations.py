@@ -40,9 +40,9 @@ client_pool = get_client_cycle()
 
 def generate_permutations(domain):
     """
-    Takes subdomains from passive.txt and generates permutations in permutations.txt
+    Takes subdomains from live.txt and generates permutations in permutations.txt
     """
-    passive_file = f"/work/backend/core/recon/output/{domain}/passive.txt"
+    live_file = f"/work/backend/core/recon/output/{domain}/live.txt"
     out_file = f"/work/backend/core/recon/output/{domain}/permutations.txt"
 
     with open(out_file, 'w') as file:
@@ -51,10 +51,10 @@ def generate_permutations(domain):
     chunk_size = 3000
 
     try:
-        with open(passive_file, 'r') as f:
+        with open(live_file, 'r') as f:
             subdomains = f.readlines()
     except FileNotFoundError:
-        print(f"File not found: {passive_file}")
+        print(f"File not found: {live_file}")
         return
 
     length = len(subdomains)

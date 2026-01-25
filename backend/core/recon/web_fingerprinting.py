@@ -15,7 +15,7 @@ def web_fingerprint(domain):
     cmd = [
         'httpx', '-l', live_file,
         '-nc', '-silent',
-        '-sc', '-title', '-location',
+        '-sc', '-title', '-location', '-td', '-cl',
         '-j', '-o', output_file,
     ]
     subprocess.run(cmd, text=True, capture_output=True)

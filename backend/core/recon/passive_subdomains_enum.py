@@ -67,7 +67,6 @@ def passive_enum(domain):
         ("digitalyama", digitalyama),
         ("pugrecon", pugrecon),
         ("dnsdumpster", dnsdumpster),
-
     ]
 
 
