@@ -1,19 +1,15 @@
-import os, django
+import os, django, requests, subprocess
+from urllib.parse import urlparse
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.api.settings")
 django.setup()
 from backend.core.models import *
-
-from backend.core.enum.crawler import crawl
-from backend.core.enum.parameter_discovery import parameter_extractor
+from pathlib import Path
 
 
+sub = "seikitoriatsukaiten.jp.eww.panasonic.com"
 
-target_url = "https://www12.um.att.com/"
+obj = Subdomain.objects.get(hostname=sub)
 
-crawl(target_url)
-parameter_extractor(target_url)
-
-
-from backend.core.scan.cross_site_scripting.xss import xss_scan
-
-xss_scan("www12.um.att.com")
+print(obj.hostname)
+print(obj.ip)
+print(obj.cname)
