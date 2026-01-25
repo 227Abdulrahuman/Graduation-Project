@@ -34,7 +34,9 @@ def parameter_extractor(url, auth_headers=None):
             urls.add(line)
 
     for i in urls:
-        res = requests.get(i,headers=h)
+        import urllib3
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)  # Optional: Suppress the warning noise
+        res = requests.get(i, headers=h, verify=False)
         p = heuristic(res)
         params.extend(p)
 
