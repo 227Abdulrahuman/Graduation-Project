@@ -91,3 +91,11 @@ class RXSS(models.Model):
 
     class Meta:
         unique_together = ("subdomain", "vuln_endpoint")
+
+class JS_URLs(models.Model):
+    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="js_urls")
+    url = models.CharField(max_length=1000, null=True, blank=True)
+    file_name = models.CharField(max_length=1000, null=True, blank=True)
+
+    class Meta:
+        unique_together = ("subdomain", "url")
