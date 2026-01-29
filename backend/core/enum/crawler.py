@@ -105,7 +105,8 @@ def crawl(url, auth_headers=None, logout=None):
     ffuf_output = f"{out_dir}/ffuf.json"
 
     #Run ffuf.
-    cmd = ['ffuf', '-u', f"{ffuf_url}/FUZZ",
+    cmd = ['ffuf', '-u', f"{ffuf_url}/FUZZ/", '-t', '1',
+           '-H', 'User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:147.0) Gecko/20100101 Firefox/147.0',
            '-w', endpoints_output,
            '-ac',
            '-o', ffuf_output

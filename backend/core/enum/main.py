@@ -3,13 +3,20 @@ from urllib.parse import urlparse
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.api.settings")
 django.setup()
 from backend.core.models import *
-from pathlib import Path
 
 
-sub = "seikitoriatsukaiten.jp.eww.panasonic.com"
+from backend.core.enum.crawler import crawl
+from backend.core.enum.parameter_discovery import parameter_extractor
+from backend.core.scan.cross_site_scripting.xss import xss_scan
+from backend.core.enum.js_analysis import download_js, extract_urls, analys_js
 
-obj = Subdomain.objects.get(hostname=sub)
 
-print(obj.hostname)
-print(obj.ip)
-print(obj.cname)
+headers = ['Cookie: session_id=85fac576-be4c-48c1-ba64-754f7c780289;access_token=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IjRxNzZKNEpZZXdpQzQ1Zk03N3ZaWiJ9.eyJodHRwczovL2pvYnMuY2gvZW1haWwiOiIyMjdhYmR1bHJhaG1hbkBnbWFpbC5jb20iLCJodHRwczovL2pvYnMuY2gvc2Vzc2lvbl9pZCI6Ijg1ZmFjNTc2LWJlNGMtNDhjMS1iYTY0LTc1NGY3Yzc4MDI4OSIsImh0dHBzOi8vam9icy5jaC91c2VyX2lkIjoiMGUzODY4MDgtZDdlZi00ZjM2LTg4MWItMjUxMWNiNTIzOTRmIiwiaXNzIjoiaHR0cHM6Ly9hdXRoLmpvYnMuY2gvIiwic3ViIjoiZ29vZ2xlLW9hdXRoMnwxMTYxMjQzMjY3NzI1ODQxMTI3OTgiLCJhdWQiOlsiaHR0cHM6Ly9qb2JzLWNoLXByb2QuZXUuYXV0aDAuY29tL2FwaS92Mi8iLCJodHRwczovL2pvYnMtY2gtcHJvZC5ldS5hdXRoMC5jb20vdXNlcmluZm8iXSwiaWF0IjoxNzY5MzgxOTY4LCJleHAiOjE3NjkzODU1NjgsInNjb3BlIjoib3BlbmlkIG9mZmxpbmVfYWNjZXNzIiwiYXpwIjoiSUI1elF4dU00WGRoaEg2bkN2Szc3dWh2VEtjVjVtcVkifQ.nYK6_Brl00fF2qfKPq9gKmjEcWcwCt5P3g2gqM3TD-kzkcyk65aH48xbk2UFZATGlFU-twWyHxYX7bFNyrLc9XqJZqqFU31oEiv6U1xQjSTKRQGZAHEzdlz3YGQIb3A2PboUDewLTNQJqsrzRkXlDC4eOv9XKseHpF_gNZ1xvEGuSMcGx8QUDyacph1EB2smaor4C3hFo1gBeRSlJr94I08JXOkfF0BTAdJtpPlqEcE1xD5fOkV6Yp-sK8vuO9VmgWC3kwjINtf7a8dADAcOPD1yUVyzIhzXXNOk-YF1rtwENRhteg6zRtvlf6mEdvOB5po0UF3arrxZkPPeeMdL-w; auth_connection=google-oauth2']
+
+
+url = 'https://www.jobs.ch/'
+
+subdomain = 'www.jobs.ch'
+
+crawl(url,headers)
+analys_js(subdomain,headers)

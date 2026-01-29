@@ -37,3 +37,6 @@ class ArchivedURLsAdmin(admin.ModelAdmin):
 class RXSSAdmin(admin.ModelAdmin):
     list_display = ('subdomain', 'vuln_endpoint')
 
+@admin.register(models.JS_URLs)
+class JSURLSADMIN(admin.ModelAdmin):
+    list_display = ('subdomain','url', 'file_name')
