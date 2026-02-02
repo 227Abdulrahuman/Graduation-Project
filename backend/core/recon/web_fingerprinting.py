@@ -37,7 +37,7 @@ def web_fingerprint(domain):
                 location = data.get('location')
 
                 subdomain_obj = Subdomain.objects.get(hostname=host_name)
-                HTTPX.objects.update_or_create(
+                WebFingerPrint.objects.update_or_create(
                     subdomain=subdomain_obj,
                     url=url,
                     defaults={

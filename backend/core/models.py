@@ -3,6 +3,8 @@ from django.db import models
 
 class Company(models.Model):
     name = models.CharField(max_length=10000, unique=True)
+    platform = models.CharField(max_length=10000, null=True, blank=True)
+    program_url = models.CharField(max_length=10000, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -29,7 +31,7 @@ class Subdomain(models.Model):
         return self.hostname
 
 
-class HTTPX(models.Model):
+class WebFingerPrint(models.Model):
     subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="web_fingerprint")
     status_code = models.IntegerField(null=True, blank=True)
     url = models.CharField(max_length=10000,null=True, blank=True)

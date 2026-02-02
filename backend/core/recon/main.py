@@ -5,11 +5,12 @@ from backend.core.recon.dns_enum import dns_enum
 from backend.core.recon.web_fingerprinting import web_fingerprint
 from backend.core.models import *
 import subprocess
+import sys
 
 
 def recon_pipline(domain):
     print("###############################################")
-    print(f"[*] Starting full recon pipeline for {domain}")
+    print(f"[*] Starting recon pipeline for {domain}")
     print("###############################################")
 
     passive_enum(domain)
@@ -82,7 +83,9 @@ def recon_pipline(domain):
 
 
     print("###############################################")
-    print(f"[+] DONE full recon pipline for {domain}")
+    print(f"[+] Finished recon pipline for {domain}")
     print("###############################################")
 
 
+if __name__ == "__main__":
+    recon_pipline(sys.argv[1])
