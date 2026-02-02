@@ -10,7 +10,7 @@ target_file = f"{data_dir}/targets.txt"
 os.makedirs(data_dir, exist_ok=True)
 
 #Get urls from database.
-httpx_data = HTTPX.objects.filter(subdomain__domain__hostname=domain)
+httpx_data = WebFingerPrint.objects.filter(subdomain__domain__hostname=domain)
 
 #Save them to targets.txt
 with open(target_file, 'w') as f:

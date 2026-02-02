@@ -9,7 +9,7 @@ admin.site.register(models.Company)
 class SubdomainAdmin(admin.ModelAdmin):
     list_display = ("hostname","ip","cname","is_alive")
 
-@admin.register(models.HTTPX)
+@admin.register(models.WebFingerPrint)
 class HTTPXAdmin(admin.ModelAdmin):
     list_display = ("url", "title", "status_code", "location", "tech", "content_length" )
 
