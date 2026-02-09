@@ -48,7 +48,7 @@ def generate_permutations(domain):
     with open(out_file, 'w') as file:
         pass
 
-    chunk_size = 3000
+    chunk_size = 500
 
     try:
         with open(live_file, 'r') as f:

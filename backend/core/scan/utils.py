@@ -24,7 +24,6 @@ def load_html_urls(subdomain, out_file):
         for u in req_urls:
             file.write(f"{u}\n")
 
-
 def load_parameters(subdomain, out_file):
     """
     Loads all parameters key=value related to the subdomain in out_file.
@@ -55,7 +54,6 @@ def load_html_urls_to_set(subdomain):
 
     return req_urls
 
-
 def load_parameters_to_set(subdomain):
     """
     Loads all parameters key=value related to the subdomain and returns them in a set.
@@ -70,3 +68,31 @@ def load_parameters_to_set(subdomain):
         result.add(f"{p.key}={p.value}")
 
     return result
+
+def load_subs(domain):
+    out_dir = f'/work/backend/core/scan/output/{domain}'
+    os.makedirs(out_dir, exist_ok=True)
+
+    subs_file = f'{out_dir}/subs.txt'
+
+    domain_obj = Domain.objects.get(hostname=domain)
+    subdomains = domain_obj.subdomains.all()
+
+    with open(subs_file, 'w') as file:
+        for i in subdomains:
+            file.write(f'{i.hostname}\n')
+
+def load_urls(domain):
+    out_dir = f'/work/backend/core/scan/output/{domain}'
+    os.makedirs(out_dir, exist_ok=True)
+
+    urls_file = f'{out_dir}/urls.txt'
+
+    urls = WebFingerPrint.objects.filter(subdomain__domain__hostname=domain)
+
+    with open(urls_file, 'w') as file:
+        for i in urls:
+            file.write(f'{i.url}\n')
+
+
+
