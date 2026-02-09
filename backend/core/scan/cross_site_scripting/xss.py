@@ -45,28 +45,28 @@ def xss_scan(subdomain, auth_headers=None):
 
 
     sub_obj = Subdomain.objects.get(hostname=subdomain)
-    #Parse JSON Result.
-    with open(out_file, 'r') as file:
-        for line in file:
-            line = line.strip()
-            if not line:
-                continue
-
-            try:
-                data = json.loads(line)
-
-                vuln = data.get("matched-at")
-
-                if vuln:
-                    RXSS.objects.update_or_create(
-                        subdomain=sub_obj,
-                        vuln_endpoint=vuln
-                    )
-
-                print(f"[+] RXSS at {vuln}")
-
-            except:
-                print(f"[-] Error during XSS scanning for {subdomain} in parsing JSON")
+    # #Parse JSON Result.
+    # with open(out_file, 'r') as file:
+    #     for line in file:
+    #         line = line.strip()
+    #         if not line:
+    #             continue
+    #
+    #         try:
+    #             data = json.loads(line)
+    #
+    #             vuln = data.get("matched-at")
+    #
+    #             if vuln:
+    #                 RXSS.objects.update_or_create(
+    #                     subdomain=sub_obj,
+    #                     vuln_endpoint=vuln
+    #                 )
+    #
+    #             print(f"[+] RXSS at {vuln}")
+    #
+    #         except:
+    #             print(f"[-] Error during XSS scanning for {subdomain} in parsing JSON")
 
 
 

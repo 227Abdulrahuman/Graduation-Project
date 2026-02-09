@@ -67,7 +67,7 @@ def port_scan(url):
 
     for item in data:
         print(f"{item['port']} {item['state']} {item['service']} {item['product']}")
-        Nmap.objects.update_or_create(
+        Port.objects.update_or_create(
             subdomain=domain_obj,
             port_number=item['port'],
             defaults={

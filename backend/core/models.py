@@ -43,13 +43,29 @@ class WebFingerPrint(models.Model):
     class Meta:
         unique_together = ("subdomain", "url")
 
-class SubdomainTakeover(models.Model):
-    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="subdomain_takeover")
-    type = models.CharField(max_length=1000, null=True, blank=True)
-    severity = models.CharField(max_length=1000, null=True, blank=True)
-    target = models.JSONField(default=list,null=True, blank=True)
 
-class Nmap(models.Model):
+class Vulnerability(models.Model):
+    class Severity(models.TextChoices):
+        LOW = 'Low', 'Low'
+        MEDIUM = 'Medium', 'Medium'
+        HIGH = 'High', 'High'
+        CRITICAL = 'Critical', 'Critical'
+
+    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="vulnerabilities")
+    vuln_location = models.CharField(max_length=10000,null=True, blank=True)
+    vuln_type = models.CharField(max_length=10000,null=True, blank=True)
+    vuln_name = models.CharField(max_length=10000,null=True, blank=True)
+    vuln_severity = models.CharField(
+        max_length=100,
+        choices=Severity.choices,
+        default=Severity.LOW,
+        null=True,
+        blank=True
+    )
+    class Meta:
+        unique_together = ("subdomain", "vuln_location")
+
+class Port(models.Model):
     subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="nmap")
     port_number = models.IntegerField(null=True,blank=True)
     state = models.CharField(max_length=1000, null=True, blank=True)
@@ -86,13 +102,6 @@ class ArchivedURLs(models.Model):
     class Meta:
         unique_together = ("subdomain", "url")
 
-
-class RXSS(models.Model):
-    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="rxss")
-    vuln_endpoint = models.CharField(max_length=1000, null=True, blank=True)
-
-    class Meta:
-        unique_together = ("subdomain", "vuln_endpoint")
 
 class JS_URLs(models.Model):
     subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="js_urls")
