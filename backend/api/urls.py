@@ -9,7 +9,7 @@ from ninja.responses import Response
 from celery.result import AsyncResult
 
 from backend.core.models import Company, Domain, Subdomain, WebFingerPrint
-from backend.api.tasks import enum  # Assuming this is your Celery task
+from backend.api.tasks import enum, scan
 
 api = NinjaAPI(version="1.0.0", title="Recon API")
 
@@ -96,7 +96,21 @@ def perform_recon(request, payload: ScanRequest):
         "task_id": task.id
     }, status=202)
 
+@api.post("/scan/start", response={202: dict, 404: dict})
+def perform_scan(request, payload: ScanRequest):
 
+    domain = payload.domain.lower()
+
+    if not Domain.objects.filter(hostname=domain).exists():
+        return Response({"error": f"Domain {domain} not found in database. Add company first."}, status=404)
+
+    task = scan.delay(domain)
+
+    return Response({
+        "success": True,
+        "message": f"Scan initiated for {domain}",
+        "task_id": task.id
+    }, status=202)
 @api.get("/recon/status/{task_id}")
 def get_recon_status(request, task_id: str):
     """
