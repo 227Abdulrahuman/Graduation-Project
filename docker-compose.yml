@@ -7,9 +7,7 @@ services:
     ports:
      - "8000:8000"
     volumes:
-      # Mount current directory to workspace
       - .:/work
-      # Keep command history
       - automator-history:/root
     environment:
       - PYTHONUNBUFFERED=1

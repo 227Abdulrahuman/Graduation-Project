@@ -1,0 +1,8 @@
+api.pimto01.ope.moptimo.jpn.panasonic.com
+authrelay-dev.pcpf.panasonic.com
+dev.na.panasonic.com
+org-cid-dev.connect.panasonic.com
+org-cid-uat.connect.panasonic.com
+org-recruit-dev.jpn.panasonic.com
+origin-uis-dev.apfc.panasonic.com
+uat.lsin.panasonic.com

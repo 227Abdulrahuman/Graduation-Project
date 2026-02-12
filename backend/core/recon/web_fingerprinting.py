@@ -1,16 +1,12 @@
-
-#Intialize Django.
 import os, django, subprocess,json
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.api.settings")
 django.setup()
 from backend.core.models import *
-
+from backend.core.utilities.loaders import load_urls
 
 def web_fingerprint(domain):
-    output_file = f"/work/backend/core/recon/output/{domain}/http.json"
-    live_file = f"/work/backend/core/recon/output/{domain}/live.txt"
-
-    print(f"[+] Starting Web Fingerprinting for {domain}")
+    output_file = f"/work/backend/core/output/{domain}/web_fingerprint.json"
+    live_file = f"/work/backend/core/output/{domain}/live_subdomains.txt"
 
     cmd = [
         'httpx', '-l', live_file,
@@ -18,6 +14,9 @@ def web_fingerprint(domain):
         '-sc', '-title', '-location', '-td', '-cl',
         '-j', '-o', output_file,
     ]
+
+    print(f"[+] Starting Web Fingerprinting for {domain}")
+
     subprocess.run(cmd, text=True, capture_output=True)
 
     with open(output_file, 'r') as file:
@@ -37,18 +36,18 @@ def web_fingerprint(domain):
                 location = data.get('location')
 
                 subdomain_obj = Subdomain.objects.get(hostname=host_name)
-                WebFingerPrint.objects.update_or_create(
+                WebApplication.objects.update_or_create(
                     subdomain=subdomain_obj,
                     url=url,
                     defaults={
                         "status_code": status_code,
                         "content_length": content_length,
-                        "tech": tech,
+                        "tech_stack": tech,
                         "title": title,
                         "location": location,
                     }
                 )
             except Exception:
                 pass
-
-    print(f"[+] Done Web Fingerprinting for {domain}")
+    load_urls(domain)
+    print(f"[+] Finished Web Fingerprinting for {domain}")

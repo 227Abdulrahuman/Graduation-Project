@@ -29,10 +29,7 @@ ENV GOPATH=/go
 ENV PATH=$PATH:/usr/local/go/bin:$GOPATH/bin
 RUN mkdir -p /go/bin
 
-RUN go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest && \
-    go install -v github.com/projectdiscovery/dnsx/cmd/dnsx@latest && \
-    go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest && \
-    go install -v github.com/ffuf/ffuf/v2@latest
+RUN go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
 
 WORKDIR /work
 

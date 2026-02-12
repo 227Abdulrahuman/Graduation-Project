@@ -1,79 +1,65 @@
 from django.db import models
 
 
-class Company(models.Model):
-    name = models.CharField(max_length=10000, unique=True)
-    platform = models.CharField(max_length=10000, null=True, blank=True)
-    program_url = models.CharField(max_length=10000, null=True, blank=True)
+class Target(models.Model):
+    name = models.CharField(max_length=1000, unique=True)
+    platform = models.CharField(max_length=1000, null=True, blank=True)
+    program_url = models.CharField(max_length=1000, null=True, blank=True)
 
     def __str__(self):
         return self.name
 
 
 class Domain(models.Model):
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="domains")
-    hostname = models.CharField(max_length=10000, unique=True)
+    target = models.ForeignKey(Target, on_delete=models.CASCADE, related_name="domains")
+    hostname = models.CharField(max_length=1000, unique=True)
 
     def __str__(self):
         return self.hostname
 
 class Subdomain(models.Model):
     domain = models.ForeignKey(Domain, on_delete=models.CASCADE, related_name="subdomains")
+    hostname = models.CharField(max_length=1000, unique=True)
+    cname = models.CharField(max_length=1000, null=True, blank=True)
+    ip = models.CharField(max_length=100, null=True, blank=True)
     is_alive = models.BooleanField(default=False)
-    hostname = models.CharField(max_length=10000)
-    cname = models.CharField(max_length=10000, null=True, blank=True)
-    ip = models.CharField(max_length=10000, null=True, blank=True)
-
-    class Meta:
-        unique_together = ("domain", "hostname")
 
     def __str__(self):
         return self.hostname
 
 
-class WebFingerPrint(models.Model):
-    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="web_fingerprint")
+class WebApplication(models.Model):
+    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="webapps")
     status_code = models.IntegerField(null=True, blank=True)
-    url = models.CharField(max_length=10000,null=True, blank=True)
+    url = models.CharField(max_length=1000,unique=True)
     content_length = models.IntegerField(null=True, blank=True)
-    tech = models.JSONField(default=list,null=True, blank=True)
-    location = models.CharField(max_length=10000,null=True, blank=True)
-    title = models.CharField(max_length=10000,null=True, blank=True)
+    tech_stack = models.JSONField(default=list,null=True, blank=True)
+    location = models.CharField(max_length=1000,null=True, blank=True)
+    title = models.CharField(max_length=1000,null=True, blank=True)
 
-    class Meta:
-        unique_together = ("subdomain", "url")
+    def __str__(self):
+        return self.url
 
 
 class Vulnerability(models.Model):
-    class Severity(models.TextChoices):
-        LOW = 'Low', 'Low'
-        MEDIUM = 'Medium', 'Medium'
-        HIGH = 'High', 'High'
-        CRITICAL = 'Critical', 'Critical'
-
-    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="vulnerabilities")
-    vuln_location = models.CharField(max_length=10000,null=True, blank=True)
-    vuln_type = models.CharField(max_length=10000,null=True, blank=True)
-    vuln_name = models.CharField(max_length=10000,null=True, blank=True)
-    vuln_severity = models.CharField(
-        max_length=100,
-        choices=Severity.choices,
-        default=Severity.LOW,
-        null=True,
-        blank=True
-    )
-    class Meta:
-        unique_together = ("subdomain", "vuln_location")
-
-class Port(models.Model):
-    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="nmap")
-    port_number = models.IntegerField(null=True,blank=True)
-    state = models.CharField(max_length=1000, null=True, blank=True)
-    service_name = models.CharField(max_length=1000, null=True, blank=True)
-    product_name = models.CharField(max_length=1000, null=True, blank=True)
+    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="vulnerabilities", null=True, blank=True)
+    url = models.ForeignKey(WebApplication, on_delete=models.CASCADE, related_name="vulnerabilities", null=True, blank=True)
+    name = models.CharField(max_length=1000)
+    location = models.CharField(max_length=1000)
+    severity = models.CharField(max_length=1000)
+    type = models.CharField(max_length=1000)
 
     class Meta:
-        unique_together = ("subdomain", "port_number")
+        unique_together = ("name", "location")
+
+
+
+
+
+
+
+
+
 
 
 class URL(models.Model):

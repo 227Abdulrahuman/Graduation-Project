@@ -1,0 +1,36 @@
+import os
+import requests
+
+
+
+SHODAN_KEY = os.getenv("SHODAN_KEY")
+BASE_URL = "https://api.shodan.io/dns/domain"
+
+
+def scrap(domain):
+  check = requests.get(f"https://api.shodan.io/account/profile?key={SHODAN_KEY}")
+
+  if check.status_code == 401:
+      return {-1}
+
+  page_num = 1
+  subdomains = set()
+  while True:
+    try:
+      url = f"{BASE_URL}/{domain}"
+      params = {
+        "key": SHODAN_KEY,
+        "page": page_num
+      }
+      response = requests.get(url=url,params=params)
+
+      response_data = response.json()
+      prefix_subs = response_data["subdomains"]
+      for prefix in prefix_subs:
+        subdomains.add(f"{prefix}.{domain}")
+      if response_data["more"] == False:
+        break
+      page_num+=1
+    except Exception:
+      subdomains = set()
+  return subdomains
