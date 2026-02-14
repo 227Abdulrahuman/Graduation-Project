@@ -3,12 +3,12 @@ from django.db import models
 
 class Target(models.Model):
     name = models.CharField(max_length=1000, unique=True)
+    type = models.CharField(max_length=1000, null=True, blank=True)
     platform = models.CharField(max_length=1000, null=True, blank=True)
     program_url = models.CharField(max_length=1000, null=True, blank=True)
 
     def __str__(self):
         return self.name
-
 
 class Domain(models.Model):
     target = models.ForeignKey(Target, on_delete=models.CASCADE, related_name="domains")
@@ -27,7 +27,6 @@ class Subdomain(models.Model):
     def __str__(self):
         return self.hostname
 
-
 class WebApplication(models.Model):
     subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="webapps")
     status_code = models.IntegerField(null=True, blank=True)
@@ -40,7 +39,6 @@ class WebApplication(models.Model):
     def __str__(self):
         return self.url
 
-
 class Vulnerability(models.Model):
     subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="vulnerabilities", null=True, blank=True)
     url = models.ForeignKey(WebApplication, on_delete=models.CASCADE, related_name="vulnerabilities", null=True, blank=True)
@@ -52,47 +50,29 @@ class Vulnerability(models.Model):
     class Meta:
         unique_together = ("name", "location")
 
-
-
-
-
-
-
-
-
-
-
-class URL(models.Model):
-    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="URL")
-    endpoint = models.CharField(max_length=1000, null=True, blank=True)
+class EndPoint(models.Model):
+    web_app = models.ForeignKey(WebApplication, on_delete=models.CASCADE, related_name="endpoint")
+    path = models.CharField(max_length=1000, null=True, blank=True)
     status_code = models.IntegerField(null=True, blank=True)
     content_type = models.CharField(max_length=1000, null=True, blank=True)
-    location = models.CharField(max_length=1000, null=True, blank=True)
+    content_length = models.IntegerField(null=True, blank=True)
+    location_header = models.CharField(max_length=1000, null=True, blank=True)
 
     class Meta:
-        unique_together = ("subdomain", "endpoint")
+        unique_together = ("web_app", "path")
 
 class Parameter(models.Model):
-    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="param")
+    endpoint = models.ForeignKey(EndPoint, on_delete=models.CASCADE, related_name="parameter")
     key = models.CharField(max_length=1000, null=True, blank=True)
     value = models.CharField(max_length=1000, null=True, blank=True)
 
     class Meta:
-        unique_together = ("subdomain", "key")
+        unique_together = ("endpoint", "key")
 
 class ArchivedURLs(models.Model):
-    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="ArchivedUrls")
+    web_app = models.ForeignKey(WebApplication, on_delete=models.CASCADE, related_name="ArchivedURLs")
     url = models.CharField(max_length=1000, null=True, blank=True)
     source = models.CharField(max_length=300, null=True, blank=True)
 
     class Meta:
-        unique_together = ("subdomain", "url")
-
-
-class JS_URLs(models.Model):
-    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="js_urls")
-    url = models.CharField(max_length=1000, null=True, blank=True)
-    file_name = models.CharField(max_length=1000, null=True, blank=True)
-
-    class Meta:
-        unique_together = ("subdomain", "url")
+        unique_together = ("web_app", "url")

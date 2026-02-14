@@ -56,16 +56,16 @@ def fetch_subdomains(domain):
         ("C99", c99),
         ("Subfinder", subfinder),
         ("securityTrailsWeb", securitytrailsweb),
-        # ("bevigil", bevigil),
+        ("bevigil", bevigil),
         ("chaos",chaos),
         ("leakix", leakix),
-        # ("netlas", netlas),
+        ("netlas", netlas),
         ("fullHunt", fullHunt),
         # ("shodan", shodan),
         ("certspotter", certspotter),
-        # ("digitalyama", digitalyama),
-        # ("pugrecon", pugrecon),
-        # ("dnsdumpster", dnsdumpster),
+        ("digitalyama", digitalyama),
+        ("pugrecon", pugrecon),
+        ("dnsdumpster", dnsdumpster),
     ]
 
     #Run passive providers.

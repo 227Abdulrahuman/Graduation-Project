@@ -9,7 +9,7 @@ def load_urls(domain):
     os.makedirs(base_dir, exist_ok=True)
     urls_file = base_dir + "/urls.txt"
 
-    urls = WebApplication.objects.all()
+    urls = WebApplication.objects.filter(subdomain__domain__hostname=domain)
 
     with open(urls_file, 'w') as file:
         for i in urls:
