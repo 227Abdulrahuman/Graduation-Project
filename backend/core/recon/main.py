@@ -11,14 +11,15 @@ def run_recon_pipeline(domain, chunk_size=None):
     print()
     fetch_subdomains(domain)
     print()
-    dns_recon(domain)
-    print()
-    web_fingerprint(domain)
-    print()
 
     if chunk_size is not None:
         generate_permutations(domain, chunk_size)
         print()
+
+    dns_recon(domain)
+    print()
+    web_fingerprint(domain)
+    print()
 
     print("###############################################")
     print(f"[+] Finished recon pipline for {domain}")

@@ -62,6 +62,7 @@ def generate_permutations(domain, chunk_size):
 
     print(f"[*] Generating permutations for {domain}")
     for start in range(0, length, chunk_size):
+        print(f"[*] Generating permutations for subdomains from {start} to {start + chunk_size} for {domain}")
         batch = subdomains[start:start + chunk_size]
         batch_content = "".join(batch)
 

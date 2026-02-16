@@ -41,7 +41,7 @@ class WebApplication(models.Model):
 
 class Vulnerability(models.Model):
     subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="vulnerabilities", null=True, blank=True)
-    url = models.ForeignKey(WebApplication, on_delete=models.CASCADE, related_name="vulnerabilities", null=True, blank=True)
+    web_app = models.ForeignKey(WebApplication, on_delete=models.CASCADE, related_name="vulnerabilities", null=True, blank=True)
     name = models.CharField(max_length=1000)
     location = models.CharField(max_length=1000)
     severity = models.CharField(max_length=1000)
@@ -61,6 +61,9 @@ class EndPoint(models.Model):
     class Meta:
         unique_together = ("web_app", "path")
 
+    def __str__(self):
+        return self.path
+
 class Parameter(models.Model):
     endpoint = models.ForeignKey(EndPoint, on_delete=models.CASCADE, related_name="parameter")
     key = models.CharField(max_length=1000, null=True, blank=True)
@@ -70,9 +73,9 @@ class Parameter(models.Model):
         unique_together = ("endpoint", "key")
 
 class ArchivedURLs(models.Model):
-    web_app = models.ForeignKey(WebApplication, on_delete=models.CASCADE, related_name="ArchivedURLs")
+    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="ArchivedURLs")
     url = models.CharField(max_length=1000, null=True, blank=True)
     source = models.CharField(max_length=300, null=True, blank=True)
 
     class Meta:
-        unique_together = ("web_app", "url")
+        unique_together = ("subdomain", "url")

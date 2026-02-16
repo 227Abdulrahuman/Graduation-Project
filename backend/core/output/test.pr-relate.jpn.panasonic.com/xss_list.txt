@@ -1,0 +1,6 @@
+https://test.pr-relate.jpn.panasonic.com/?remember="websploit"
+https://test.pr-relate.jpn.panasonic.com/?email="websploit"
+https://test.pr-relate.jpn.panasonic.com/?password="websploit"
+https://test.pr-relate.jpn.panasonic.com/login?remember="websploit"
+https://test.pr-relate.jpn.panasonic.com/login?email="websploit"
+https://test.pr-relate.jpn.panasonic.com/login?password="websploit"

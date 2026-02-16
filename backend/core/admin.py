@@ -23,7 +23,7 @@ class WebAppAdmin(admin.ModelAdmin):
 @admin.register(models.EndPoint)
 class EndPointAdmin(admin.ModelAdmin):
     list_display = ('path', 'status_code', 'content_type', 'content_length', 'location_header')
-    list_filter = ('web_app',)
+    list_filter = ('web_app__url',)
 
 @admin.register(models.Parameter)
 class ParameterAdmin(admin.ModelAdmin):
@@ -33,5 +33,10 @@ class ParameterAdmin(admin.ModelAdmin):
 @admin.register(models.ArchivedURLs)
 class ArchivedURLsAdmin(admin.ModelAdmin):
     list_display = ('url', 'source')
-    list_filter = ('web_app',)
+    list_filter = ('subdomain__hostname',)
+
+@admin.register(models.Vulnerability)
+class VulnerabilityAdmin(admin.ModelAdmin):
+    list_display = ('name', 'location', 'severity', 'type')
+    list_filter = ('subdomain__hostname','web_app__url')
 

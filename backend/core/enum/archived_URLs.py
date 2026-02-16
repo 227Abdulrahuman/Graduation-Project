@@ -10,6 +10,26 @@ urlscan_key = os.getenv("URLSCAN_KEY")
 vstotal_key = os.getenv("VIRUSTOTALARCHIVE_KEY")
 intlex_key = os.getenv("INTELX_API_KEY")
 
+
+def init_waymore():
+    config_dir = "/root/.config/waymore"
+    os.makedirs(config_dir, exist_ok=True)
+
+    config_file = Path(f"{config_dir}/config.yml")
+
+    if not config_file.exists():
+        with open(config_file, 'w') as file:
+            file.write(f"""FILTER_CODE: 404
+        FILTER_MIME: text/css,image/jpeg,image/jpg,image/png,image/svg+xml,image/gif,image/tiff,image/webp,image/bmp,image/vnd,image/x-icon,image/vnd.microsoft.icon,font/ttf,font/woff,font/woff2,font/x-woff2,font/x-woff,font/otf,audio/mpeg,audio/wav,audio/webm,audio/aac,audio/ogg,audio/wav,audio/webm,video/mp4,video/mpeg,video/webm,video/ogg,video/mp2t,video/webm,video/x-msvideo,video/x-flv,application/font-woff,application/font-woff2,application/x-font-woff,application/x-font-woff2,application/vnd.ms-fontobject,application/font-sfnt,application/vnd.android.package-archive,binary/octet-stream,application/octet-stream,application/pdf,application/x-font-ttf,application/x-font-otf,video/webm,video/3gpp,application/font-ttf,audio/mp3,audio/x-wav,image/pjpeg,audio/basic,application/font-otf,application/x-ms-application,application/x-msdownload,video/x-ms-wmv,image/x-png,video/quicktime,image/x-ms-bmp,font/opentype,application/x-font-opentype,application/x-woff,audio/aiff
+        FILTER_URL: .css,.jpg,.jpeg,.png,.svg,.img,.gif,.mp4,.flv,.ogv,.webm,.webp,.mov,.mp3,.m4a,.m4p,.scss,.tif,.tiff,.ttf,.otf,.woff,.woff2,.bmp,.ico,.eot,.htc,.rtf,.swf,.image,/image,/img,/css,/wp-content,/wp-includes,/theme,/audio,/captcha,/font,node_modules,/jquery,/bootstrap
+        URLSCAN_API_KEY:  {urlscan_key} 
+        VIRUSTOTAL_API_KEY: {vstotal_key}
+        CONTINUE_RESPONSES_IF_PIPED: True
+        WEBHOOK_DISCORD: YOUR_WEBHOOK
+        DEFAULT_OUTPUT_DIR:
+        INTELX_API_KEY: {intlex_key}
+        """)
+
 def virus_total(subdomain):
     """
     Takes a subdomain & Gets urls from VirusTotal and saves it to the database.
@@ -52,23 +72,6 @@ def url_scan(subdomain):
     Takes a subdomain extracts urls from urlscan and saves the result to the database.
     returns the length of the found urls.
     """
-    config_dir = "/root/.config/waymore"
-    os.makedirs(config_dir, exist_ok=True)
-
-    config_file = Path(f"{config_dir}/config.yml")
-
-    if not config_file.exists():
-        with open(config_file, 'w') as file:
-            file.write(f"""FILTER_CODE: 404
-    FILTER_MIME: text/css,image/jpeg,image/jpg,image/png,image/svg+xml,image/gif,image/tiff,image/webp,image/bmp,image/vnd,image/x-icon,image/vnd.microsoft.icon,font/ttf,font/woff,font/woff2,font/x-woff2,font/x-woff,font/otf,audio/mpeg,audio/wav,audio/webm,audio/aac,audio/ogg,audio/wav,audio/webm,video/mp4,video/mpeg,video/webm,video/ogg,video/mp2t,video/webm,video/x-msvideo,video/x-flv,application/font-woff,application/font-woff2,application/x-font-woff,application/x-font-woff2,application/vnd.ms-fontobject,application/font-sfnt,application/vnd.android.package-archive,binary/octet-stream,application/octet-stream,application/pdf,application/x-font-ttf,application/x-font-otf,video/webm,video/3gpp,application/font-ttf,audio/mp3,audio/x-wav,image/pjpeg,audio/basic,application/font-otf,application/x-ms-application,application/x-msdownload,video/x-ms-wmv,image/x-png,video/quicktime,image/x-ms-bmp,font/opentype,application/x-font-opentype,application/x-woff,audio/aiff
-    FILTER_URL: .css,.jpg,.jpeg,.png,.svg,.img,.gif,.mp4,.flv,.ogv,.webm,.webp,.mov,.mp3,.m4a,.m4p,.scss,.tif,.tiff,.ttf,.otf,.woff,.woff2,.bmp,.ico,.eot,.htc,.rtf,.swf,.image,/image,/img,/css,/wp-content,/wp-includes,/theme,/audio,/captcha,/font,node_modules,/jquery,/bootstrap
-    URLSCAN_API_KEY:  {urlscan_key} 
-    VIRUSTOTAL_API_KEY: {vstotal_key}
-    CONTINUE_RESPONSES_IF_PIPED: True
-    WEBHOOK_DISCORD: YOUR_WEBHOOK
-    DEFAULT_OUTPUT_DIR:
-    INTELX_API_KEY: {intlex_key}
-    """)
 
     out_dir = f'/work/backend/core/enum/output/{subdomain}'
     os.makedirs(out_dir, exist_ok=True)
@@ -110,23 +113,6 @@ def url_scan(subdomain):
         return len(urls)
 
 def intelx(subdomain):
-    config_dir = "/root/.config/waymore"
-    os.makedirs(config_dir,exist_ok=True)
-
-    config_file = Path(f"{config_dir}/config.yml")
-
-    if not config_file.exists():
-        with open(config_file, 'w') as file:
-            file.write(f"""FILTER_CODE: 404
-FILTER_MIME: text/css,image/jpeg,image/jpg,image/png,image/svg+xml,image/gif,image/tiff,image/webp,image/bmp,image/vnd,image/x-icon,image/vnd.microsoft.icon,font/ttf,font/woff,font/woff2,font/x-woff2,font/x-woff,font/otf,audio/mpeg,audio/wav,audio/webm,audio/aac,audio/ogg,audio/wav,audio/webm,video/mp4,video/mpeg,video/webm,video/ogg,video/mp2t,video/webm,video/x-msvideo,video/x-flv,application/font-woff,application/font-woff2,application/x-font-woff,application/x-font-woff2,application/vnd.ms-fontobject,application/font-sfnt,application/vnd.android.package-archive,binary/octet-stream,application/octet-stream,application/pdf,application/x-font-ttf,application/x-font-otf,video/webm,video/3gpp,application/font-ttf,audio/mp3,audio/x-wav,image/pjpeg,audio/basic,application/font-otf,application/x-ms-application,application/x-msdownload,video/x-ms-wmv,image/x-png,video/quicktime,image/x-ms-bmp,font/opentype,application/x-font-opentype,application/x-woff,audio/aiff
-FILTER_URL: .css,.jpg,.jpeg,.png,.svg,.img,.gif,.mp4,.flv,.ogv,.webm,.webp,.mov,.mp3,.m4a,.m4p,.scss,.tif,.tiff,.ttf,.otf,.woff,.woff2,.bmp,.ico,.eot,.htc,.rtf,.swf,.image,/image,/img,/css,/wp-content,/wp-includes,/theme,/audio,/captcha,/font,node_modules,/jquery,/bootstrap
-URLSCAN_API_KEY:  {urlscan_key} 
-VIRUSTOTAL_API_KEY: {vstotal_key}
-CONTINUE_RESPONSES_IF_PIPED: True
-WEBHOOK_DISCORD: YOUR_WEBHOOK
-DEFAULT_OUTPUT_DIR:
-INTELX_API_KEY: {intlex_key}
-""")
 
     out_dir = f'/work/backend/core/enum/output/{subdomain}'
     os.makedirs(out_dir, exist_ok=True)
@@ -166,23 +152,6 @@ INTELX_API_KEY: {intlex_key}
         return len(urls)
 
 def common_crawl(subdomain):
-    config_dir = "/root/.config/waymore"
-    os.makedirs(config_dir, exist_ok=True)
-
-    config_file = Path(f"{config_dir}/config.yml")
-
-    if not config_file.exists():
-        with open(config_file, 'w') as file:
-            file.write(f"""FILTER_CODE: 404
-    FILTER_MIME: text/css,image/jpeg,image/jpg,image/png,image/svg+xml,image/gif,image/tiff,image/webp,image/bmp,image/vnd,image/x-icon,image/vnd.microsoft.icon,font/ttf,font/woff,font/woff2,font/x-woff2,font/x-woff,font/otf,audio/mpeg,audio/wav,audio/webm,audio/aac,audio/ogg,audio/wav,audio/webm,video/mp4,video/mpeg,video/webm,video/ogg,video/mp2t,video/webm,video/x-msvideo,video/x-flv,application/font-woff,application/font-woff2,application/x-font-woff,application/x-font-woff2,application/vnd.ms-fontobject,application/font-sfnt,application/vnd.android.package-archive,binary/octet-stream,application/octet-stream,application/pdf,application/x-font-ttf,application/x-font-otf,video/webm,video/3gpp,application/font-ttf,audio/mp3,audio/x-wav,image/pjpeg,audio/basic,application/font-otf,application/x-ms-application,application/x-msdownload,video/x-ms-wmv,image/x-png,video/quicktime,image/x-ms-bmp,font/opentype,application/x-font-opentype,application/x-woff,audio/aiff
-    FILTER_URL: .css,.jpg,.jpeg,.png,.svg,.img,.gif,.mp4,.flv,.ogv,.webm,.webp,.mov,.mp3,.m4a,.m4p,.scss,.tif,.tiff,.ttf,.otf,.woff,.woff2,.bmp,.ico,.eot,.htc,.rtf,.swf,.image,/image,/img,/css,/wp-content,/wp-includes,/theme,/audio,/captcha,/font,node_modules,/jquery,/bootstrap
-    URLSCAN_API_KEY:  {urlscan_key} 
-    VIRUSTOTAL_API_KEY: {vstotal_key}
-    CONTINUE_RESPONSES_IF_PIPED: True
-    WEBHOOK_DISCORD: YOUR_WEBHOOK
-    DEFAULT_OUTPUT_DIR:
-    INTELX_API_KEY: {intlex_key}
-    """)
 
     out_dir = f'/work/backend/core/enum/output/{subdomain}'
     os.makedirs(out_dir, exist_ok=True)
@@ -223,23 +192,6 @@ def common_crawl(subdomain):
         return len(urls)
 
 def alien_vault(subdomain):
-    config_dir = "/root/.config/waymore"
-    os.makedirs(config_dir, exist_ok=True)
-
-    config_file = Path(f"{config_dir}/config.yml")
-
-    if not config_file.exists():
-        with open(config_file, 'w') as file:
-            file.write(f"""FILTER_CODE: 404
-    FILTER_MIME: text/css,image/jpeg,image/jpg,image/png,image/svg+xml,image/gif,image/tiff,image/webp,image/bmp,image/vnd,image/x-icon,image/vnd.microsoft.icon,font/ttf,font/woff,font/woff2,font/x-woff2,font/x-woff,font/otf,audio/mpeg,audio/wav,audio/webm,audio/aac,audio/ogg,audio/wav,audio/webm,video/mp4,video/mpeg,video/webm,video/ogg,video/mp2t,video/webm,video/x-msvideo,video/x-flv,application/font-woff,application/font-woff2,application/x-font-woff,application/x-font-woff2,application/vnd.ms-fontobject,application/font-sfnt,application/vnd.android.package-archive,binary/octet-stream,application/octet-stream,application/pdf,application/x-font-ttf,application/x-font-otf,video/webm,video/3gpp,application/font-ttf,audio/mp3,audio/x-wav,image/pjpeg,audio/basic,application/font-otf,application/x-ms-application,application/x-msdownload,video/x-ms-wmv,image/x-png,video/quicktime,image/x-ms-bmp,font/opentype,application/x-font-opentype,application/x-woff,audio/aiff
-    FILTER_URL: .css,.jpg,.jpeg,.png,.svg,.img,.gif,.mp4,.flv,.ogv,.webm,.webp,.mov,.mp3,.m4a,.m4p,.scss,.tif,.tiff,.ttf,.otf,.woff,.woff2,.bmp,.ico,.eot,.htc,.rtf,.swf,.image,/image,/img,/css,/wp-content,/wp-includes,/theme,/audio,/captcha,/font,node_modules,/jquery,/bootstrap
-    URLSCAN_API_KEY:  {urlscan_key} 
-    VIRUSTOTAL_API_KEY: {vstotal_key}
-    CONTINUE_RESPONSES_IF_PIPED: True
-    WEBHOOK_DISCORD: YOUR_WEBHOOK
-    DEFAULT_OUTPUT_DIR:
-    INTELX_API_KEY: {intlex_key}
-    """)
 
     out_dir = f'/work/backend/core/enum/output/{subdomain}'
     os.makedirs(out_dir, exist_ok=True)
@@ -290,6 +242,9 @@ def get_from_source(name, func, subdomain):
 
 
 def get_archived_urls(subdomain):
+
+    init_waymore()
+
     sources = [
         ("Virus Total", virus_total),
         ("Url Scan", url_scan),

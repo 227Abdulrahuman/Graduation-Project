@@ -3,7 +3,7 @@ import os, django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.api.settings")
 django.setup()
 from backend.core.models import *
-from backend.core.enum.utils import load_urls_for_mining, heuristic, parse_headers
+from backend.core.utilities.enum import load_urls_for_mining, heuristic, parse_headers
 from urllib.parse import urlparse
 
 def parameter_extractor(url, auth_headers=None):
@@ -13,13 +13,13 @@ def parameter_extractor(url, auth_headers=None):
     """
     #Load target URLs.
     domain = urlparse(url).hostname
-    urls_file = f'/work/backend/core/enum/output/{domain}/htmlurls.txt'
-    load_urls_for_mining(domain)
+    urls_file = f'/work/backend/core/output/{domain}/htmlurls.txt'
+    load_urls_for_mining(url, urls_file)
 
     params = list()
     urls = set()
 
-    print(f"[*] Started extracting parameters from {url}")
+    print(f"[*] Started extracting parameters for {url}")
 
     #Extract the parameters.
     if auth_headers:
@@ -35,20 +35,25 @@ def parameter_extractor(url, auth_headers=None):
 
     for i in urls:
         import urllib3
-        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)  # Optional: Suppress the warning noise
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         res = requests.get(i, headers=h, verify=False)
         p = heuristic(res)
         params.extend(p)
 
     #Save to the database
-    sub_obj = Subdomain.objects.get(hostname=domain)
+    web_app = WebApplication.objects.get(url=url)
+    endpoint, _ = EndPoint.objects.get_or_create(
+        web_app=web_app,
+        path='/web-sploit-reserved-neralp',
+    )
+
     for i in params:
         Parameter.objects.update_or_create(
-            subdomain=sub_obj,
+            endpoint=endpoint,
             key=i,
             defaults={
                 "value":"EXTRACTED",
             }
         )
 
-    print(f"[+] Done extracting parameters from {url}")
+    print(f"[+] Done extracting parameters for {url}")
