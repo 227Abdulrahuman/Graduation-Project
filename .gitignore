@@ -10,6 +10,9 @@ backend/core/recon/output/*
 /backend/core/enum/output/*
 /backend/core/enum/output/
 /backend/core/enum/output
+/backend/core/output/*
+/backend/core/output/
+/backend/core/output
 backend/core/scan/output/*
 backend/core/scan/output
 *.sqlite3
@@ -43,6 +46,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
 
 
 
