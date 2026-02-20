@@ -5,14 +5,14 @@ django.setup()
 from backend.core.models import *
 from backend.core.scan.notify.notify import notify_discord
 
-def cve_scan(domain):
+def information_disclosure_scan(domain):
 
     out_dir = f'/work/backend/core/output/{domain}'
     os.makedirs(out_dir, exist_ok=True)
     targets_file = f'{out_dir}/urls.txt'
 
-    templates_dir = f'/work/backend/core/scan/templates/cves'
-    result_file = f'{out_dir}/cves.json'
+    templates_dir = f'/work/backend/core/scan/templates/disclosures'
+    result_file = f'{out_dir}/disclosures.json'
 
     cmd = [
         'nuclei', '-l', targets_file,
@@ -21,7 +21,7 @@ def cve_scan(domain):
             '-o', result_file,
            ]
 
-    print(f"[*] Started Scanning for CVEs on {domain}")
+    print(f"[*] Started Scanning for Information Disclosure on {domain}")
     subprocess.run(cmd, text=True, capture_output=True)
 
     from django.db import transaction
@@ -47,7 +47,7 @@ def cve_scan(domain):
                         defaults={
                             "severity": severity,
                             "name" : template_id,
-                            "type": "CVE"
+                            "type": "Information Disclosure"
                         }
                     )
                     message = f"[+] Found {template_id} on {url}"
@@ -57,4 +57,4 @@ def cve_scan(domain):
             except Exception as e:
                 print(f"Error processing line: {str(e)}")
 
-    print(f"[+] Finished Scanning for CVEs on {domain}")
+    print(f"[+] Finished Scanning for Information Disclosure on {domain}")

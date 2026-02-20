@@ -6,7 +6,7 @@ from backend.core.models import *
 from backend.core.utilities.enum import load_urls_for_mining, heuristic, parse_headers
 from urllib.parse import urlparse
 
-def parameter_extractor(url, auth_headers=None):
+def extract_parameters(url, auth_headers=None):
     """
     Takes a domain and extracts parameters from <input> and <script> and saves to the db.
     The target must be crawled first.

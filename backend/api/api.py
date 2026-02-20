@@ -1,127 +1,125 @@
-from typing import List
-from ninja import NinjaAPI, ModelSchema, Schema
+from ninja import NinjaAPI
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
+from celery.result import AsyncResult
+from ninja.pagination import paginate, PageNumberPagination
+from .schemas import *
+from .tasks import general_scan_task, comprehensive_scan_task
 
-# Ensure this import points to where your models actually are
-from backend.core.models import Target, Domain
-from typing import Optional
-api = NinjaAPI()
+api = NinjaAPI(title="Web-Sploit API")
 
+###################################################################################################
+@api.get("/targets/", response=List[TargetOut])
+def get_all_targets(request):
+    """Get all Targets Information."""
+    return Target.objects.prefetch_related('domains').all()
 
-class TargetSchema(ModelSchema):
-    class Meta:  # Changed from Config
-        model = Target
-        fields = ['id', 'name', 'platform', 'program_url']  # Changed from model_fields
+@api.get("/targets/{target_name}/", response=TargetOut)
+def get_target(request, target_name: str):
+    """Get a Target Information."""
+    target_name = target_name.lower()
+    return get_object_or_404(Target, name=target_name)
 
-
-class TargetIn(ModelSchema):
-    class Meta:  # Changed from Config
-        model = Target
-        fields = ['name', 'platform', 'program_url']
-
-class TargetPatch(Schema):
-    name: Optional[str] = None
-    platform: Optional[str] = None
-    program_url: Optional[str] = None
-
-
-class DomainSchema(ModelSchema):
-    class Meta:
-        model = Domain
-        fields = ['id', 'hostname', 'target']
-
-
-class DomainIn(Schema):
-    target_id: int
-    hostname: str
-
-
-class DomainUpdate(Schema):
-    target_id: int = None
-    hostname: str = None
-
-
-
-@api.post("/targets", response=TargetSchema)
+@api.post("/targets/", response=dict)
 def create_target(request, payload: TargetIn):
-    target = Target.objects.create(**payload.dict())
-    return target
+    """Create a Target."""
+    target = Target.objects.create(
+        name=payload.name.lower(),
+        type=payload.type,
+        platform=payload.platform,
+        program_url=payload.program_url
+    )
+    for domain_name in payload.domains:
+        Domain.objects.create(target=target, hostname=domain_name.lower())
+    return {"success": True, "target_name": target.name}
 
 
-@api.get("/targets", response=List[TargetSchema])
-def list_targets(request):
-    return Target.objects.all()
-
-
-@api.get("/targets/{target_id}", response=TargetSchema)
-def get_target(request, target_id: int):
-    target = get_object_or_404(Target, id=target_id)
-    return target
-
-
-@api.patch("/targets/{target_id}", response=TargetSchema)
-def update_target(request, target_id: int, payload: TargetPatch):
-    target = get_object_or_404(Target, id=target_id)
+@api.put("/targets/{target_name}/", response=dict)
+def update_target(request, target_name: str, payload: TargetUpdate):
+    """Update a Target"""
+    target_name = target_name.lower()
+    target = get_object_or_404(Target, name=target_name)
 
     for attr, value in payload.dict(exclude_unset=True).items():
-        setattr(target, attr, value)
-
+        if attr not in ['add_domains', 'remove_domains']:
+            if attr == 'name' and isinstance(value, str):
+                value = value.lower()
+            setattr(target, attr, value)
     target.save()
-    return target
 
-@api.delete("/targets/{target_id}")
-def delete_target(request, target_id: int):
-    target = get_object_or_404(Target, id=target_id)
+    if payload.add_domains:
+        for domain_name in payload.add_domains:
+            Domain.objects.get_or_create(target=target, hostname=domain_name.lower())
+
+    if payload.remove_domains:
+        lower_remove_domains = [d.lower() for d in payload.remove_domains]
+        Domain.objects.filter(target=target, hostname__in=lower_remove_domains).delete()
+
+    return {"success": True, "message": f"Target '{target.name}' updated successfully"}
+
+
+@api.delete("/targets/{target_name}/", response=dict)
+def delete_target(request, target_name: str):
+    """Delete a target"""
+    target_name = target_name.lower()
+    target = get_object_or_404(Target, name=target_name)
     target.delete()
-    return {"success": True}
+    return {"success": True, "message": f"Target '{target_name}' deleted successfully"}
 
+##################################################################################################################
 
-
-@api.post("/domains", response=DomainSchema)
-def create_domain(request, payload: DomainIn):
-    target = get_object_or_404(Target, id=payload.target_id)
-    domain = Domain.objects.create(
-        target=target,
-        hostname=payload.hostname
+@api.post("/scans/general/", response=TaskStatusOut)
+def run_general_scan(request, payload: ScanDomainIn):
+    task = general_scan_task.delay(
+        domain=payload.domain.lower(),
+        chunk_size=payload.chunk_size
     )
-    return domain
+    return {"task_id": task.id, "status": task.status}
 
 
-@api.get("/domains", response=List[DomainSchema])
-def list_domains(request):
-    return Domain.objects.all()
+@api.post("/scans/comprehensive/", response=TaskStatusOut)
+def run_comprehensive_scan(request, payload: ScanUrlIn):
+    task = comprehensive_scan_task.delay(
+        url=payload.url,
+        auth_headers=payload.auth_headers,
+        logout=payload.logout
+    )
+    return {"task_id": task.id, "status": task.status}
 
 
-@api.get("/domains/{domain_id}", response=DomainSchema)
-def get_domain(request, domain_id: int):
-    domain = get_object_or_404(Domain, id=domain_id)
-    return domain
+@api.get("/scans/status/{task_id}/", response=dict)
+def get_scan_status(request, task_id: str):
+    task_result = AsyncResult(task_id)
+    return {
+        "task_id": task_id,
+        "status": task_result.status
+    }
+
+##############################################################################################################################
+
+@api.get("/subdomains/{domain_name}/", response=List[SubdomainOut])
+@paginate(PageNumberPagination, page_size=500)
+def get_domain_subdomains(request, domain_name: str):
+    """Get Subdomains"""
+    domain_name = domain_name.lower()
+    return Subdomain.objects.filter(domain__hostname=domain_name)
 
 
-@api.put("/domains/{domain_id}", response=DomainSchema)
-def update_domain(request, domain_id: int, payload: DomainUpdate):
-    domain = get_object_or_404(Domain, id=domain_id)
+@api.get("/webapps/{domain_name}/", response=List[WebAppOut])
+@paginate(PageNumberPagination, page_size=500)
+def get_domain_webapps(request, domain_name: str):
+    """Get Web Apps."""
+    domain_name = domain_name.lower()
+    return WebApplication.objects.filter(subdomain__domain__hostname=domain_name)
 
-    if payload.hostname:
-        domain.hostname = payload.hostname
-
-    if payload.target_id:
-        target = get_object_or_404(Target, id=payload.target_id)
-        domain.target = target
-
-    domain.save()
-    return domain
-
-
-@api.delete("/domains/{domain_id}")
-def delete_domain(request, domain_id: int):
-    domain = get_object_or_404(Domain, id=domain_id)
-    domain.delete()
-    return {"success": True}
+@api.get("/vulnerabilities/{target_name}/", response=List[VulnerabilityOut])
+def get_target_vulnerabilities(request, target_name: str):
+    """Get vulnerabilities of a Target."""
+    target_name = target_name.lower()
+    return Vulnerability.objects.filter(
+        Q(subdomain__domain__target__name=target_name) |
+        Q(web_app__subdomain__domain__target__name=target_name)
+    ).select_related('subdomain', 'web_app')
 
 
-@api.get("/targets/{target_id}/domains", response=List[DomainSchema])
-def list_target_domains(request, target_id: int):
-    target = get_object_or_404(Target, id=target_id)
-    # Ensure your Domain model has related_name="domains" in the ForeignKey
-    return target.domains.all()
+########################################################################################################33
