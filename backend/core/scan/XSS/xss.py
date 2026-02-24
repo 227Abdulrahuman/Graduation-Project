@@ -4,33 +4,19 @@ django.setup()
 from backend.core.models import *
 from urllib.parse import urlparse
 from backend.core.scan.notify.notify import notify_discord
-from backend.core.utilities.loaders import load_html_urls_to_set, load_parameters_to_set
-
 
 def xss_scan(url, auth_headers=None):
     """
-    Takes a subdomain and scans for reflected XSS by trying all parameters on all endpoints.
+    Scans for XSS by testing for Unsanitized reflection of Query Parameters.
     """
     domain = urlparse(url).hostname
     output_dir = f'/work/backend/core/output/{domain}'
-    os.makedirs(output_dir, exist_ok=True)
-
-
-    urls_file = f"{output_dir}/xss_list.txt"
-
-    urls = load_html_urls_to_set(url)
-    params = load_parameters_to_set(url)
-
-    # Create all URLS and parameters Combinations.
-    with open(urls_file, 'w') as file:
-        for u in urls:
-            for p in params:
-                file.write(f"{u}?{p}\n")
+    targets_file = f"{output_dir}/scan_targets.txt"
 
     out_file = f"{output_dir}/xss.json"
 
     cmd = ['ffuf', '-u', 'FUZZ',
-          '-w', urls_file,
+          '-w', targets_file,
            '-mr', '(?i)"websploit"',
            '-H', 'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36',
            '-o', out_file

@@ -1,4 +1,8 @@
 from ninja import NinjaAPI
+from ninja.errors import HttpError
+from django.db import transaction
+import tldextract
+from urllib.parse import urlparse
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from celery.result import AsyncResult
@@ -8,21 +12,20 @@ from .tasks import general_scan_task, comprehensive_scan_task
 
 api = NinjaAPI(title="Web-Sploit API")
 
-###################################################################################################
-@api.get("/targets/", response=List[TargetOut])
+#Target CRUD
+
+@api.get("/targets/", response=List[TargetOut]) #Get all Targets.
+@paginate(PageNumberPagination, page_size=500)
 def get_all_targets(request):
-    """Get all Targets Information."""
     return Target.objects.prefetch_related('domains').all()
 
-@api.get("/targets/{target_name}/", response=TargetOut)
+@api.get("/targets/{target_name}/", response=TargetOut) #Get a single Target.
 def get_target(request, target_name: str):
-    """Get a Target Information."""
     target_name = target_name.lower()
     return get_object_or_404(Target, name=target_name)
 
-@api.post("/targets/", response=dict)
+@api.post("/targets/", response=dict) #Create a Target.
 def create_target(request, payload: TargetIn):
-    """Create a Target."""
     target = Target.objects.create(
         name=payload.name.lower(),
         type=payload.type,
@@ -33,10 +36,8 @@ def create_target(request, payload: TargetIn):
         Domain.objects.create(target=target, hostname=domain_name.lower())
     return {"success": True, "target_name": target.name}
 
-
-@api.put("/targets/{target_name}/", response=dict)
+@api.put("/targets/{target_name}/", response=dict) #Update a Target.
 def update_target(request, target_name: str, payload: TargetUpdate):
-    """Update a Target"""
     target_name = target_name.lower()
     target = get_object_or_404(Target, name=target_name)
 
@@ -57,18 +58,17 @@ def update_target(request, target_name: str, payload: TargetUpdate):
 
     return {"success": True, "message": f"Target '{target.name}' updated successfully"}
 
-
-@api.delete("/targets/{target_name}/", response=dict)
+@api.delete("/targets/{target_name}/", response=dict) #Delete a Target.
 def delete_target(request, target_name: str):
-    """Delete a target"""
     target_name = target_name.lower()
     target = get_object_or_404(Target, name=target_name)
     target.delete()
     return {"success": True, "message": f"Target '{target_name}' deleted successfully"}
 
-##################################################################################################################
 
-@api.post("/scans/general/", response=TaskStatusOut)
+
+#Mange Scans.
+@api.post("/scans/general/", response=TaskStatusOut) #Run General Scan.
 def run_general_scan(request, payload: ScanDomainIn):
     task = general_scan_task.delay(
         domain=payload.domain.lower(),
@@ -77,17 +77,22 @@ def run_general_scan(request, payload: ScanDomainIn):
     return {"task_id": task.id, "status": task.status}
 
 
-@api.post("/scans/comprehensive/", response=TaskStatusOut)
+@api.post("/scans/comprehensive/", response=TaskStatusOut)  # Run Comprehensive Scan.
 def run_comprehensive_scan(request, payload: ScanUrlIn):
+    raw_url = payload.url.strip()
+
+    parsed_url = urlparse(raw_url)
+    normalized_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+
     task = comprehensive_scan_task.delay(
-        url=payload.url,
+        url=normalized_url,
         auth_headers=payload.auth_headers,
         logout=payload.logout
     )
+
     return {"task_id": task.id, "status": task.status}
 
-
-@api.get("/scans/status/{task_id}/", response=dict)
+@api.get("/scans/status/{task_id}/", response=dict) #Get Scan Status.
 def get_scan_status(request, task_id: str):
     task_result = AsyncResult(task_id)
     return {
@@ -95,31 +100,146 @@ def get_scan_status(request, task_id: str):
         "status": task_result.status
     }
 
-##############################################################################################################################
 
-@api.get("/subdomains/{domain_name}/", response=List[SubdomainOut])
+#Scan Results.
+@api.get("/subdomains/", response=List[SubdomainOut]) #Get DNS Data.
 @paginate(PageNumberPagination, page_size=500)
-def get_domain_subdomains(request, domain_name: str):
-    """Get Subdomains"""
-    domain_name = domain_name.lower()
-    return Subdomain.objects.filter(domain__hostname=domain_name)
+def get_subdomains(request, target_name: Optional[str] = None, domain: Optional[str] = None):
+    query = Q()
+
+    if target_name:
+        query |= Q(domain__target__name=target_name)
+
+    if domain:
+        query |= Q(domain__hostname=domain.lower())
+
+    return Subdomain.objects.filter(query)
 
 
-@api.get("/webapps/{domain_name}/", response=List[WebAppOut])
+@api.get("/webapps/", response=List[WebAppOut]) #Get web apps fingerprint.
 @paginate(PageNumberPagination, page_size=500)
-def get_domain_webapps(request, domain_name: str):
-    """Get Web Apps."""
-    domain_name = domain_name.lower()
-    return WebApplication.objects.filter(subdomain__domain__hostname=domain_name)
+def get_webapps(
+        request,
+        target_name: Optional[str] = None,
+        domain: Optional[str] = None,
+        status_code: Optional[int] = None,
+        content_length: Optional[int] = None,
+        tech_stack: Optional[str] = None
+):
 
-@api.get("/vulnerabilities/{target_name}/", response=List[VulnerabilityOut])
-def get_target_vulnerabilities(request, target_name: str):
-    """Get vulnerabilities of a Target."""
-    target_name = target_name.lower()
-    return Vulnerability.objects.filter(
-        Q(subdomain__domain__target__name=target_name) |
-        Q(web_app__subdomain__domain__target__name=target_name)
-    ).select_related('subdomain', 'web_app')
+    identifier_query = Q()
+    if target_name:
+        identifier_query |= Q(subdomain__domain__target__name=target_name)
+    if domain:
+        identifier_query |= Q(subdomain__domain__hostname=domain.lower())
+
+    main_query = Q()
+
+    if target_name or domain:
+        main_query &= identifier_query
+
+    if status_code is not None:
+        main_query &= Q(status_code=status_code)
+
+    if content_length is not None:
+        main_query &= Q(content_length=content_length)
+
+    if tech_stack:
+        main_query &= Q(tech_stack__icontains=tech_stack)
+
+    return WebApplication.objects.filter(main_query)
 
 
-########################################################################################################33
+@api.get("/vulnerabilities/", response=List[VulnerabilityOut]) #Get Vulnerabilities
+@paginate(PageNumberPagination, page_size=500)
+def get_vulnerabilities(
+        request,
+        target_name: Optional[str] = None,
+        domain: Optional[str] = None,
+        url: Optional[str] = None,
+        vuln_severity: Optional[str] = None,
+        vuln_type: Optional[str] = None,
+        vuln_name: Optional[str] = None
+):
+    identifier_query = Q()
+
+    if target_name:
+        identifier_query |= (
+                Q(subdomain__domain__target__name=target_name) |
+                Q(web_app__subdomain__domain__target__name=target_name)
+        )
+
+    if domain:
+        domain_lower = domain.lower()
+        identifier_query |= (
+                Q(subdomain__domain__hostname=domain_lower) |
+                Q(web_app__subdomain__domain__hostname=domain_lower)
+        )
+
+    if url:
+        identifier_query |= Q(web_app__url=url)
+
+    main_query = Q()
+
+    if target_name or domain or url:
+        main_query &= identifier_query
+
+    if vuln_severity:
+        main_query &= Q(severity__iexact=vuln_severity)
+
+    if vuln_type:
+        main_query &= Q(type__icontains=vuln_type)
+
+    if vuln_name:
+        main_query &= Q(name__icontains=vuln_name)
+
+    return Vulnerability.objects.filter(main_query).select_related('subdomain', 'web_app')
+
+
+@api.post("/webapps/", response=WebAppCreateOut) #Create a web app
+def create_webapp(request, payload: WebAppCreateIn):
+    raw_url = payload.url.strip()
+
+    extracted = tldextract.extract(raw_url)
+    parsed_url = urlparse(raw_url)
+
+    if extracted.suffix:
+        domain_name = f"{extracted.domain}.{extracted.suffix}"
+    else:
+        domain_name = extracted.domain
+
+    hostname_parts = [extracted.subdomain, extracted.domain, extracted.suffix]
+    hostname = ".".join(part for part in hostname_parts if part)
+
+    scheme = parsed_url.scheme if parsed_url.scheme else "https"
+
+    normalized_url = f"{scheme}://{hostname}"
+
+    with transaction.atomic():
+
+        target_obj, _ = Target.objects.get_or_create(
+            name=payload.target_name
+        )
+
+        domain_obj, _ = Domain.objects.get_or_create(
+            hostname=domain_name,
+            defaults={"target": target_obj}
+        )
+
+        subdomain_obj, _ = Subdomain.objects.get_or_create(
+            hostname=hostname,
+            defaults={"domain": domain_obj}
+        )
+
+        webapp_obj, _ = WebApplication.objects.get_or_create(
+            url=normalized_url,
+            defaults={"subdomain": subdomain_obj}
+        )
+
+    return {
+        "message": "Successfully Created Webapp",
+        "target": target_obj.name,
+        "domain": domain_obj.hostname,
+        "subdomain": subdomain_obj.hostname,
+        "webapp_url": webapp_obj.url
+    }

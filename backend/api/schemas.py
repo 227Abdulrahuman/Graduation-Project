@@ -27,27 +27,16 @@ class ScanUrlIn(Schema):
     auth_headers: Optional[List[str]] = None
     logout: Optional[str] = None
 
-class SubdomainAdd(Schema):
-    hostname: str
-    cname: Optional[str] = None
-    ip: Optional[str] = None
-    is_alive: bool = False
-
-class SubdomainRemove(Schema):
-    hostnames: List[str]
-
-class WebAppAdd(Schema):
+class WebAppCreateIn(Schema):
     url: str
-    status_code: Optional[int] = None
-    content_length: Optional[int] = None
-    title: Optional[str] = None
-    tech_stack: Optional[List[str]] = None
-    location: Optional[str] = None
+    target_name: str
 
-class WebAppRemove(Schema):
-    urls: List[str]
-
-# --- OUTPUT SCHEMAS ---
+class WebAppCreateOut(Schema):
+    message: str
+    target: str
+    domain: str
+    subdomain: str
+    webapp_url: str
 
 class DomainOut(ModelSchema):
     class Meta:
@@ -85,25 +74,12 @@ class VulnerabilityOut(ModelSchema):
         model = Vulnerability
         fields = ["name", "location", "severity", "type"]
 
-class ParameterOut(ModelSchema):
-    class Meta:
-        model = Parameter
-        fields = ["key", "value"]
-
-class EndPointOut(ModelSchema):
-    parameter: List[ParameterOut] = []
-
-    class Meta:
-        model = EndPoint
-        fields = ["path", "status_code", "content_type", "content_length", "location_header"]
-
 class ArchivedURLOut(ModelSchema):
     class Meta:
         model = ArchivedURLs
         fields = ["url", "source"]
 
-# --- TASK SCHEMAS ---
 
 class TaskStatusOut(Schema):
-    task_id: str  # Kept this because it's a Celery UUID, not a database ID
+    task_id: str
     status: str
