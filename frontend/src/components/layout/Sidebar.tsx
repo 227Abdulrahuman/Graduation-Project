@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 interface SidebarProps {
 	currentPath: string;
 	onNavigate: (path: string) => void;
+	className?: string;
 }
 
 const navItems = [
@@ -15,15 +16,15 @@ const navItems = [
 	{ id: "/settings", label: "Settings", icon: Settings },
 ];
 
-export function Sidebar({ currentPath, onNavigate }: SidebarProps) {
+export function Sidebar({ currentPath, onNavigate, className }: SidebarProps) {
 	return (
-		<div className="flex flex-col h-full bg-zinc-950 border-r border-emerald-900/30 w-64 fixed left-0 top-0 z-40">
+		<div className={cn("flex flex-col bg-zinc-950 border-r border-emerald-900/30", className)}>
 			<div className="p-6 flex items-center gap-3 select-none">
 				<div className="relative">
 					<Hexagon className="w-8 h-8 text-emerald-500 fill-emerald-500/10" />
 					<Zap className="w-4 h-4 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
 				</div>
-				<span className="font-bold text-xl tracking-tight text-white uppercase italic">
+				<span className="font-bold text-xl tracking-tight text-white uppercase">
 					Web<span className="text-emerald-500">Sploit</span>
 				</span>
 			</div>

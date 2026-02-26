@@ -2,13 +2,13 @@ import { Search } from "lucide-react";
 
 function Topbar() {
 	return (
-		<header className="h-16 border-b border-emerald-900/10 bg-black/50 backdrop-blur-xl flex items-center justify-between px-8 sticky top-0 z-30">
+		<header className="h-16 border-b border-emerald-900/10 bg-black/50 backdrop-blur-xl flex items-center justify-between sticky top-0 z-30">
 			<div className="flex items-center gap-4 flex-1">
 				<div className="relative w-96 hidden md:block">
 					<Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
 					<input
 						type="text"
-						placeholder="Global command search... (⌘K)"
+						placeholder="Global command search..."
 						className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-lg py-1.5 pl-10 pr-4 text-sm text-zinc-400 focus:outline-none focus:border-emerald-500/50 focus:bg-zinc-900 transition-all"
 					/>
 				</div>
