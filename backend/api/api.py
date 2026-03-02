@@ -1,5 +1,4 @@
 from ninja import NinjaAPI
-from ninja.errors import HttpError
 from django.db import transaction
 import tldextract
 from urllib.parse import urlparse
@@ -12,19 +11,23 @@ from .tasks import general_scan_task, comprehensive_scan_task
 
 api = NinjaAPI(title="Web-Sploit API")
 
-#Target CRUD
+def get_target_by_identifier(identifier: str):
+    if identifier.isdigit():
+        return get_object_or_404(Target, id=int(identifier))
+    return get_object_or_404(Target, name=identifier.lower())
 
-@api.get("/targets/", response=List[TargetOut]) #Get all Targets.
+@api.get("/targets/", response=List[TargetOut])
 @paginate(PageNumberPagination, page_size=500)
 def get_all_targets(request):
     return Target.objects.prefetch_related('domains').all()
 
-@api.get("/targets/{target_name}/", response=TargetOut) #Get a single Target.
-def get_target(request, target_name: str):
-    target_name = target_name.lower()
-    return get_object_or_404(Target, name=target_name)
 
-@api.post("/targets/", response=dict) #Create a Target.
+@api.get("/targets/{target_identifier}/", response=TargetOut)
+def get_target(request, target_identifier: str):
+    return get_target_by_identifier(target_identifier)
+
+
+@api.post("/targets/", response=dict)
 def create_target(request, payload: TargetIn):
     target = Target.objects.create(
         name=payload.name.lower(),
@@ -34,12 +37,13 @@ def create_target(request, payload: TargetIn):
     )
     for domain_name in payload.domains:
         Domain.objects.create(target=target, hostname=domain_name.lower())
-    return {"success": True, "target_name": target.name}
 
-@api.put("/targets/{target_name}/", response=dict) #Update a Target.
-def update_target(request, target_name: str, payload: TargetUpdate):
-    target_name = target_name.lower()
-    target = get_object_or_404(Target, name=target_name)
+    return {"success": True, "target_id": target.id, "target_name": target.name}
+
+
+@api.put("/targets/{target_identifier}/", response=dict)
+def update_target(request, target_identifier: str, payload: TargetUpdate):
+    target = get_target_by_identifier(target_identifier)
 
     for attr, value in payload.dict(exclude_unset=True).items():
         if attr not in ['add_domains', 'remove_domains']:
@@ -56,19 +60,31 @@ def update_target(request, target_name: str, payload: TargetUpdate):
         lower_remove_domains = [d.lower() for d in payload.remove_domains]
         Domain.objects.filter(target=target, hostname__in=lower_remove_domains).delete()
 
-    return {"success": True, "message": f"Target '{target.name}' updated successfully"}
+    return {
+        "success": True,
+        "message": f"Target updated successfully",
+        "target_id": target.id,
+        "target_name": target.name
+    }
 
-@api.delete("/targets/{target_name}/", response=dict) #Delete a Target.
-def delete_target(request, target_name: str):
-    target_name = target_name.lower()
-    target = get_object_or_404(Target, name=target_name)
+
+@api.delete("/targets/{target_identifier}/", response=dict)
+def delete_target(request, target_identifier: str):
+    target = get_target_by_identifier(target_identifier)
+
+    target_id = target.id
+    target_name = target.name
     target.delete()
-    return {"success": True, "message": f"Target '{target_name}' deleted successfully"}
+
+    return {
+        "success": True,
+        "message": f"Target deleted successfully",
+        "target_id": target_id,
+        "target_name": target_name
+    }
 
 
-
-#Mange Scans.
-@api.post("/scans/general/", response=TaskStatusOut) #Run General Scan.
+@api.post("/scans/general/", response=TaskStatusOut)
 def run_general_scan(request, payload: ScanDomainIn):
     task = general_scan_task.delay(
         domain=payload.domain.lower(),
@@ -77,7 +93,7 @@ def run_general_scan(request, payload: ScanDomainIn):
     return {"task_id": task.id, "status": task.status}
 
 
-@api.post("/scans/comprehensive/", response=TaskStatusOut)  # Run Comprehensive Scan.
+@api.post("/scans/comprehensive/", response=TaskStatusOut)
 def run_comprehensive_scan(request, payload: ScanUrlIn):
     raw_url = payload.url.strip()
 
@@ -92,7 +108,8 @@ def run_comprehensive_scan(request, payload: ScanUrlIn):
 
     return {"task_id": task.id, "status": task.status}
 
-@api.get("/scans/status/{task_id}/", response=dict) #Get Scan Status.
+
+@api.get("/scans/status/{task_id}/", response=dict)
 def get_scan_status(request, task_id: str):
     task_result = AsyncResult(task_id)
     return {
@@ -101,14 +118,16 @@ def get_scan_status(request, task_id: str):
     }
 
 
-#Scan Results.
-@api.get("/subdomains/", response=List[SubdomainOut]) #Get DNS Data.
+@api.get("/subdomains/", response=List[SubdomainOut])
 @paginate(PageNumberPagination, page_size=500)
-def get_subdomains(request, target_name: Optional[str] = None, domain: Optional[str] = None):
+def get_subdomains(request, target_identifier: Optional[str] = None, domain: Optional[str] = None):
     query = Q()
 
-    if target_name:
-        query |= Q(domain__target__name=target_name)
+    if target_identifier:
+        if target_identifier.isdigit():
+            query |= Q(domain__target__id=int(target_identifier))
+        else:
+            query |= Q(domain__target__name=target_identifier.lower())
 
     if domain:
         query |= Q(domain__hostname=domain.lower())
@@ -116,26 +135,29 @@ def get_subdomains(request, target_name: Optional[str] = None, domain: Optional[
     return Subdomain.objects.filter(query)
 
 
-@api.get("/webapps/", response=List[WebAppOut]) #Get web apps fingerprint.
+@api.get("/webapps/", response=List[WebAppOut])
 @paginate(PageNumberPagination, page_size=500)
 def get_webapps(
         request,
-        target_name: Optional[str] = None,
+        target_identifier: Optional[str] = None,
         domain: Optional[str] = None,
         status_code: Optional[int] = None,
         content_length: Optional[int] = None,
         tech_stack: Optional[str] = None
 ):
-
     identifier_query = Q()
-    if target_name:
-        identifier_query |= Q(subdomain__domain__target__name=target_name)
+    if target_identifier:
+        if target_identifier.isdigit():
+            identifier_query |= Q(subdomain__domain__target__id=int(target_identifier))
+        else:
+            identifier_query |= Q(subdomain__domain__target__name=target_identifier.lower())
+
     if domain:
         identifier_query |= Q(subdomain__domain__hostname=domain.lower())
 
     main_query = Q()
 
-    if target_name or domain:
+    if target_identifier or domain:
         main_query &= identifier_query
 
     if status_code is not None:
@@ -150,11 +172,11 @@ def get_webapps(
     return WebApplication.objects.filter(main_query)
 
 
-@api.get("/vulnerabilities/", response=List[VulnerabilityOut]) #Get Vulnerabilities
+@api.get("/vulnerabilities/", response=List[VulnerabilityOut])
 @paginate(PageNumberPagination, page_size=500)
 def get_vulnerabilities(
         request,
-        target_name: Optional[str] = None,
+        target_identifier: Optional[str] = None,
         domain: Optional[str] = None,
         url: Optional[str] = None,
         vuln_severity: Optional[str] = None,
@@ -163,11 +185,18 @@ def get_vulnerabilities(
 ):
     identifier_query = Q()
 
-    if target_name:
-        identifier_query |= (
-                Q(subdomain__domain__target__name=target_name) |
-                Q(web_app__subdomain__domain__target__name=target_name)
-        )
+    if target_identifier:
+        if target_identifier.isdigit():
+            identifier_query |= (
+                    Q(subdomain__domain__target__id=int(target_identifier)) |
+                    Q(web_app__subdomain__domain__target__id=int(target_identifier))
+            )
+        else:
+            target_name = target_identifier.lower()
+            identifier_query |= (
+                    Q(subdomain__domain__target__name=target_name) |
+                    Q(web_app__subdomain__domain__target__name=target_name)
+            )
 
     if domain:
         domain_lower = domain.lower()
@@ -181,7 +210,7 @@ def get_vulnerabilities(
 
     main_query = Q()
 
-    if target_name or domain or url:
+    if target_identifier or domain or url:
         main_query &= identifier_query
 
     if vuln_severity:
@@ -196,7 +225,7 @@ def get_vulnerabilities(
     return Vulnerability.objects.filter(main_query).select_related('subdomain', 'web_app')
 
 
-@api.post("/webapps/", response=WebAppCreateOut) #Create a web app
+@api.post("/webapps/", response=WebAppCreateOut)
 def create_webapp(request, payload: WebAppCreateIn):
     raw_url = payload.url.strip()
 
@@ -217,9 +246,10 @@ def create_webapp(request, payload: WebAppCreateIn):
 
     with transaction.atomic():
 
-        target_obj, _ = Target.objects.get_or_create(
-            name=payload.target_name
-        )
+        if payload.target_name.isdigit():
+            target_obj, _ = Target.objects.get_or_create(id=int(payload.target_name))
+        else:
+            target_obj, _ = Target.objects.get_or_create(name=payload.target_name.lower())
 
         domain_obj, _ = Domain.objects.get_or_create(
             hostname=domain_name,
@@ -238,6 +268,7 @@ def create_webapp(request, payload: WebAppCreateIn):
 
     return {
         "message": "Successfully Created Webapp",
+        "target_id": target_obj.id,
         "target": target_obj.name,
         "domain": domain_obj.hostname,
         "subdomain": subdomain_obj.hostname,

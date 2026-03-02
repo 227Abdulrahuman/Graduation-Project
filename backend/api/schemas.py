@@ -2,7 +2,6 @@ from typing import List, Optional
 from ninja import Schema, ModelSchema
 from backend.core.models import *
 
-
 class TargetIn(Schema):
     name: str
     type: Optional[str] = None
@@ -33,6 +32,7 @@ class WebAppCreateIn(Schema):
 
 class WebAppCreateOut(Schema):
     message: str
+    target_id: int    # Added ID
     target: str
     domain: str
     subdomain: str
@@ -48,17 +48,17 @@ class TargetOut(ModelSchema):
 
     class Meta:
         model = Target
-        fields = ["name", "type", "platform", "program_url"]
+        fields = ["id", "name", "type", "platform", "program_url"] # Added "id" here
 
 class SubdomainOut(ModelSchema):
     class Meta:
         model = Subdomain
-        fields = ["hostname", "cname", "ip"]
+        fields = ["id", "hostname", "cname", "ip"] # Added "id" here as best practice
 
 class WebAppOut(ModelSchema):
     class Meta:
         model = WebApplication
-        fields = ["status_code", "url", "content_length", "tech_stack", "location", "title"]
+        fields = ["id", "status_code", "url", "content_length", "tech_stack", "location", "title"]
 
 class VulnSubdomainOut(Schema):
     hostname: str
@@ -72,13 +72,12 @@ class VulnerabilityOut(ModelSchema):
 
     class Meta:
         model = Vulnerability
-        fields = ["name", "location", "severity", "type"]
+        fields = ["id", "name", "location", "severity", "type"]
 
 class ArchivedURLOut(ModelSchema):
     class Meta:
         model = ArchivedURLs
         fields = ["url", "source"]
-
 
 class TaskStatusOut(Schema):
     task_id: str
