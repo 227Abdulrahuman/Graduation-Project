@@ -11,7 +11,7 @@ def xss_scan(url, auth_headers=None):
     """
     domain = urlparse(url).hostname
     output_dir = f'/work/backend/core/output/{domain}'
-    targets_file = f"{output_dir}/scan_targets.txt"
+    targets_file = f"{output_dir}/xss_scan_targets.txt"
 
     out_file = f"{output_dir}/xss.json"
 

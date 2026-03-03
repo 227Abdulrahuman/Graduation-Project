@@ -8,4 +8,4 @@ def general_scan_task(domain, chunk_size=None):
 
 @shared_task
 def comprehensive_scan_task(url, auth_headers=None, logout=None):
-    comprehensive_scan(url, auth_headers, logout)
+    comprehensive_scan(url, auth_headers=auth_headers, logout=logout)

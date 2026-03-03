@@ -1,4 +1,5 @@
 from ninja import NinjaAPI
+from ninja.errors import HttpError
 from django.db import transaction
 import tldextract
 from urllib.parse import urlparse
@@ -8,6 +9,7 @@ from celery.result import AsyncResult
 from ninja.pagination import paginate, PageNumberPagination
 from .schemas import *
 from .tasks import general_scan_task, comprehensive_scan_task
+import requests
 
 api = NinjaAPI(title="Web-Sploit API")
 
@@ -93,12 +95,23 @@ def run_general_scan(request, payload: ScanDomainIn):
     return {"task_id": task.id, "status": task.status}
 
 
+def can_connect(url, timeout_seconds=5):
+    try:
+        requests.head(url, timeout=timeout_seconds, allow_redirects=True)
+        return True
+
+    except requests.exceptions.RequestException:
+        return False
+
 @api.post("/scans/comprehensive/", response=TaskStatusOut)
 def run_comprehensive_scan(request, payload: ScanUrlIn):
     raw_url = payload.url.strip()
 
     parsed_url = urlparse(raw_url)
     normalized_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+
+    if not can_connect(normalized_url):
+        raise HttpError(400, "Target not reachable. Please verify that you can connect with the URL.")
 
     task = comprehensive_scan_task.delay(
         url=normalized_url,

