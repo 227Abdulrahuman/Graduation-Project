@@ -1,6 +1,6 @@
 import { useRouteError, useNavigate } from   'react-router'
 
-async function ErrorPage() {
+function ErrorPage() {
     const navigate = useNavigate()
     const error = useRouteError() as Error
     return (
@@ -10,7 +10,6 @@ async function ErrorPage() {
         <p className="text-zinc-500">{error.message}</p>
         <button className="mt-4 px-4 py-2 bg-zinc-900 text-zinc-100 rounded-md cursor-pointer hover:bg-zinc-800 transition-colors" onClick={() => navigate("/")}>Go back to home</button>
     </div>
-    
   )
 }
 
