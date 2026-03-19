@@ -17,7 +17,7 @@ def path_traversal_scan(url, auth_headers=None):
 
     cmd = ['ffuf', '-u', 'FUZZ',
           '-w', targets_file,
-           '-mr', 'root:|\[fonts\]',
+           '-mr', 'root:|\[fonts\]', '-r',
            '-H', 'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36',
            '-o', out_file
            ]

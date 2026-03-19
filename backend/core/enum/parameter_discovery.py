@@ -1,4 +1,5 @@
 import requests
+from backend.core.utilities.declutter import declutter_urls
 import os, django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.api.settings")
 django.setup()
@@ -31,8 +32,14 @@ def extract_parameters(url, auth_headers=None, logout=None):
     with open(urls_file, 'r') as file:
         for line in file:
             line = line.strip()
-            if logout not in line:
+
+            if logout is not None:
+                if logout not in line:
+                    urls.add(line)
+            else:
                 urls.add(line)
+
+    urls = declutter_urls(urls)
 
     for i in urls:
         import urllib3
