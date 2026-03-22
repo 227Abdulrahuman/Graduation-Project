@@ -22,5 +22,10 @@ def init_notify():
 def notify_discord(message):
     init_notify()
 
-    subprocess.run(f"echo {message} | notify -id hunter", shell=True, capture_output=True, text=True)
+    subprocess.run(
+        ["notify", "-id", "hunter"],
+        input=message,
+        capture_output=True,
+        text=True
+    )
     pass

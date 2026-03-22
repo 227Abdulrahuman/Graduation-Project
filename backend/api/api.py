@@ -8,7 +8,7 @@ from django.db.models import Q
 from celery.result import AsyncResult
 from ninja.pagination import paginate, PageNumberPagination
 from .schemas import *
-from .tasks import general_scan_task, comprehensive_scan_task
+from .tasks import *
 import requests
 
 api = NinjaAPI(title="Web-Sploit API")

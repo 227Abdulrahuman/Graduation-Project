@@ -39,17 +39,6 @@ class WebApplication(models.Model):
     def __str__(self):
         return self.url
 
-class Vulnerability(models.Model):
-    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="vulnerabilities", null=True, blank=True)
-    web_app = models.ForeignKey(WebApplication, on_delete=models.CASCADE, related_name="vulnerabilities", null=True, blank=True)
-    name = models.CharField(max_length=1000)
-    location = models.CharField(max_length=1000)
-    severity = models.CharField(max_length=1000)
-    type = models.CharField(max_length=1000)
-
-    class Meta:
-        unique_together = ("name", "location")
-
 class EndPoint(models.Model):
     web_app = models.ForeignKey(WebApplication, on_delete=models.CASCADE, related_name="endpoint")
     path = models.CharField(max_length=1000, null=True, blank=True)
@@ -79,3 +68,38 @@ class ArchivedURLs(models.Model):
 
     class Meta:
         unique_together = ("subdomain", "url")
+
+
+class Vulnerability(models.Model):
+    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="vulnerabilities", null=True, blank=True)
+    web_app = models.ForeignKey(WebApplication, on_delete=models.CASCADE, related_name="vulnerabilities", null=True, blank=True)
+    endpoint = models.ForeignKey(EndPoint, on_delete=models.CASCADE, related_name="endpoint", null=True, blank=True)
+    parameter = models.ForeignKey(Parameter, on_delete=models.CASCADE, related_name="parameter", null=True, blank=True)
+    name = models.CharField(max_length=1000)
+    location = models.CharField(max_length=1000)
+    severity = models.CharField(max_length=1000)
+    type = models.CharField(max_length=1000)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name', 'subdomain'],
+                name='unique_name_per_subdomain',
+                condition=models.Q(subdomain__isnull=False)
+            ),
+            models.UniqueConstraint(
+                fields=['name', 'web_app'],
+                name='unique_name_per_webapp',
+                condition=models.Q(web_app__isnull=False)
+            ),
+            models.UniqueConstraint(
+                fields=['name', 'endpoint'],
+                name='unique_name_per_endpoint',
+                condition=models.Q(endpoint__isnull=False)
+            ),
+            models.UniqueConstraint(
+                fields=['name', 'parameter'],
+                name='unique_name_per_parameter',
+                condition=models.Q(parameter__isnull=False)
+            ),
+        ]

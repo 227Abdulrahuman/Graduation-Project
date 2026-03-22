@@ -5,19 +5,19 @@ from backend.core.models import *
 from urllib.parse import urlparse
 from backend.core.scan.notify.notify import notify_discord
 
-def path_traversal_scan(url, auth_headers=None):
+def open_redirect_scan(url, auth_headers=None):
     """
-    Scans for path traversal by attempting to reach /etc/passwd or /windows/win.ini
+    Scans for Path based and Parameter based open redirect.
     """
     domain = urlparse(url).hostname
     output_dir = f'/work/backend/core/output/{domain}'
-    targets_file = f"{output_dir}/path_traversal_scan_targets.txt"
+    targets_file = f"{output_dir}/open_redirect_targets.txt"
 
-    out_file = f"{output_dir}/path_traversal.json"
+    out_file = f"{output_dir}/open_redirect.json"
 
     cmd = ['ffuf', '-u', 'FUZZ',
           '-w', targets_file,
-           '-mr', r'root:|\[fonts\]', '-r',
+           '-mr', r'(?i)location:\s*(https?:)?//.*@?www\.google\.com',
            '-H', 'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36',
            '-o', out_file
            ]
@@ -26,8 +26,11 @@ def path_traversal_scan(url, auth_headers=None):
         for header in auth_headers:
             cmd.extend(["-H", header])
 
-    print(f"[*] Starting Path Traversal Scanning on {url}")
+    print(f"[*] Starting Open Redirect Scanning on {url}")
     subprocess.run(cmd, capture_output=True, text=True)
+
+
+    web_app = WebApplication.objects.get(url=url)
 
     with open(out_file, 'r') as file:
         data = json.load(file)
@@ -46,20 +49,20 @@ def path_traversal_scan(url, auth_headers=None):
 
         Vulnerability.objects.update_or_create(
             parameter=parameter_obj,
-            name="Path Traversal",
+            name="Open Redirect",
 
             defaults={
                 "location": u,
-                "severity": "High",
-                "type": "Server Side"
+                "severity": "Low",
+                "type": "Client Side"
             }
         )
 
-        message = f"[+] Found Path Traversal at {u}"
+        message = f"[+] Found Open Redirect at {u}"
         notify_discord(message)
         print(message)
 
-    print(f"[+] Finished Path Traversal Scanning on {url}")
+    print(f"[+] Finished Open Redirect Scanning on {url}")
 
 
 

@@ -12,10 +12,13 @@ re_map_keys = re.compile(r'''['"](\w+?)['"]\s*:\s*['"`]''')
 
 def is_not_junk(param):
 
-    if (param.startswith('_')):
+    if param.startswith('_'):
         return False
 
-    if (param.endswith('_')):
+    if param.endswith('_'):
+        return False
+
+    if param.lower().startswith('utm_'):
         return False
 
     return (re_not_junk.match(param) is not None)
@@ -60,27 +63,6 @@ def heuristic(raw_response):
 
     return list(found)
 
-def load_urls_for_mining(url, out_file):
-    """
-    Loads URLs that are HTML pages.
-    """
-    web_app = WebApplication.objects.get(url=url)
-    base_url = web_app.url.rstrip('/')
-
-    routes = EndPoint.objects.filter(
-        web_app=web_app,
-        content_type__icontains='html'
-    )
-
-    req_paths = set()
-    for route in routes:
-        if route.path:
-            path = route.path if route.path.startswith('/') else f"/{route.path}"
-            req_paths.add(path)
-
-    with open(out_file, 'w') as file:
-        for path in req_paths:
-            file.write(f"{base_url}{path}\n")
 
 def parse_headers(header_list):
     """

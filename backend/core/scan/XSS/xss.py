@@ -29,23 +29,29 @@ def xss_scan(url, auth_headers=None):
     print(f"[*] Starting XSS Scanning on {url}")
     subprocess.run(cmd, capture_output=True, text=True)
 
-
-    web_app = WebApplication.objects.get(url=url)
-
     with open(out_file, 'r') as file:
         data = json.load(file)
 
     urls = [result['url'] for result in data.get('results', [])]
 
+    web_app = WebApplication.objects.get(url=url)
+
     for u in urls:
+        path = urlparse(u).path
+        endpoint = EndPoint.objects.get(web_app=web_app, path=path)
+
+        parameter_value = urlparse(u).query.split("=")[0]
+
+        parameter_obj = Parameter.objects.get(endpoint=endpoint, key=parameter_value)
+
         Vulnerability.objects.update_or_create(
-            web_app=web_app,
-            name="Reflected XSS",
-            location=u,
+            parameter=parameter_obj,
+            name="Cross Site Scripting",
 
             defaults={
+                "location": u,
                 "severity": "Medium",
-                "type": "XSS"
+                "type": "Client Side"
             }
         )
 
