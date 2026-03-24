@@ -1,4 +1,4 @@
-import { LayoutDashboard, Target, Globe2, ShieldAlert, History, Settings, Hexagon, Zap } from "lucide-react";
+import { LayoutDashboard, Target, Globe2, ShieldAlert, History, Hexagon, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
@@ -13,7 +13,6 @@ const navItems = [
 	{ id: "/subdomains", label: "Subdomains", icon: Globe2 },
 	{ id: "/scans", label: "Scans", icon: History },
 	{ id: "/vulnerabilities", label: "Vulnerabilities", icon: ShieldAlert },
-	{ id: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function Sidebar({ currentPath, onNavigate, className }: SidebarProps) {
