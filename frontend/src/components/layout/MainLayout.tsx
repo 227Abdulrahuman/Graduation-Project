@@ -19,7 +19,7 @@ function MainLayout() {
 			{/* Main Content */}
       <main className="flex flex-col mx-10 dark">
         <Topbar />
-        <div className="flex-1 overflow-auto bg-linear-to-b from-black via-zinc-950 to-black my-6">
+        <div className="flex-1 overflow-auto bg-linear-to-b from-black via-zinc-950 to-black my-6 mx-11">
           <Outlet />
         </div>
       </main>

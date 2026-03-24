@@ -18,7 +18,7 @@ const recentScans = [
     target: "https://api.example.com",
     type: "Vulnerability Scan",
     progress: 75,
-    status: "Running",
+    status: "Pending",
     time: "5 min ago",
   },
   {

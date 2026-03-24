@@ -22,7 +22,7 @@ const scanData = [
 
 function SeverityTrendsChart({ className }: { className?: string }) {
   return (
-    <Card className={className}>
+    <Card className={className} glow>
       <div className="flex items-center justify-between mb-6">
         <h3 className="font-bold text-zinc-200">Vulnerability Trends</h3>
         <div className="flex gap-2">
