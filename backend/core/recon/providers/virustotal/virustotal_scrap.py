@@ -17,8 +17,7 @@ def scrap(domain):
             if cursor:
                 params['cursor'] = cursor
             req = requests.get(url, headers=headers, params=params)
-            if 400 <= req.status_code < 500:
-                return {-1}
+
             resp = req.json()
             if "data" not in resp:
                 break

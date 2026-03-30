@@ -17,7 +17,7 @@ class SubdomainAdmin(admin.ModelAdmin):
 
 @admin.register(models.WebApplication)
 class WebAppAdmin(admin.ModelAdmin):
-    list_display = ("url", "status_code", "title", "content_length", "tech_stack")
+    list_display = ("url", "status_code", "title", "location","content_length", "tech_stack")
     list_filter = ("subdomain__domain",)
 
 @admin.register(models.EndPoint)

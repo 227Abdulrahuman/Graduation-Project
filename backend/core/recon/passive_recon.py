@@ -1,18 +1,11 @@
 #import providers
-from backend.core.recon.providers.subfinder.subfinder import scrap as subfinder
-from backend.core.recon.providers.virustotal.virustotal import scrap as virustotal
-from backend.core.recon.providers.c99.c99 import scrap as c99
-from backend.core.recon.providers.securitytrails_web.securitytrailsweb import scrap as securitytrailsweb
-from backend.core.recon.providers.bevigil.bevigil import scrap as bevigil
-from backend.core.recon.providers.chaos.chaos import scrap as chaos
-from backend.core.recon.providers.leakix.leakix import scrap as leakix
-from backend.core.recon.providers.netlas.netlas import scrap as netlas
-from backend.core.recon.providers.fullHunt.fullHunt import scrap as fullHunt
-from backend.core.recon.providers.shodan.shodan import scrap as shodan
-from backend.core.recon.providers.certspotter.certspotter import scrap as certspotter
-from backend.core.recon.providers.digitalyama.digitalyama import scrap as digitalyama
-from backend.core.recon.providers.pugrecon.pugrecon import scrap as pugrecon
-from backend.core.recon.providers.dnsdumpster.dnsdumpster import scrap as dnsdumpster
+from backend.core.recon.providers.virustotal.virustotal_scrap import scrap as virustotal
+from backend.core.recon.providers.c99.c99_scrap import scrap as c99
+from backend.core.recon.providers.securitytrails_web.securitytrailsweb_scrap import scrap as securitytrailsweb
+from backend.core.recon.providers.key_chaos.chaos_scrap import scrap as chaos
+from backend.core.recon.providers.key_shodan.shodan_scraper import scrap as shodan
+from backend.core.recon.providers.key_digitalyama.digitalyama_scrap import scrap as digitalyama
+from backend.core.recon.providers.subfinder.subfinder_scrap import scrap as subfinder
 
 #Connect to Django
 import os, django, subprocess
@@ -29,7 +22,7 @@ def run_provider(name, func, domain):
         result = func(domain)
 
         if result == {-1}:
-            print(f"[-] {name} key expired.")
+            print(f"[-] {name} ERROR.")
             return {-1}
 
         print(f"[+] {name}: {len(result)} subdomains.")
@@ -43,29 +36,23 @@ def fetch_subdomains(domain):
     """
     Enumerates Subdomains from passive sources and saves the result to the database.
     """
-    print(f"[*] Starting passive subdomains enumeration for {domain}")
+    print(f"\n[*] Starting passive subdomains enumeration for {domain}")
 
     base_dir = f"/work/backend/core/output/{domain}"
     os.makedirs(base_dir, exist_ok=True)
     subs_file = base_dir + "/passive_subdomains.txt"
     live_file = base_dir + "/live_subdomains.txt"
     all_subs = set()
+    all_subs.add(domain)
 
     scrapers = [
         ("VirusTotal", virustotal),
         ("C99", c99),
-        ("Subfinder", subfinder),
         ("securityTrailsWeb", securitytrailsweb),
-        ("bevigil", bevigil),
-        ("chaos",chaos),
-        ("leakix", leakix),
-        ("netlas", netlas),
-        ("fullHunt", fullHunt),
-        # ("shodan", shodan),
-        ("certspotter", certspotter),
-        ("digitalyama", digitalyama),
-        ("pugrecon", pugrecon),
-        ("dnsdumpster", dnsdumpster),
+        ("key_chaos",chaos),
+        ("key_shodan", shodan),
+        ("key_digitalyama", digitalyama),
+        ("subfinder", subfinder),
     ]
 
     #Run passive providers.
@@ -88,7 +75,7 @@ def fetch_subdomains(domain):
 
 
     #Resolve live subdomains.
-    print(f"[*] Resolving live subdomains for {domain}")
+    print(f"\n[*] Resolving live subdomains for {domain}")
     resolvers_file = f"/work/backend/core/recon/resources/resolvers/resolvers.txt"
     cmd = ['puredns', 'resolve', subs_file, '-r', resolvers_file, '-w', live_file]
     subprocess.run(cmd, text=True, capture_output=True)

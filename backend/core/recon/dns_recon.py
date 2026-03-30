@@ -19,7 +19,7 @@ def dns_recon(domain):
         '-j', '-o', output_file
     ]
 
-    print(f"[*] Starting DNS enumeration for {domain}")
+    print(f"\n[*] Starting DNS enumeration for {domain}")
     subprocess.run(cmd, text=True, capture_output=True)
 
     with open(output_file, 'r') as file:

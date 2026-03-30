@@ -12,8 +12,6 @@ def scrap(domain):
 
     try:
         response = requests.get(url,headers=headers)
-        if 400 <= response.status_code < 500:
-            return {-1}
 
         res = response.json()
         for sub in res["subdomains"]:

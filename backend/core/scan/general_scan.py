@@ -1,4 +1,4 @@
-from backend.core.scan.information_disclosure.information_disclosure import information_disclosure_scan
+from backend.core.scan.information_disclosure.information_disclosure_nuclei import information_disclosure_scan
 from backend.core.scan.CVEs.cve import cve_scan
 from backend.core.recon.main import run_recon_pipeline
 

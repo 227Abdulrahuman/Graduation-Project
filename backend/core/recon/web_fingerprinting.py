@@ -15,7 +15,7 @@ def web_fingerprint(domain):
         '-j', '-o', output_file,
     ]
 
-    print(f"[+] Starting Web Fingerprinting for {domain}")
+    print(f"\n[+] Starting Web Fingerprinting for {domain}")
 
     subprocess.run(cmd, text=True, capture_output=True)
 
@@ -50,4 +50,4 @@ def web_fingerprint(domain):
             except Exception:
                 pass
     load_urls(domain)
-    print(f"[+] Finished Web Fingerprinting for {domain}")
+    print(f"\n[+] Finished Web Fingerprinting for {domain}")

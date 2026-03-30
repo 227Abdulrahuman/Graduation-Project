@@ -9,3 +9,4 @@ google-genai
 uro
 dotenv
 waymore
+shodan
