@@ -1,5 +1,5 @@
 #import providers
-from backend.core.recon.providers.virustotal.virustotal_scrap import scrap as virustotal
+from backend.core.recon.providers.key_virustotal.virustotal_scrap import scrap as virustotal
 from backend.core.recon.providers.c99.c99_scrap import scrap as c99
 from backend.core.recon.providers.securitytrails_web.securitytrailsweb_scrap import scrap as securitytrailsweb
 from backend.core.recon.providers.key_chaos.chaos_scrap import scrap as chaos

@@ -2,7 +2,7 @@ from backend.core.recon.providers.key_chaos.chaos_check import check as chaos_ch
 from backend.core.recon.providers.key_digitalyama.digitalyama_check import check as digitalyama_check
 from backend.core.recon.providers.key_shodan.shodan_check import check as shodan_check
 from backend.core.recon.providers.securitytrails_web.securitytrailsweb_check import check as securitytrailsweb_check
-from backend.core.recon.providers.virustotal.virustotal_check import check as virustotal_check
+from backend.core.recon.providers.key_virustotal.virustotal_check import check as virustotal_check
 
 
 from backend.core.recon.passive_recon import fetch_subdomains
@@ -21,7 +21,7 @@ def validate_api_keys():
         ("key_digitalyama", digitalyama_check),
         ("key_shodan", shodan_check),
         ("securitytrails_web", securitytrailsweb_check),
-        ("virustotal", virustotal_check),
+        ("key_virustotal", virustotal_check),
     ]
 
     invalid_providers = []
@@ -46,7 +46,7 @@ def run_recon_pipeline(domain, chunk_size=None):
     print(f"[*] Starting recon pipeline for {domain}")
     print("###############################################")
 
-    print("\n[*] Validating API keys for paid providers...")
+    print("[*] Validating API keys for paid providers...")
     invalid_keys = validate_api_keys()
 
     if invalid_keys:

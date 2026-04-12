@@ -38,7 +38,7 @@ def virus_total(subdomain):
 
     out_dir = f'/work/backend/core/enum/output/{subdomain}'
     os.makedirs(out_dir, exist_ok=True)
-    out_file = f'{out_dir}/virustotal.txt'
+    out_file = f'{out_dir}/key_virustotal.txt'
 
     url = 'https://www.virustotal.com/vtapi/v2/domain/report'
     params = {
