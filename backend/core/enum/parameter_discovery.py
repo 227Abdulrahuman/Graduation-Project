@@ -1,7 +1,7 @@
 import requests
 from backend.core.utilities.declutter import declutter_urls
 import os, django
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.api.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.websploit.settings")
 django.setup()
 from backend.core.models import *
 from backend.core.utilities.enum import heuristic, parse_headers

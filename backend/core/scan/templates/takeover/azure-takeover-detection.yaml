@@ -28,7 +28,7 @@ dns:
           - NXDOMAIN
       - type: dsl
         dsl:
-          - 'contains(cname, "azure-api.net")'
+          - 'contains(cname, "azure-websploit.net")'
           - 'contains(cname, "azure-mobile.net")'
           - 'contains(cname, "azurecontainer.io")'
           - 'contains(cname, "azurecr.io")'

@@ -9,7 +9,7 @@ from backend.core.recon.providers.subfinder.subfinder_scrap import scrap as subf
 
 #Connect to Django
 import os, django, subprocess
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.api.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.websploit.settings")
 django.setup()
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from backend.core.models import *

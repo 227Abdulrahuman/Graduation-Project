@@ -3,7 +3,7 @@
 # 2) Open the networks tab in the inspector (Crhome Browser)
 # 3) Visit `https://securitytrails.com/list/apex_domain/krazeplanet.com?page=1`
 # 4) Right-click on the request and Copy as cURL (bash)
-# Paste it here /work/backend/api/tools/data/cookie.txt
+# Paste it here /work/backend/websploit/tools/data/cookie.txt
 SecurityTrails:
   apiKey: "rntU2I9I55GNxEJ23bI75ZDXjgpsdR2v"
   linkToGetAPIKey: "https://securitytrails.com/app/account/credentials"

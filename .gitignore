@@ -1,6 +1,6 @@
 __pycache__/
-backend/api/tools/output/*
-backend/api/tools/data/cookie.txt
+backend/websploit/tools/output/*
+backend/websploit/tools/data/cookie.txt
 backend/core/migrations/*
 backend/core/migrations
 backend/core/migrations/

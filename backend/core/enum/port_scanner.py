@@ -3,7 +3,7 @@ import subprocess, os
 import xml.etree.ElementTree as ET
 #Connect to Django
 import os, django, subprocess
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.api.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.websploit.settings")
 django.setup()
 from backend.core.models import *
 

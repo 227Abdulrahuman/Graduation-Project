@@ -1,5 +1,5 @@
 import os, django, subprocess, json
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.api.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.websploit.settings")
 django.setup()
 from backend.core.models import *
 from urllib.parse import urlparse

@@ -1,3 +1,11 @@
 from django.shortcuts import render
+from backend.core.models import *
 
-# Create your views here.
+def home_view(request):
+    targets =  Target.objects.all()
+
+    context = {
+        'targets': targets
+    }
+
+    return render(request, 'core/index.html', context)

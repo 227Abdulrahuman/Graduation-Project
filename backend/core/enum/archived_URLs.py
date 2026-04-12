@@ -1,7 +1,7 @@
 import os, django, requests, subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import urlparse
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.api.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.websploit.settings")
 django.setup()
 from backend.core.models import *
 from pathlib import Path

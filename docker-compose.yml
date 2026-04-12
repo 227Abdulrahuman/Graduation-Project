@@ -34,7 +34,7 @@ services:
       context: backend
       dockerfile: Dockerfile
     container_name: celery
-    command: celery -A api worker -l INFO
+    command: celery -A websploit worker -l INFO
     volumes:
       - .:/work
       - automator-history:/root
