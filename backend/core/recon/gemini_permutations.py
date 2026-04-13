@@ -41,10 +41,10 @@ client_pool = get_key()
 
 def generate_permutations(domain, chunk_size):
 
-    live_file = f"/work/backend/core/output/{domain}/live_subdomains.txt"
-    perm_file = f"/work/backend/core/output/{domain}/unresolved_permutations.txt"
-    resolved_file = f"/work/backend/core/output/{domain}/resolved_permutations.txt"
-    diff_file = f"/work/backend/core/output/{domain}/diff.txt"
+    live_file = f"/work/output/{domain}/live_subdomains.txt"
+    perm_file = f"/work/output/{domain}/unresolved_permutations.txt"
+    resolved_file = f"/work/output/{domain}/resolved_permutations.txt"
+    diff_file = f"/work/output/{domain}/diff.txt"
 
     with open(perm_file, 'w') as file:
         pass

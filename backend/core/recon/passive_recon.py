@@ -38,7 +38,7 @@ def fetch_subdomains(domain):
     """
     print(f"\n[*] Starting passive subdomains enumeration for {domain}")
 
-    base_dir = f"/work/backend/core/output/{domain}"
+    base_dir = f"/work/output/{domain}"
     os.makedirs(base_dir, exist_ok=True)
     subs_file = base_dir + "/passive_subdomains.txt"
     live_file = base_dir + "/live_subdomains.txt"
@@ -76,7 +76,7 @@ def fetch_subdomains(domain):
 
     #Resolve live subdomains.
     print(f"\n[*] Resolving live subdomains for {domain}")
-    resolvers_file = f"/work/backend/core/recon/resources/resolvers/resolvers.txt"
+    resolvers_file = f"/work/resources/resolvers/resolvers.txt"
     cmd = ['puredns', 'resolve', subs_file, '-r', resolvers_file, '-w', live_file]
     subprocess.run(cmd, text=True, capture_output=True)
 

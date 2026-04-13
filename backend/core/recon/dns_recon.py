@@ -9,8 +9,8 @@ def dns_recon(domain):
     domain_obj = Domain.objects.get(hostname=domain)
 
     #Get the cnames and IPs for live subdomains.
-    output_file = f"/work/backend/core/output/{domain}/dns_recon.json"
-    live_file = f"/work/backend/core/output/{domain}/live_subdomains.txt"
+    output_file = f"/work/output/{domain}/dns_recon.json"
+    live_file = f"/work/output/{domain}/live_subdomains.txt"
 
     cmd = [
         'dnsx', '-l', live_file,

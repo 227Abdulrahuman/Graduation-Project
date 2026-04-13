@@ -5,7 +5,7 @@ def resolve_subdomains(in_file, outfile):
     """
     Resolve subs in infile to outfile
     """
-    resolvers_file = f"/work/backend/core/recon/resources/resolvers/resolvers.txt"
+    resolvers_file = f"/work/resources/resolvers/resolvers.txt"
 
     cmd = ['puredns', 'resolve', in_file, '-r', resolvers_file, '-w', outfile]
     subprocess.run(cmd, text=True, capture_output=True)

@@ -1,23 +1,19 @@
 __pycache__/
-backend/websploit/tools/output/*
-backend/websploit/tools/data/cookie.txt
 backend/core/migrations/*
 backend/core/migrations
 backend/core/migrations/
-backend/core/recon/output/*
-/backend/core/recon/output/
-/backend/core/recon/output
-/backend/core/enum/output/*
-/backend/core/enum/output/
-/backend/core/enum/output
-/backend/core/output/*
-/backend/core/output/
-/backend/core/output
-backend/core/scan/output/*
-backend/core/scan/output
+
+output
+resources/cookie.txt
+
 *.sqlite3
 
+/backend/output/
+backend/output/
+/backend/output/*
 
+/backend/resources/cookie.txt
+backend/resources/cookie.txt
 #Keys
 .env
 

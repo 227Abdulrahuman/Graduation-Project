@@ -5,8 +5,8 @@ from backend.core.models import *
 from backend.core.utilities.loaders import load_urls
 
 def web_fingerprint(domain):
-    output_file = f"/work/backend/core/output/{domain}/web_fingerprint.json"
-    live_file = f"/work/backend/core/output/{domain}/live_subdomains.txt"
+    output_file = f"/work/output/{domain}/web_fingerprint.json"
+    live_file = f"/work/output/{domain}/live_subdomains.txt"
 
     cmd = [
         'httpx', '-l', live_file,
