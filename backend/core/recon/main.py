@@ -9,6 +9,7 @@ from backend.core.recon.passive_recon import fetch_subdomains
 from backend.core.recon.dns_recon import dns_recon
 from backend.core.recon.web_fingerprinting import web_fingerprint
 from backend.core.recon.gemini_permutations import generate_permutations
+from backend.core.recon.port_scanner import scan_ports
 
 
 def validate_api_keys():
@@ -65,6 +66,7 @@ def recon(domain, chunk_size=None):
     print()
     web_fingerprint(domain)
     print()
+    scan_ports(domain)
 
     print(f"[+] Finished recon pipline for {domain}")
 

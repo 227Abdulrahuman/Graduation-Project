@@ -4,7 +4,7 @@ import subprocess
 
 def scrap(domain):
     try:
-        cmd = ["haktrailsfree", "-d", domain, "-c", "/work/backend/core/recon/resources/securitytrails/cookie.txt", "--silent"]
+        cmd = ["haktrailsfree", "-d", domain, "-c", "/work/resources/securitytrails/cookie.txt", "--silent"]
         proc = subprocess.run(cmd,text=True,capture_output=True)
 
         subdomains = set()

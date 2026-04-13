@@ -3,7 +3,7 @@ import re
 import requests
 
 def check():
-    filepath = "/work/backend/core/recon/resources/securitytrails/cookie.txt"
+    filepath = "/work/resources/securitytrails/cookie.txt"
 
     if not os.path.exists(filepath):
         return -1

@@ -5,7 +5,7 @@ from backend.core.models import *
 
 
 def load_urls(domain):
-    base_dir = f"/work/backend/core/output/{domain}"
+    base_dir = f"/work/output/{domain}"
     os.makedirs(base_dir, exist_ok=True)
     urls_file = base_dir + "/urls.txt"
 

@@ -27,6 +27,11 @@ class Subdomain(models.Model):
     def __str__(self):
         return self.hostname
 
+class Port(models.Model):
+    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="ports")
+    number = models.IntegerField(null=True, blank=True)
+    service = models.CharField(max_length=1000, null=True, blank=True)
+
 class WebApplication(models.Model):
     subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="webapps")
     status_code = models.IntegerField(null=True, blank=True)

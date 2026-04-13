@@ -40,3 +40,6 @@ class VulnerabilityAdmin(admin.ModelAdmin):
     list_display = ('name', 'location', 'severity', 'type')
     list_filter = ('web_app__url',)
 
+@admin.register(models.Port)
+class PortAdmin(admin.ModelAdmin):
+    list_display = ('subdomain','number','service')

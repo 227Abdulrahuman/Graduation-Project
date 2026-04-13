@@ -147,7 +147,13 @@
     font-family: var(--font-sans);
     outline: none;
     transition: border-color var(--transition);
-    min-width: 200px;
+    min-width: 180px;
+  }
+
+  .toolbar-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(0, 0, 0, 0.4);
   }
 
   .toolbar-select option {
@@ -305,6 +311,16 @@
       <option value="yes">Has CNAME</option>
       <option value="no">No CNAME</option>
     </select>
+
+    <input type="text" id="hostSearchSub" class="toolbar-input" placeholder="Search Hostname..." onkeyup="filterSubdomains()">
+
+    <div style="display: flex; gap: 8px;">
+      <select id="portSearch" class="toolbar-select" style="max-width: 140px;">
+        <option value="all">Port: All</option>
+        </select>
+
+      <input type="text" id="serviceSearch" class="toolbar-input" placeholder="Service (e.g., http)" style="max-width: 180px;" disabled onkeyup="filterSubdomains()">
+    </div>
   </div>
 
   <div class="panel">
@@ -315,14 +331,18 @@
           <th>Hostname</th>
           <th>IP Address</th>
           <th>CNAME</th>
-        </tr>
+          <th>Ports</th> </tr>
       </thead>
       <tbody id="subdomainsTbody">
         {% for sub in subdomains %}
         <tr class="subdomain-row"
             data-domain="{{ sub.domain.hostname }}"
+            data-hostname="{{ sub.hostname|lower }}"
             data-has-ip="{% if sub.ip %}yes{% else %}no{% endif %}"
-            data-has-cname="{% if sub.cname %}yes{% else %}no{% endif %}">
+            data-has-cname="{% if sub.cname %}yes{% else %}no{% endif %}"
+            data-ports="{% for p in sub.ports.all %}{{ p.number }} {% endfor %}"
+            data-services="{% for p in sub.ports.all %}{{ p.service|default:''|lower }} {% endfor %}">
+
           <td class="font-mono text-muted">{{ forloop.counter }}</td>
           <td class="font-mono" style="color: var(--accent-primary);">
             {{ sub.hostname }}
@@ -331,10 +351,19 @@
           </td>
           <td class="font-mono">{{ sub.ip|default:"<span class='text-muted'>—</span>"|safe }}</td>
           <td class="font-mono">{{ sub.cname|default:"<span class='text-muted'>—</span>"|safe }}</td>
+          <td>
+            {% if sub.ports.all %}
+                {% for port in sub.ports.all %}
+                    <span class="tech-badge">{{ port.number }}{% if port.service %}/{{ port.service }}{% endif %}</span>
+                {% endfor %}
+            {% else %}
+                <span class="text-muted">—</span>
+            {% endif %}
+          </td>
         </tr>
         {% empty %}
         <tr id="emptySubdomainRow">
-          <td colspan="4" style="text-align: center; padding: 40px;" class="text-muted">No subdomains found for this target.</td>
+          <td colspan="5" style="text-align: center; padding: 40px;" class="text-muted">No subdomains found for this target.</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -351,6 +380,8 @@
         <option value="{{ dom.hostname }}">{{ dom.hostname }}</option>
       {% endfor %}
     </select>
+
+    <input type="text" id="hostSearchApp" class="toolbar-input" placeholder="Search Hostname..." onkeyup="filterWebApps()">
 
     <input type="text" id="techSearch" class="toolbar-input" placeholder="Search Tech Stack..." onkeyup="filterWebApps()">
 
@@ -380,6 +411,7 @@
         {% for app in webapps %}
         <tr class="webapp-row"
             data-domain="{{ app.subdomain.domain.hostname }}"
+            data-hostname="{% if app.subdomain %}{{ app.subdomain.hostname|lower }}{% else %}{{ app.url|lower }}{% endif %}"
             data-status="{{ app.status_code|default:0 }}"
             data-tech="{{ app.tech_stack|join:' '|lower }}">
           <td class="font-mono text-muted">{{ forloop.counter }}</td>
@@ -428,6 +460,32 @@
 </div>
 
 <script>
+  // --- Auto-Populate Ports Dropdown on Load ---
+  document.addEventListener("DOMContentLoaded", function() {
+    const portSelect = document.getElementById('portSearch');
+    const rows = document.querySelectorAll('.subdomain-row');
+    const uniquePorts = new Set();
+
+    // Gather all unique ports from the table rows
+    rows.forEach(row => {
+      const ports = row.getAttribute('data-ports').trim().split(/\s+/);
+      ports.forEach(port => {
+        if(port) uniquePorts.add(port);
+      });
+    });
+
+    // Sort numerically
+    const sortedPorts = Array.from(uniquePorts).sort((a, b) => parseInt(a) - parseInt(b));
+
+    // Create options
+    sortedPorts.forEach(port => {
+      const option = document.createElement('option');
+      option.value = port;
+      option.textContent = "Port: " + port;
+      portSelect.appendChild(option);
+    });
+  });
+
   // Tab Switching Logic
   function switchTab(tabId, btnElement) {
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
@@ -436,24 +494,63 @@
     btnElement.classList.add('active');
   }
 
+  // --- Port/Service Input Toggle Logic ---
+  const portInput = document.getElementById('portSearch');
+  const serviceInput = document.getElementById('serviceSearch');
+
+  // Change from 'input' to 'change' because it's a select tag now
+  portInput.addEventListener('change', function() {
+    if (this.value !== 'all') {
+      serviceInput.disabled = false; // Enable service if specific port is selected
+    } else {
+      serviceInput.disabled = true;  // Disable service if "All" is selected
+      serviceInput.value = '';       // Clear the service input
+    }
+    filterSubdomains(); // Trigger the table filter update
+  });
+  // ---------------------------------------
+
   // Subdomains Filtering Logic
   function filterSubdomains() {
     const domainFilter = document.getElementById('domainFilterSub').value;
     const ipFilter = document.getElementById('ipFilter').value;
     const cnameFilter = document.getElementById('cnameFilter').value;
+
+    // Search Filters
+    const hostSearchValue = document.getElementById('hostSearchSub').value.toLowerCase();
+    const portSearchValue = document.getElementById('portSearch').value;
+    const serviceSearchValue = document.getElementById('serviceSearch').value.toLowerCase();
+
     const rows = document.querySelectorAll('.subdomain-row');
     let visibleCount = 0;
 
     rows.forEach(row => {
       const rowDomain = row.getAttribute('data-domain');
+      const rowHostname = row.getAttribute('data-hostname');
       const hasIp = row.getAttribute('data-has-ip');
       const hasCname = row.getAttribute('data-has-cname');
+
+      // Split into arrays so "80" doesn't accidentally match "8080"
+      const rowPorts = row.getAttribute('data-ports').trim().split(/\s+/);
+      const rowServices = row.getAttribute('data-services').trim().toLowerCase();
 
       let matchesDomain = (domainFilter === 'all') || (domainFilter === rowDomain);
       let matchesIp = (ipFilter === 'all') || (ipFilter === hasIp);
       let matchesCname = (cnameFilter === 'all') || (cnameFilter === hasCname);
 
-      if (matchesDomain && matchesIp && matchesCname) {
+      let matchesHost = rowHostname.includes(hostSearchValue);
+
+      let matchesPortAndService = true;
+      if (portSearchValue !== "all") {
+        matchesPortAndService = rowPorts.includes(portSearchValue); // Exact match the port number
+
+        // If a service is typed in, it must match too
+        if (matchesPortAndService && serviceSearchValue !== "") {
+          matchesPortAndService = rowServices.includes(serviceSearchValue);
+        }
+      }
+
+      if (matchesDomain && matchesIp && matchesCname && matchesHost && matchesPortAndService) {
         row.style.display = '';
         visibleCount++;
       } else {
@@ -470,21 +567,26 @@
   // Web Apps Filtering Logic
   function filterWebApps() {
     const domainFilter = document.getElementById('domainFilterApp').value;
+
+    const hostSearchValue = document.getElementById('hostSearchApp').value.toLowerCase();
     const techSearchValue = document.getElementById('techSearch').value.toLowerCase();
     const statusSearchValue = document.getElementById('statusSearch').value.trim();
+
     const rows = document.querySelectorAll('.webapp-row');
     let visibleCount = 0;
 
     rows.forEach(row => {
       const rowDomain = row.getAttribute('data-domain');
+      const rowHostname = row.getAttribute('data-hostname');
       const techText = row.getAttribute('data-tech');
       const statusStr = row.getAttribute('data-status'); // Treat as string for easy startsWith checking
 
       let matchesDomain = (domainFilter === 'all') || (domainFilter === rowDomain);
+      let matchesHost = rowHostname.includes(hostSearchValue);
       let matchesSearch = techText.includes(techSearchValue);
       let matchesStatus = (statusSearchValue === "") || statusStr.startsWith(statusSearchValue);
 
-      if (matchesDomain && matchesSearch && matchesStatus) {
+      if (matchesDomain && matchesHost && matchesSearch && matchesStatus) {
         row.style.display = '';
         visibleCount++;
       } else {
