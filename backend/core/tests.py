@@ -1,4 +1,4 @@
-from backend.core.recon.main import run_recon_pipeline
+from backend.core.recon.main import recon
 
 
-run_recon_pipeline("billiger-mietwagen.de",chunk_size=500)
+recon("billiger-mietwagen.de", chunk_size=500)

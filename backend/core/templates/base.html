@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Web Sploit{% endblock %}</title>
+
+  <!-- Google Fonts: Oxanium (display) + JetBrains Mono (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  {% block extra_css %}{% endblock %}
+
+  <style>
+    /* ─── Design Tokens ───────────────────────────────────────────── */
+    :root {
+      --bg-void:        #080b0f;
+      --bg-panel:       #0d1117;
+      --bg-surface:     #111820;
+      --bg-elevated:    #18222d;
+
+      --border-dim:     #1e2d3d;
+      --border-mid:     #243447;
+      --border-bright:  #2d4a63;
+
+      --accent-primary: #00d4ff;
+      --accent-glow:    #00aacc;
+      --accent-red:     #ff3b5c;
+      --accent-green:   #00ff9d;
+      --accent-amber:   #ffb700;
+
+      --text-primary:   #e8f0fe;
+      --text-secondary: #7a92aa;
+      --text-dim:       #3d5166;
+
+      --font-display: 'Oxanium', sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+
+      --header-h:     96px;
+      --radius-sm:    4px;
+      --radius-md:    8px;
+      --transition:   0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ─── Reset & Base ────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg-void);
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Subtle scanline texture */
+    body::before {
+      content: '';
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 212, 255, 0.012) 2px,
+        rgba(0, 212, 255, 0.012) 4px
+      );
+      z-index: 9999;
+    }
+
+    a { color: var(--accent-primary); text-decoration: none; transition: color var(--transition); }
+    a:hover { color: var(--text-primary); }
+
+    /* ─── Header ──────────────────────────────────────────────────── */
+    .ws-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: var(--header-h);
+      background: rgba(8, 11, 15, 0.92);
+      backdrop-filter: blur(16px) saturate(160%);
+      -webkit-backdrop-filter: blur(16px) saturate(160%);
+      border-bottom: 1px solid var(--border-dim);
+      box-shadow:
+        0 -2px 0 0 rgba(0, 212, 255, 0.5) inset,
+        0 4px 32px rgba(0, 0, 0, 0.6);
+    }
+
+    .ws-header__inner {
+      height: 100%;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    /* ── Logo ── */
+    .ws-logo {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      user-select: none;
+      text-decoration: none;
+    }
+
+    .ws-logo__icon {
+      width: 52px;
+      height: 52px;
+      flex-shrink: 0;
+    }
+
+    .ws-logo__icon svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      filter:
+        drop-shadow(0 0 8px rgba(0, 212, 255, 0.7))
+        drop-shadow(0 0 20px rgba(0, 212, 255, 0.3));
+    }
+
+    .ws-logo__wordmark {
+      display: flex;
+      flex-direction: column;
+      line-height: 1;
+      gap: 6px;
+    }
+
+    .ws-logo__name {
+      font-family: var(--font-display);
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: linear-gradient(
+        90deg,
+        #c8dff0 0%,
+        var(--accent-primary) 35%,
+        #ffffff 50%,
+        var(--accent-primary) 65%,
+        #c8dff0 100%
+      );
+      background-size: 250% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmer 5s linear infinite;
+    }
+
+    .ws-logo__sub {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 300;
+      letter-spacing: 0.45em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: 250% center; }
+      100% { background-position: -250% center; }
+    }
+
+    /* ─── Page content wrapper ────────────────────────────────────── */
+    .ws-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    /* ─── Utility classes ─────────────────────────────────────────── */
+    .text-cyan   { color: var(--accent-primary); }
+    .text-green  { color: var(--accent-green); }
+    .text-red    { color: var(--accent-red); }
+    .text-amber  { color: var(--accent-amber); }
+    .text-dim    { color: var(--text-dim); }
+    .text-mono   { font-family: var(--font-mono); }
+
+    .ws-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border: 1px solid transparent;
+    }
+    .ws-badge--active  { background: rgba(0,255,157,0.07); border-color: rgba(0,255,157,0.25); color: var(--accent-green); }
+    .ws-badge--warning { background: rgba(255,183,0,0.07); border-color: rgba(255,183,0,0.25); color: var(--accent-amber); }
+    .ws-badge__dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    .ws-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: all var(--transition);
+      border: 1px solid transparent;
+    }
+    .ws-btn--ghost   { background: transparent; border-color: var(--border-mid); color: var(--text-secondary); }
+    .ws-btn--ghost:hover { background: var(--bg-elevated); border-color: var(--border-bright); color: var(--text-primary); }
+    .ws-btn--primary { background: rgba(0,212,255,0.1); border-color: rgba(0,212,255,0.4); color: var(--accent-primary); }
+    .ws-btn--primary:hover { background: rgba(0,212,255,0.18); border-color: var(--accent-primary); box-shadow: 0 0 18px rgba(0,212,255,0.2); }
+    .ws-btn--danger  { background: rgba(255,59,92,0.08); border-color: rgba(255,59,92,0.3); color: var(--accent-red); }
+    .ws-btn--danger:hover { background: rgba(255,59,92,0.15); border-color: var(--accent-red); box-shadow: 0 0 14px rgba(255,59,92,0.15); }
+
+    .panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-dim);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    {% block extra_styles %}{% endblock %}
+  </style>
+</head>
+
+<body>
+
+  <!-- ══════════════════ HEADER ══════════════════ -->
+  <header class="ws-header" role="banner">
+    <div class="ws-header__inner">
+
+      <a href="/" class="ws-logo" aria-label="Web Sploit – Home">
+
+        <div class="ws-logo__icon">
+          <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <polygon points="18,2 32,10 32,26 18,34 4,26 4,10"
+              stroke="var(--accent-primary)" stroke-width="1.5" fill="rgba(0,212,255,0.05)"/>
+            <circle cx="18" cy="18" r="6"
+              stroke="var(--accent-primary)" stroke-width="1.2" fill="none" opacity="0.9"/>
+            <line x1="18" y1="8"  x2="18" y2="12" stroke="var(--accent-primary)" stroke-width="1.2"/>
+            <line x1="18" y1="24" x2="18" y2="28" stroke="var(--accent-primary)" stroke-width="1.2"/>
+            <line x1="8"  y1="18" x2="12" y2="18" stroke="var(--accent-primary)" stroke-width="1.2"/>
+            <line x1="24" y1="18" x2="28" y2="18" stroke="var(--accent-primary)" stroke-width="1.2"/>
+            <circle cx="18" cy="18" r="2" fill="var(--accent-primary)"/>
+          </svg>
+        </div>
+
+        <div class="ws-logo__wordmark">
+          <span class="ws-logo__name">WebSploit</span>
+        </div>
+
+      </a>
+
+    </div>
+  </header>
+  <!-- ══════════════════ END HEADER ══════════════════ -->
+
+
+  <!-- ══════════════════ PAGE CONTENT ══════════════════ -->
+  <main class="ws-content" id="main-content" role="main">
+    {% block content %}{% endblock %}
+  </main>
+  <!-- ══════════════════ END PAGE CONTENT ══════════════════ -->
+
+  {% block extra_js %}{% endblock %}
+
+</body>
+</html>

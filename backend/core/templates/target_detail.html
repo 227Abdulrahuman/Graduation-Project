@@ -1,0 +1,526 @@
+{% extends "base.html" %}
+
+{% block title %}{{ target.name }} — Web Sploit{% endblock %}
+
+{% block extra_styles %}
+  /* ── Header ── */
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .target-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .target-icon-large {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-sm);
+    background: rgba(0, 212, 255, 0.08);
+    border: 1px solid var(--accent-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-primary);
+    flex-shrink: 0;
+  }
+
+  .page-title {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+  }
+
+  .target-meta {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .target-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ── Tabs ── */
+  .tabs-container {
+    border-bottom: 1px solid var(--border-mid);
+    margin-bottom: 24px;
+    display: flex;
+    gap: 32px;
+  }
+
+  .tab-btn {
+    background: none;
+    border: none;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 0 0 16px 0;
+    cursor: pointer;
+    position: relative;
+    transition: color var(--transition);
+  }
+
+  .tab-btn:hover {
+    color: var(--text-primary);
+  }
+
+  .tab-btn.active {
+    color: var(--accent-primary);
+  }
+
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent-primary);
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+  }
+
+  .tab-badge {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-dim);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    margin-left: 8px;
+    color: var(--text-secondary);
+  }
+
+  .tab-btn.active .tab-badge {
+    border-color: rgba(0, 212, 255, 0.3);
+    color: var(--accent-primary);
+  }
+
+  /* ── Tab Content ── */
+  .tab-content {
+    display: none;
+  }
+
+  .tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Toolbar (Sorting & Filtering) ── */
+  .table-toolbar {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .toolbar-input, .toolbar-select {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-dim);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 14px;
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    outline: none;
+    transition: border-color var(--transition);
+    min-width: 200px;
+  }
+
+  .toolbar-select option {
+    background: var(--bg-surface, #1a1b26);
+    color: var(--text-primary);
+  }
+
+  .toolbar-input:focus, .toolbar-select:focus {
+    border-color: var(--accent-primary);
+  }
+
+  .toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid var(--border-dim);
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--text-dim);
+    transition: all var(--transition);
+  }
+
+  .toolbar-btn:hover {
+    background: var(--bg-elevated);
+    border-color: var(--border-mid);
+    color: var(--text-primary);
+  }
+
+  /* ── Table Styles ── */
+  .panel {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--bg-surface, rgba(255, 255, 255, 0.02));
+    border: 1px solid var(--border-mid);
+    border-radius: var(--radius-md);
+  }
+
+  .target-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+    min-width: 900px;
+  }
+
+  .target-table thead tr { border-bottom: 1px solid var(--border-mid); }
+
+  .target-table th {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 16px 24px;
+    text-align: left;
+    white-space: nowrap;
+    background: rgba(0,0,0,0.2);
+  }
+
+  .target-table td {
+    padding: 16px 24px;
+    vertical-align: middle;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-dim);
+  }
+
+  .target-table tbody tr:last-child td { border-bottom: none; }
+  .target-table tbody tr:hover { background: var(--bg-elevated); }
+
+  /* ── Status Indicators & Badges ── */
+  .status-code {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+  .status-code.success { color: var(--accent-green); background: rgba(0,255,157,0.1); }
+  .status-code.redirect { color: var(--accent-primary); background: rgba(0,212,255,0.1); }
+  .status-code.client-error { color: #ff9800; background: rgba(255,152,0,0.1); }
+  .status-code.server-error { color: var(--accent-red); background: rgba(255,59,92,0.1); }
+  .status-code.unknown { color: var(--text-dim); background: var(--bg-elevated); }
+
+  .tech-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-mid);
+    margin-right: 4px;
+    margin-bottom: 4px;
+    color: var(--text-secondary);
+  }
+
+  .text-muted { color: var(--text-dim); font-size: 14px; }
+  .font-mono { font-family: var(--font-mono); }
+
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="target-title-wrapper">
+    <div class="target-icon-large">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="22"/><line x1="2" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="22" y2="12"/>
+      </svg>
+    </div>
+    <div>
+      <h1 class="page-title">{{ target.name }}</h1>
+      <div class="target-meta">
+        {% if target.type %}<span>TYPE: {{ target.type }}</span> • {% endif %}
+        {% if target.platform %}<span>PLATFORM: {{ target.platform }}</span> • {% endif %}
+        <a href="{% url 'home' %}" style="color: var(--accent-primary); text-decoration: none;">&larr; Back to Targets</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tabs-container">
+  <button class="tab-btn active" onclick="switchTab('subdomains', this)">
+    Subdomains <span class="tab-badge">{{ subdomains|length }}</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('webapps', this)">
+    Web Apps <span class="tab-badge">{{ webapps|length }}</span>
+  </button>
+</div>
+
+<div id="subdomains" class="tab-content active">
+
+  <div class="table-toolbar">
+    <select id="domainFilterSub" class="toolbar-select" onchange="filterSubdomains()">
+      <option value="all">Domain: All</option>
+      {% for dom in target.domains.all %}
+        <option value="{{ dom.hostname }}">{{ dom.hostname }}</option>
+      {% endfor %}
+    </select>
+
+    <select id="ipFilter" class="toolbar-select" onchange="filterSubdomains()">
+      <option value="all">IP Address: All</option>
+      <option value="yes">Has IP</option>
+      <option value="no">No IP</option>
+    </select>
+
+    <select id="cnameFilter" class="toolbar-select" onchange="filterSubdomains()">
+      <option value="all">CNAME: All</option>
+      <option value="yes">Has CNAME</option>
+      <option value="no">No CNAME</option>
+    </select>
+  </div>
+
+  <div class="panel">
+    <table class="target-table">
+      <thead>
+        <tr>
+          <th style="width: 50px;">#</th>
+          <th>Hostname</th>
+          <th>IP Address</th>
+          <th>CNAME</th>
+        </tr>
+      </thead>
+      <tbody id="subdomainsTbody">
+        {% for sub in subdomains %}
+        <tr class="subdomain-row"
+            data-domain="{{ sub.domain.hostname }}"
+            data-has-ip="{% if sub.ip %}yes{% else %}no{% endif %}"
+            data-has-cname="{% if sub.cname %}yes{% else %}no{% endif %}">
+          <td class="font-mono text-muted">{{ forloop.counter }}</td>
+          <td class="font-mono" style="color: var(--accent-primary);">
+            {{ sub.hostname }}
+            <br>
+            <span style="font-size: 11px; color: var(--text-dim);">{{ sub.domain.hostname }}</span>
+          </td>
+          <td class="font-mono">{{ sub.ip|default:"<span class='text-muted'>—</span>"|safe }}</td>
+          <td class="font-mono">{{ sub.cname|default:"<span class='text-muted'>—</span>"|safe }}</td>
+        </tr>
+        {% empty %}
+        <tr id="emptySubdomainRow">
+          <td colspan="4" style="text-align: center; padding: 40px;" class="text-muted">No subdomains found for this target.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div id="webapps" class="tab-content">
+
+  <div class="table-toolbar">
+    <select id="domainFilterApp" class="toolbar-select" onchange="filterWebApps()">
+      <option value="all">Domain: All</option>
+      {% for dom in target.domains.all %}
+        <option value="{{ dom.hostname }}">{{ dom.hostname }}</option>
+      {% endfor %}
+    </select>
+
+    <input type="text" id="techSearch" class="toolbar-input" placeholder="Search Tech Stack..." onkeyup="filterWebApps()">
+
+    <input type="text" id="statusSearch" class="toolbar-input" placeholder="Status (e.g., 404, 200)" onkeyup="filterWebApps()" style="max-width: 220px;">
+
+    <button class="toolbar-btn" onclick="sortWebApps()" id="sortBtn">
+      Sort Status
+      <svg id="sortIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="panel">
+    <table class="target-table">
+      <thead>
+        <tr>
+          <th style="width: 50px;">#</th>
+          <th>URL</th>
+          <th>Status</th>
+          <th>Title</th>
+          <th>Content Length</th>
+          <th>Tech Stack</th>
+        </tr>
+      </thead>
+      <tbody id="webappsTbody">
+        {% for app in webapps %}
+        <tr class="webapp-row"
+            data-domain="{{ app.subdomain.domain.hostname }}"
+            data-status="{{ app.status_code|default:0 }}"
+            data-tech="{{ app.tech_stack|join:' '|lower }}">
+          <td class="font-mono text-muted">{{ forloop.counter }}</td>
+          <td class="font-mono">
+            <a href="{{ app.url }}" target="_blank" style="color: var(--accent-primary); text-decoration: none;">
+              {{ app.url }}
+            </a>
+          </td>
+
+          <td>
+            {% if app.status_code %}
+              <span class="status-code
+                {% if app.status_code >= 200 and app.status_code < 300 %}success
+                {% elif app.status_code >= 300 and app.status_code < 400 %}redirect
+                {% elif app.status_code >= 400 and app.status_code < 500 %}client-error
+                {% elif app.status_code >= 500 %}server-error
+                {% else %}unknown{% endif %}">
+                {{ app.status_code }}
+              </span>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+
+          <td>{{ app.title|default:"<span class='text-muted'>—</span>"|safe }}</td>
+          <td class="font-mono">{{ app.content_length|default:"<span class='text-muted'>—</span>"|safe }}</td>
+
+          <td>
+            {% if app.tech_stack %}
+              {% for tech in app.tech_stack %}
+                <span class="tech-badge">{{ tech }}</span>
+              {% endfor %}
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr id="emptyWebappRow">
+          <td colspan="6" style="text-align: center; padding: 40px;" class="text-muted">No web applications found for this target.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  // Tab Switching Logic
+  function switchTab(tabId, btnElement) {
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btnElement.classList.add('active');
+  }
+
+  // Subdomains Filtering Logic
+  function filterSubdomains() {
+    const domainFilter = document.getElementById('domainFilterSub').value;
+    const ipFilter = document.getElementById('ipFilter').value;
+    const cnameFilter = document.getElementById('cnameFilter').value;
+    const rows = document.querySelectorAll('.subdomain-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+      const rowDomain = row.getAttribute('data-domain');
+      const hasIp = row.getAttribute('data-has-ip');
+      const hasCname = row.getAttribute('data-has-cname');
+
+      let matchesDomain = (domainFilter === 'all') || (domainFilter === rowDomain);
+      let matchesIp = (ipFilter === 'all') || (ipFilter === hasIp);
+      let matchesCname = (cnameFilter === 'all') || (cnameFilter === hasCname);
+
+      if (matchesDomain && matchesIp && matchesCname) {
+        row.style.display = '';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    const emptyRow = document.getElementById('emptySubdomainRow');
+    if (emptyRow && rows.length > 0) {
+        emptyRow.style.display = visibleCount === 0 ? '' : 'none';
+    }
+  }
+
+  // Web Apps Filtering Logic
+  function filterWebApps() {
+    const domainFilter = document.getElementById('domainFilterApp').value;
+    const techSearchValue = document.getElementById('techSearch').value.toLowerCase();
+    const statusSearchValue = document.getElementById('statusSearch').value.trim();
+    const rows = document.querySelectorAll('.webapp-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+      const rowDomain = row.getAttribute('data-domain');
+      const techText = row.getAttribute('data-tech');
+      const statusStr = row.getAttribute('data-status'); // Treat as string for easy startsWith checking
+
+      let matchesDomain = (domainFilter === 'all') || (domainFilter === rowDomain);
+      let matchesSearch = techText.includes(techSearchValue);
+      let matchesStatus = (statusSearchValue === "") || statusStr.startsWith(statusSearchValue);
+
+      if (matchesDomain && matchesSearch && matchesStatus) {
+        row.style.display = '';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    const emptyRow = document.getElementById('emptyWebappRow');
+    if (emptyRow && rows.length > 0) {
+        emptyRow.style.display = visibleCount === 0 ? '' : 'none';
+    }
+  }
+
+  // Web Apps Sorting Logic
+  let sortAscending = true;
+  function sortWebApps() {
+    const tbody = document.getElementById('webappsTbody');
+    const rows = Array.from(tbody.querySelectorAll('.webapp-row'));
+    const sortIcon = document.getElementById('sortIcon');
+
+    rows.sort((a, b) => {
+      const statusA = parseInt(a.getAttribute('data-status')) || 0;
+      const statusB = parseInt(b.getAttribute('data-status')) || 0;
+      return sortAscending ? statusA - statusB : statusB - statusA;
+    });
+
+    sortAscending = !sortAscending;
+
+    if (sortAscending) {
+      sortIcon.innerHTML = '<path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/>';
+    } else {
+      sortIcon.innerHTML = '<path d="M7 15l5 5 5-5"/>';
+    }
+
+    rows.forEach(row => tbody.appendChild(row));
+  }
+</script>
+
+{% endblock %}

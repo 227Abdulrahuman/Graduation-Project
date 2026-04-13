@@ -38,5 +38,5 @@ class ArchivedURLsAdmin(admin.ModelAdmin):
 @admin.register(models.Vulnerability)
 class VulnerabilityAdmin(admin.ModelAdmin):
     list_display = ('name', 'location', 'severity', 'type')
-    list_filter = ('subdomain__hostname','web_app__url')
+    list_filter = ('web_app__url',)
 

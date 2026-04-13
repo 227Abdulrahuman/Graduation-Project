@@ -71,7 +71,6 @@ class ArchivedURLs(models.Model):
 
 
 class Vulnerability(models.Model):
-    subdomain = models.ForeignKey(Subdomain, on_delete=models.CASCADE, related_name="vulnerabilities", null=True, blank=True)
     web_app = models.ForeignKey(WebApplication, on_delete=models.CASCADE, related_name="vulnerabilities", null=True, blank=True)
     endpoint = models.ForeignKey(EndPoint, on_delete=models.CASCADE, related_name="endpoint", null=True, blank=True)
     parameter = models.ForeignKey(Parameter, on_delete=models.CASCADE, related_name="parameter", null=True, blank=True)
@@ -82,11 +81,6 @@ class Vulnerability(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(
-                fields=['name', 'subdomain'],
-                name='unique_name_per_subdomain',
-                condition=models.Q(subdomain__isnull=False)
-            ),
             models.UniqueConstraint(
                 fields=['name', 'web_app'],
                 name='unique_name_per_webapp',

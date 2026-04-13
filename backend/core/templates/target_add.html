@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Add Target — Web Sploit{% endblock %}
+
+{% block extra_styles %}
+  /* ── Page header row ── */
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+
+  .page-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-primary);
+  }
+
+  /* ── Form container ── */
+  .form-panel {
+    background: var(--bg-surface, rgba(255, 255, 255, 0.02));
+    border: 1px solid var(--border-mid);
+    border-radius: var(--radius-md);
+    padding: 40px;
+    max-width: 600px;
+  }
+
+  /* ── Form layout ── */
+  .form-group {
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .form-group label {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  /* Combined styling for input, select, and textarea */
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-dim);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    font-size: 16px;
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    transition: all var(--transition);
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    border-color: var(--accent-primary, rgba(0, 212, 255, 0.8));
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.1);
+  }
+
+  .form-group input::placeholder,
+  .form-group textarea::placeholder {
+    color: var(--text-dim);
+    opacity: 0.5;
+  }
+
+  /* Specifically target textarea to ensure it's resizable properly */
+  .form-group textarea {
+    resize: vertical;
+    min-height: 120px;
+    font-family: var(--font-mono); /* Often preferred for lists of domains */
+    line-height: 1.5;
+  }
+
+  /* Dropdown specific styling (fixes some default browser styling) */
+  .form-group select option {
+    background: var(--bg-surface, #1a1b26);
+    color: var(--text-primary);
+  }
+
+  /* ── Form actions ── */
+  .form-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-dim);
+  }
+
+  .btn-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid rgba(0, 212, 255, 0.45);
+    background: rgba(0, 212, 255, 0.08);
+    color: var(--accent-primary);
+    transition: all var(--transition);
+  }
+
+  .btn-submit:hover {
+    background: rgba(0, 212, 255, 0.16);
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.18);
+  }
+
+  .btn-cancel {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 24px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    border: 1px solid var(--border-mid);
+    background: transparent;
+    color: var(--text-dim);
+    transition: all var(--transition);
+  }
+
+  .btn-cancel:hover {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+  }
+
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <h1 class="page-title">Add New Target</h1>
+</div>
+
+<div class="form-panel">
+  <form method="POST" action="{% url 'target_add' %}">
+    {% csrf_token %}
+
+    <div class="form-group">
+      <label for="name">Target Name *</label>
+      <input type="text" id="name" name="name" required placeholder="e.g., Example Corp">
+    </div>
+
+    <div class="form-group">
+      <label for="type">Target Type</label>
+      <select id="type" name="type">
+        <option value="BBP">Bug Bounty Program (BBP)</option>
+        <option value="VDP">Vulnerability Disclosure Program (VDP)</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="platform">Platform</label>
+      <input type="text" id="platform" name="platform" placeholder="e.g., HackerOne, Bugcrowd">
+    </div>
+
+    <div class="form-group">
+      <label for="program_url">Program URL</label>
+      <input type="url" id="program_url" name="program_url" placeholder="https://...">
+    </div>
+
+    <div class="form-group">
+      <label for="domains">In-Scope Domains (One per line)</label>
+      <textarea id="domains" name="domains" placeholder="example.com&#10;api.example.com&#10;corp.example.com"></textarea>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-submit">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" 
+             stroke="currentColor" stroke-width="2.5" 
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+          <polyline points="17 21 17 13 7 13 7 21"></polyline>
+          <polyline points="7 3 7 8 15 8"></polyline>
+        </svg>
+        Save Target
+      </button>
+      
+      <a href="{% url 'home' %}" class="btn-cancel">Cancel</a>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

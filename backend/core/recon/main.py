@@ -41,17 +41,14 @@ def validate_api_keys():
     return invalid_providers
 
 
-def run_recon_pipeline(domain, chunk_size=None):
-    print("###############################################")
+def recon(domain, chunk_size=None):
     print(f"[*] Starting recon pipeline for {domain}")
-    print("###############################################")
 
     print("[*] Validating API keys for paid providers...")
     invalid_keys = validate_api_keys()
 
     if invalid_keys:
         print(f"[-] Pipeline aborted! Invalid API keys detected for: {', '.join(invalid_keys)}")
-        print("###############################################")
         return invalid_keys
 
     print("[+] All API keys are valid.")
@@ -69,8 +66,6 @@ def run_recon_pipeline(domain, chunk_size=None):
     web_fingerprint(domain)
     print()
 
-    print("###############################################")
     print(f"[+] Finished recon pipline for {domain}")
-    print("###############################################")
 
     return True
