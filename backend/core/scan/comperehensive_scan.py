@@ -1,10 +1,7 @@
-from backend.core.enum.crawler import crawl
-from backend.core.enum.parameter_discovery import extract_parameters
 from backend.core.scan.XSS.xss import xss_scan
 from backend.core.scan.path_traversal.path_traversal import path_traversal_scan
 from backend.core.scan.SQLi.sqli import sqli_scan
 from backend.core.scan.open_redirect.open_redirect import open_redirect_scan
-from backend.core.enum.archived_URLs import get_archived_urls
 from backend.core.utilities.declutter import declutter_urls
 from backend.core.utilities.loaders import *
 from backend.core.utilities.url_operations import  count_path_parts
@@ -16,7 +13,7 @@ def comprehensive_scan_init(url, logout=None):
     """
 
     domain = urlparse(url).hostname
-    output_dir = f'/work/backend/core/output/{domain}'
+    output_dir = f'/work/output/{domain}'
     os.makedirs(output_dir, exist_ok=True)
 
     xss_targets_file = f"{output_dir}/xss_scan_targets.txt"
@@ -76,8 +73,13 @@ def comprehensive_scan_init(url, logout=None):
 
 
 def comprehensive_scan(url, auth_headers=None, logout=None):
-    crawl(url, auth_headers=auth_headers, logout=logout)
-    extract_parameters(url,auth_headers=auth_headers,logout=logout)
+    url = url.strip()
+    parsed_url = urlparse(url)
+    url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+
+    from backend.core.scan.webapp_analysis import can_connect
+    if not can_connect(url):
+        return
 
     comprehensive_scan_init(url,logout=logout)
 

@@ -259,6 +259,39 @@
   .text-muted { color: var(--text-dim); font-size: 14px; }
   .font-mono { font-family: var(--font-mono); }
 
+  /* ── Pagination UI ── */
+  .pagination-wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 20px;
+    padding-bottom: 20px;
+  }
+
+  .page-btn {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid var(--border-dim);
+    color: var(--text-primary);
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all var(--transition);
+  }
+
+  .page-btn:hover:not(:disabled) {
+    background: rgba(0, 212, 255, 0.1);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+  }
+
+  .page-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
 {% endblock %}
 
 {% block content %}
@@ -283,43 +316,48 @@
 
 <div class="tabs-container">
   <button class="tab-btn active" onclick="switchTab('subdomains', this)">
-    Subdomains <span class="tab-badge">{{ subdomains|length }}</span>
+    Subdomains <span class="tab-badge" id="subCountBadge">0</span>
   </button>
   <button class="tab-btn" onclick="switchTab('webapps', this)">
-    Web Apps <span class="tab-badge">{{ webapps|length }}</span>
+    Web Apps <span class="tab-badge" id="appCountBadge">0</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('vulnerabilities', this)">
+    Vulnerabilities <span class="tab-badge" id="vulnCountBadge">0</span>
   </button>
 </div>
 
 <div id="subdomains" class="tab-content active">
-
   <div class="table-toolbar">
-    <select id="domainFilterSub" class="toolbar-select" onchange="filterSubdomains()">
+    <select id="domainFilterSub" class="toolbar-select" onchange="fetchSubdomains(1)">
       <option value="all">Domain: All</option>
       {% for dom in target.domains.all %}
         <option value="{{ dom.hostname }}">{{ dom.hostname }}</option>
       {% endfor %}
     </select>
 
-    <select id="ipFilter" class="toolbar-select" onchange="filterSubdomains()">
+    <select id="ipFilter" class="toolbar-select" onchange="fetchSubdomains(1)">
       <option value="all">IP Address: All</option>
       <option value="yes">Has IP</option>
       <option value="no">No IP</option>
     </select>
 
-    <select id="cnameFilter" class="toolbar-select" onchange="filterSubdomains()">
+    <select id="cnameFilter" class="toolbar-select" onchange="fetchSubdomains(1)">
       <option value="all">CNAME: All</option>
       <option value="yes">Has CNAME</option>
       <option value="no">No CNAME</option>
     </select>
 
-    <input type="text" id="hostSearchSub" class="toolbar-input" placeholder="Search Hostname..." onkeyup="filterSubdomains()">
+    <input type="text" id="hostSearchSub" class="toolbar-input" placeholder="Search Hostname..." onkeyup="debounceFetchSubdomains()">
 
     <div style="display: flex; gap: 8px;">
       <select id="portSearch" class="toolbar-select" style="max-width: 140px;">
         <option value="all">Port: All</option>
-        </select>
+        {% for p in available_ports %}
+          <option value="{{ p }}">Port: {{ p }}</option>
+        {% endfor %}
+      </select>
 
-      <input type="text" id="serviceSearch" class="toolbar-input" placeholder="Service (e.g., http)" style="max-width: 180px;" disabled onkeyup="filterSubdomains()">
+      <input type="text" id="serviceSearch" class="toolbar-input" placeholder="Service (e.g., http)" style="max-width: 180px;" disabled onkeyup="debounceFetchSubdomains()">
     </div>
   </div>
 
@@ -331,63 +369,29 @@
           <th>Hostname</th>
           <th>IP Address</th>
           <th>CNAME</th>
-          <th>Ports</th> </tr>
+          <th>Ports</th>
+        </tr>
       </thead>
-      <tbody id="subdomainsTbody">
-        {% for sub in subdomains %}
-        <tr class="subdomain-row"
-            data-domain="{{ sub.domain.hostname }}"
-            data-hostname="{{ sub.hostname|lower }}"
-            data-has-ip="{% if sub.ip %}yes{% else %}no{% endif %}"
-            data-has-cname="{% if sub.cname %}yes{% else %}no{% endif %}"
-            data-ports="{% for p in sub.ports.all %}{{ p.number }} {% endfor %}"
-            data-services="{% for p in sub.ports.all %}{{ p.service|default:''|lower }} {% endfor %}">
-
-          <td class="font-mono text-muted">{{ forloop.counter }}</td>
-          <td class="font-mono" style="color: var(--accent-primary);">
-            {{ sub.hostname }}
-            <br>
-            <span style="font-size: 11px; color: var(--text-dim);">{{ sub.domain.hostname }}</span>
-          </td>
-          <td class="font-mono">{{ sub.ip|default:"<span class='text-muted'>—</span>"|safe }}</td>
-          <td class="font-mono">{{ sub.cname|default:"<span class='text-muted'>—</span>"|safe }}</td>
-          <td>
-            {% if sub.ports.all %}
-                {% for port in sub.ports.all %}
-                    <span class="tech-badge">{{ port.number }}{% if port.service %}/{{ port.service }}{% endif %}</span>
-                {% endfor %}
-            {% else %}
-                <span class="text-muted">—</span>
-            {% endif %}
-          </td>
-        </tr>
-        {% empty %}
-        <tr id="emptySubdomainRow">
-          <td colspan="5" style="text-align: center; padding: 40px;" class="text-muted">No subdomains found for this target.</td>
-        </tr>
-        {% endfor %}
-      </tbody>
+      <tbody id="subdomainsTbody"></tbody>
     </table>
+    <div id="subPagination" class="pagination-wrapper"></div>
   </div>
 </div>
 
 <div id="webapps" class="tab-content">
-
   <div class="table-toolbar">
-    <select id="domainFilterApp" class="toolbar-select" onchange="filterWebApps()">
+    <select id="domainFilterApp" class="toolbar-select" onchange="fetchWebApps(1)">
       <option value="all">Domain: All</option>
       {% for dom in target.domains.all %}
         <option value="{{ dom.hostname }}">{{ dom.hostname }}</option>
       {% endfor %}
     </select>
 
-    <input type="text" id="hostSearchApp" class="toolbar-input" placeholder="Search Hostname..." onkeyup="filterWebApps()">
+    <input type="text" id="hostSearchApp" class="toolbar-input" placeholder="Search Hostname..." onkeyup="debounceFetchWebApps()">
+    <input type="text" id="techSearch" class="toolbar-input" placeholder="Search Tech Stack..." onkeyup="debounceFetchWebApps()">
+    <input type="text" id="statusSearch" class="toolbar-input" placeholder="Status (e.g., 404)" onkeyup="debounceFetchWebApps()" style="max-width: 220px;">
 
-    <input type="text" id="techSearch" class="toolbar-input" placeholder="Search Tech Stack..." onkeyup="filterWebApps()">
-
-    <input type="text" id="statusSearch" class="toolbar-input" placeholder="Status (e.g., 404, 200)" onkeyup="filterWebApps()" style="max-width: 220px;">
-
-    <button class="toolbar-btn" onclick="sortWebApps()" id="sortBtn">
+    <button class="toolbar-btn" onclick="toggleWebAppSort()" id="sortBtn">
       Sort Status
       <svg id="sortIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/>
@@ -407,86 +411,55 @@
           <th>Tech Stack</th>
         </tr>
       </thead>
-      <tbody id="webappsTbody">
-        {% for app in webapps %}
-        <tr class="webapp-row"
-            data-domain="{{ app.subdomain.domain.hostname }}"
-            data-hostname="{% if app.subdomain %}{{ app.subdomain.hostname|lower }}{% else %}{{ app.url|lower }}{% endif %}"
-            data-status="{{ app.status_code|default:0 }}"
-            data-tech="{{ app.tech_stack|join:' '|lower }}">
-          <td class="font-mono text-muted">{{ forloop.counter }}</td>
-          <td class="font-mono">
-            <a href="{{ app.url }}" target="_blank" style="color: var(--accent-primary); text-decoration: none;">
-              {{ app.url }}
-            </a>
-          </td>
-
-          <td>
-            {% if app.status_code %}
-              <span class="status-code
-                {% if app.status_code >= 200 and app.status_code < 300 %}success
-                {% elif app.status_code >= 300 and app.status_code < 400 %}redirect
-                {% elif app.status_code >= 400 and app.status_code < 500 %}client-error
-                {% elif app.status_code >= 500 %}server-error
-                {% else %}unknown{% endif %}">
-                {{ app.status_code }}
-              </span>
-            {% else %}
-              <span class="text-muted">—</span>
-            {% endif %}
-          </td>
-
-          <td>{{ app.title|default:"<span class='text-muted'>—</span>"|safe }}</td>
-          <td class="font-mono">{{ app.content_length|default:"<span class='text-muted'>—</span>"|safe }}</td>
-
-          <td>
-            {% if app.tech_stack %}
-              {% for tech in app.tech_stack %}
-                <span class="tech-badge">{{ tech }}</span>
-              {% endfor %}
-            {% else %}
-              <span class="text-muted">—</span>
-            {% endif %}
-          </td>
-        </tr>
-        {% empty %}
-        <tr id="emptyWebappRow">
-          <td colspan="6" style="text-align: center; padding: 40px;" class="text-muted">No web applications found for this target.</td>
-        </tr>
-        {% endfor %}
-      </tbody>
+      <tbody id="webappsTbody"></tbody>
     </table>
+    <div id="appPagination" class="pagination-wrapper"></div>
+  </div>
+</div>
+
+<div id="vulnerabilities" class="tab-content">
+  <div class="table-toolbar">
+    <select id="severityFilter" class="toolbar-select" onchange="fetchVulnerabilities(1)">
+      <option value="all">Severity: All</option>
+      <option value="critical">Critical</option>
+      <option value="high">High</option>
+      <option value="medium">Medium</option>
+      <option value="low">Low</option>
+      <option value="info">Info</option>
+    </select>
+
+    <input type="text" id="vulnSearch" class="toolbar-input" placeholder="Search Vulnerability..." onkeyup="debounceFetchVulnerabilities()">
+  </div>
+
+  <div class="panel">
+    <table class="target-table">
+      <thead>
+        <tr>
+          <th style="width: 50px;">#</th>
+          <th>Vulnerability Name</th>
+          <th>Severity</th>
+          <th>Web App</th>
+          <th>Endpoint</th>
+          <th>Parameter</th>
+        </tr>
+      </thead>
+      <tbody id="vulnerabilitiesTbody"></tbody>
+    </table>
+    <div id="vulnPagination" class="pagination-wrapper"></div>
   </div>
 </div>
 
 <script>
-  // --- Auto-Populate Ports Dropdown on Load ---
+  const targetId = "{{ target.pk }}";
+  let appSortOrder = 'desc';
+
+  // Initialization
   document.addEventListener("DOMContentLoaded", function() {
-    const portSelect = document.getElementById('portSearch');
-    const rows = document.querySelectorAll('.subdomain-row');
-    const uniquePorts = new Set();
-
-    // Gather all unique ports from the table rows
-    rows.forEach(row => {
-      const ports = row.getAttribute('data-ports').trim().split(/\s+/);
-      ports.forEach(port => {
-        if(port) uniquePorts.add(port);
-      });
-    });
-
-    // Sort numerically
-    const sortedPorts = Array.from(uniquePorts).sort((a, b) => parseInt(a) - parseInt(b));
-
-    // Create options
-    sortedPorts.forEach(port => {
-      const option = document.createElement('option');
-      option.value = port;
-      option.textContent = "Port: " + port;
-      portSelect.appendChild(option);
-    });
+    fetchSubdomains(1);
+    fetchWebApps(1);
+    fetchVulnerabilities(1);
   });
 
-  // Tab Switching Logic
   function switchTab(tabId, btnElement) {
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -497,131 +470,242 @@
   // --- Port/Service Input Toggle Logic ---
   const portInput = document.getElementById('portSearch');
   const serviceInput = document.getElementById('serviceSearch');
-
-  // Change from 'input' to 'change' because it's a select tag now
   portInput.addEventListener('change', function() {
     if (this.value !== 'all') {
-      serviceInput.disabled = false; // Enable service if specific port is selected
+      serviceInput.disabled = false;
     } else {
-      serviceInput.disabled = true;  // Disable service if "All" is selected
-      serviceInput.value = '';       // Clear the service input
+      serviceInput.disabled = true;
+      serviceInput.value = '';
     }
-    filterSubdomains(); // Trigger the table filter update
+    fetchSubdomains(1);
   });
-  // ---------------------------------------
 
-  // Subdomains Filtering Logic
-  function filterSubdomains() {
-    const domainFilter = document.getElementById('domainFilterSub').value;
-    const ipFilter = document.getElementById('ipFilter').value;
-    const cnameFilter = document.getElementById('cnameFilter').value;
-
-    // Search Filters
-    const hostSearchValue = document.getElementById('hostSearchSub').value.toLowerCase();
-    const portSearchValue = document.getElementById('portSearch').value;
-    const serviceSearchValue = document.getElementById('serviceSearch').value.toLowerCase();
-
-    const rows = document.querySelectorAll('.subdomain-row');
-    let visibleCount = 0;
-
-    rows.forEach(row => {
-      const rowDomain = row.getAttribute('data-domain');
-      const rowHostname = row.getAttribute('data-hostname');
-      const hasIp = row.getAttribute('data-has-ip');
-      const hasCname = row.getAttribute('data-has-cname');
-
-      // Split into arrays so "80" doesn't accidentally match "8080"
-      const rowPorts = row.getAttribute('data-ports').trim().split(/\s+/);
-      const rowServices = row.getAttribute('data-services').trim().toLowerCase();
-
-      let matchesDomain = (domainFilter === 'all') || (domainFilter === rowDomain);
-      let matchesIp = (ipFilter === 'all') || (ipFilter === hasIp);
-      let matchesCname = (cnameFilter === 'all') || (cnameFilter === hasCname);
-
-      let matchesHost = rowHostname.includes(hostSearchValue);
-
-      let matchesPortAndService = true;
-      if (portSearchValue !== "all") {
-        matchesPortAndService = rowPorts.includes(portSearchValue); // Exact match the port number
-
-        // If a service is typed in, it must match too
-        if (matchesPortAndService && serviceSearchValue !== "") {
-          matchesPortAndService = rowServices.includes(serviceSearchValue);
-        }
-      }
-
-      if (matchesDomain && matchesIp && matchesCname && matchesHost && matchesPortAndService) {
-        row.style.display = '';
-        visibleCount++;
-      } else {
-        row.style.display = 'none';
-      }
-    });
-
-    const emptyRow = document.getElementById('emptySubdomainRow');
-    if (emptyRow && rows.length > 0) {
-        emptyRow.style.display = visibleCount === 0 ? '' : 'none';
-    }
+  // --- Debounce Utility (prevents API spam when typing fast) ---
+  let debounceTimer;
+  function debounce(func, delay = 300) {
+    return function() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => func(), delay);
+    };
   }
 
-  // Web Apps Filtering Logic
-  function filterWebApps() {
-    const domainFilter = document.getElementById('domainFilterApp').value;
+  const debounceFetchSubdomains = debounce(() => fetchSubdomains(1));
+  const debounceFetchWebApps = debounce(() => fetchWebApps(1));
+  const debounceFetchVulnerabilities = debounce(() => fetchVulnerabilities(1));
 
-    const hostSearchValue = document.getElementById('hostSearchApp').value.toLowerCase();
-    const techSearchValue = document.getElementById('techSearch').value.toLowerCase();
-    const statusSearchValue = document.getElementById('statusSearch').value.trim();
+  // ==================== SUBDOMAINS API CALL ====================
+  async function fetchSubdomains(page) {
+    const domain = document.getElementById('domainFilterSub').value;
+    const ip = document.getElementById('ipFilter').value;
+    const cname = document.getElementById('cnameFilter').value;
+    const host = document.getElementById('hostSearchSub').value;
+    const port = document.getElementById('portSearch').value;
+    const service = document.getElementById('serviceSearch').value;
 
-    const rows = document.querySelectorAll('.webapp-row');
-    let visibleCount = 0;
-
-    rows.forEach(row => {
-      const rowDomain = row.getAttribute('data-domain');
-      const rowHostname = row.getAttribute('data-hostname');
-      const techText = row.getAttribute('data-tech');
-      const statusStr = row.getAttribute('data-status'); // Treat as string for easy startsWith checking
-
-      let matchesDomain = (domainFilter === 'all') || (domainFilter === rowDomain);
-      let matchesHost = rowHostname.includes(hostSearchValue);
-      let matchesSearch = techText.includes(techSearchValue);
-      let matchesStatus = (statusSearchValue === "") || statusStr.startsWith(statusSearchValue);
-
-      if (matchesDomain && matchesHost && matchesSearch && matchesStatus) {
-        row.style.display = '';
-        visibleCount++;
-      } else {
-        row.style.display = 'none';
-      }
+    const params = new URLSearchParams({
+      page: page,
+      domain: domain,
+      ip: ip,
+      cname: cname,
+      host: host,
+      port: port,
+      service: service
     });
 
-    const emptyRow = document.getElementById('emptyWebappRow');
-    if (emptyRow && rows.length > 0) {
-        emptyRow.style.display = visibleCount === 0 ? '' : 'none';
+    const response = await fetch(`/api/targets/${targetId}/subdomains/?` + params.toString());
+    const data = await response.json();
+
+    document.getElementById('subCountBadge').innerText = data.total_count;
+
+    const tbody = document.getElementById('subdomainsTbody');
+    tbody.innerHTML = '';
+
+    if (data.results.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 40px;" class="text-muted">No subdomains match your filters.</td></tr>`;
+    } else {
+      data.results.forEach((sub, index) => {
+        const globalIndex = ((data.current_page - 1) * 500) + index + 1;
+
+        let portsHtml = sub.ports.map(p => `<span class="tech-badge">${p}</span>`).join('') || `<span class="text-muted">—</span>`;
+        let ipHtml = sub.ip ? sub.ip : `<span class='text-muted'>—</span>`;
+        let cnameHtml = sub.cname ? sub.cname : `<span class='text-muted'>—</span>`;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="font-mono text-muted">${globalIndex}</td>
+          <td class="font-mono" style="color: var(--accent-primary);">
+            ${sub.hostname}<br>
+            <span style="font-size: 11px; color: var(--text-dim);">${sub.domain}</span>
+          </td>
+          <td class="font-mono">${ipHtml}</td>
+          <td class="font-mono">${cnameHtml}</td>
+          <td>${portsHtml}</td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
+
+    renderPaginationUI(data.total_pages, data.current_page, 'subPagination', 'fetchSubdomains');
   }
 
-  // Web Apps Sorting Logic
-  let sortAscending = true;
-  function sortWebApps() {
-    const tbody = document.getElementById('webappsTbody');
-    const rows = Array.from(tbody.querySelectorAll('.webapp-row'));
+  // ==================== WEB APPS API CALL ====================
+  function toggleWebAppSort() {
+    appSortOrder = appSortOrder === 'desc' ? 'asc' : 'desc';
     const sortIcon = document.getElementById('sortIcon');
-
-    rows.sort((a, b) => {
-      const statusA = parseInt(a.getAttribute('data-status')) || 0;
-      const statusB = parseInt(b.getAttribute('data-status')) || 0;
-      return sortAscending ? statusA - statusB : statusB - statusA;
-    });
-
-    sortAscending = !sortAscending;
-
-    if (sortAscending) {
+    if (appSortOrder === 'asc') {
       sortIcon.innerHTML = '<path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/>';
     } else {
       sortIcon.innerHTML = '<path d="M7 15l5 5 5-5"/>';
     }
+    fetchWebApps(1);
+  }
 
-    rows.forEach(row => tbody.appendChild(row));
+  async function fetchWebApps(page) {
+    const domain = document.getElementById('domainFilterApp').value;
+    const host = document.getElementById('hostSearchApp').value;
+    const tech = document.getElementById('techSearch').value;
+    const status = document.getElementById('statusSearch').value;
+
+    const params = new URLSearchParams({
+      page: page,
+      domain: domain,
+      host: host,
+      tech: tech,
+      status: status,
+      sort: appSortOrder
+    });
+
+    const response = await fetch(`/api/targets/${targetId}/webapps/?` + params.toString());
+    const data = await response.json();
+
+    document.getElementById('appCountBadge').innerText = data.total_count;
+
+    const tbody = document.getElementById('webappsTbody');
+    tbody.innerHTML = '';
+
+    if (data.results.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 40px;" class="text-muted">No web applications match your filters.</td></tr>`;
+    } else {
+      data.results.forEach((app, index) => {
+        const globalIndex = ((data.current_page - 1) * 500) + index + 1;
+
+        let statusClass = 'unknown';
+        if (app.status_code >= 200 && app.status_code < 300) statusClass = 'success';
+        else if (app.status_code >= 300 && app.status_code < 400) statusClass = 'redirect';
+        else if (app.status_code >= 400 && app.status_code < 500) statusClass = 'client-error';
+        else if (app.status_code >= 500) statusClass = 'server-error';
+
+        let statusHtml = app.status_code ? `<span class="status-code ${statusClass}">${app.status_code}</span>` : `<span class="text-muted">—</span>`;
+        let techHtml = app.tech_stack.map(t => `<span class="tech-badge">${t}</span>`).join('') || `<span class="text-muted">—</span>`;
+        let titleHtml = app.title ? app.title : `<span class='text-muted'>—</span>`;
+        let lengthHtml = app.content_length ? app.content_length : `<span class='text-muted'>—</span>`;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="font-mono text-muted">${globalIndex}</td>
+          <td class="font-mono">
+            <a href="/webapps/${app.id}/" style="color: var(--accent-primary); text-decoration: none;">${app.url}</a>
+          </td>
+          <td>${statusHtml}</td>
+          <td>${titleHtml}</td>
+          <td class="font-mono">${lengthHtml}</td>
+          <td>${techHtml}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    renderPaginationUI(data.total_pages, data.current_page, 'appPagination', 'fetchWebApps');
+  }
+
+  // ==================== VULNERABILITIES API CALL ====================
+async function fetchVulnerabilities(page) {
+  const severity = document.getElementById('severityFilter').value;
+  const search = document.getElementById('vulnSearch').value;
+
+  const params = new URLSearchParams({
+    page: page,
+    severity: severity,
+    search: search
+  });
+
+  const response = await fetch(`/api/targets/${targetId}/vulnerabilities/?` + params.toString());
+  const data = await response.json();
+
+  document.getElementById('vulnCountBadge').innerText = data.total_count;
+
+  const tbody = document.getElementById('vulnerabilitiesTbody');
+  tbody.innerHTML = '';
+
+  if (data.results.length === 0) {
+    // Changed colspan from 5 to 6 to match the new table headers
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 40px;" class="text-muted">No vulnerabilities match your filters.</td></tr>`;
+  } else {
+    data.results.forEach((vuln, index) => {
+      const globalIndex = ((data.current_page - 1) * 500) + index + 1;
+
+      let sevClass = 'unknown';
+      let sevText = vuln.severity ? vuln.severity.toUpperCase() : 'UNKNOWN';
+
+      if (sevText === 'CRITICAL') sevClass = 'server-error';
+      else if (sevText === 'HIGH') sevClass = 'client-error';
+      else if (sevText === 'MEDIUM') sevClass = 'redirect';
+      else if (sevText === 'LOW') sevClass = 'success';
+      else if (sevText === 'INFO') sevClass = 'unknown';
+
+      let severityHtml = `<span class="status-code ${sevClass}">${sevText}</span>`;
+
+      // Handle the newly separated hierarchy data
+      let webAppHtml = (vuln.web_app && vuln.web_app !== '—')
+          ? `<a href="${vuln.web_app}" style="color: var(--accent-primary); text-decoration: none;" target="_blank">${vuln.web_app}</a>`
+          : `<span class='text-muted'>—</span>`;
+
+      let endpointHtml = (vuln.endpoint && vuln.endpoint !== '—')
+          ? vuln.endpoint
+          : `<span class='text-muted'>—</span>`;
+
+      let paramHtml = (vuln.parameter && vuln.parameter !== '—')
+          ? `<span class="tech-badge">${vuln.parameter}</span>`
+          : `<span class='text-muted'>—</span>`;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="font-mono text-muted">${globalIndex}</td>
+        <td style="color: var(--text-primary); font-weight: 600;">${vuln.name}</td>
+        <td>${severityHtml}</td>
+        <td class="font-mono">${webAppHtml}</td>
+        <td class="font-mono">${endpointHtml}</td>
+        <td>${paramHtml}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  renderPaginationUI(data.total_pages, data.current_page, 'vulnPagination', 'fetchVulnerabilities');
+}
+  // ==================== SHARED PAGINATION BUILDER ====================
+  function renderPaginationUI(totalPages, currentPage, containerId, fetchFuncName) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+
+      if (totalPages <= 1) return;
+
+      const prevDisabled = currentPage === 1 ? 'disabled' : '';
+      const nextDisabled = currentPage === totalPages ? 'disabled' : '';
+
+      container.innerHTML = `
+          <button class="page-btn" ${prevDisabled} onclick="${fetchFuncName}(${currentPage - 1})">
+              &larr; Prev
+          </button>
+
+          <span style="font-family: var(--font-mono); font-size: 13px; color: var(--text-dim); display: flex; align-items: center;">
+              Page <span style="color: var(--text-primary); margin: 0 4px;">${currentPage}</span> of ${totalPages}
+          </span>
+
+          <button class="page-btn" ${nextDisabled} onclick="${fetchFuncName}(${currentPage + 1})">
+              Next &rarr;
+          </button>
+      `;
   }
 </script>
 

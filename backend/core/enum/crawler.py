@@ -15,7 +15,7 @@ def crawl(url, auth_headers=None, logout=None):
         print(f"[-] Not a valid url {url}")
         return
 
-    out_dir = f'/work/backend/core/output/{hostname}'
+    out_dir = f'/work/output/{hostname}'
     out_file = f'{out_dir}/crawler.json'
     os.makedirs(out_dir, exist_ok=True)
 

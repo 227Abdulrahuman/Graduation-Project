@@ -16,7 +16,7 @@ backend/output/
 backend/resources/cookie.txt
 #Keys
 .env
-
+GEMINI.md
 
 # Logs
 logs

@@ -16,8 +16,12 @@ RUN apt-get update && apt-get install -y \
     wget \
     build-essential \
     nmap \
+    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+RUN npm install -g @google/gemini-cli
 
 RUN wget https://go.dev/dl/go1.23.0.linux-amd64.tar.gz && \
     rm -rf /usr/local/go && \

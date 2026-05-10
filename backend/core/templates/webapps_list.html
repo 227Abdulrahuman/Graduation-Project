@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Analyzed Web Apps — Web Sploit{% endblock %}
+
+{% block extra_styles %}
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+
+  .page-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-primary);
+  }
+
+  .filter-bar {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    background: var(--bg-panel);
+    padding: 16px 24px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-dim);
+    align-items: center;
+  }
+
+  .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .filter-group label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .filter-group select {
+    background: var(--bg-void);
+    border: 1px solid var(--border-mid);
+    color: var(--text-primary);
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    outline: none;
+  }
+
+  .target-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  .target-table th {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 12px 10px 20px 10px;
+    text-align: left;
+  }
+
+  .target-table td {
+    padding: 16px 10px;
+    vertical-align: middle;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-dim);
+  }
+
+  .target-table tbody tr {
+    cursor: pointer;
+    transition: background var(--transition);
+  }
+
+  .target-table tbody tr:hover { background: var(--bg-elevated); }
+
+  .status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+  }
+
+  .status-2xx { background: rgba(0, 255, 157, 0.1); color: var(--accent-green); }
+  .status-3xx { background: rgba(255, 183, 0, 0.1); color: var(--accent-amber); }
+  .status-4xx { background: rgba(255, 59, 92, 0.1); color: var(--accent-red); }
+
+  .tech-pill {
+    display: inline-block;
+    padding: 2px 6px;
+    background: rgba(0, 212, 255, 0.05);
+    border: 1px solid var(--border-mid);
+    border-radius: 3px;
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin: 2px;
+  }
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Analyzed Web Apps</h1>
+</div>
+
+<form method="GET" class="filter-bar">
+  <div class="filter-group">
+    <label>Target</label>
+    <select name="target" onchange="this.form.submit()">
+      <option value="all">All Targets</option>
+      {% for t in targets %}
+        <option value="{{ t.id }}" {% if selected_target == t.id|stringformat:"s" %}selected{% endif %}>{{ t.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="filter-group">
+    <label>Domain</label>
+    <select name="domain" onchange="this.form.submit()">
+      <option value="all">All Domains</option>
+      {% for d in domains %}
+        <option value="{{ d.id }}" {% if selected_domain == d.id|stringformat:"s" %}selected{% endif %}>{{ d.hostname }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  
+  <a href="{% url 'webapps_list' %}" class="ws-btn ws-btn--ghost" style="margin-left: auto;">Reset Filters</a>
+</form>
+
+<div class="panel">
+  <table class="target-table">
+    <thead>
+      <tr>
+        <th style="padding-left: 24px;">URL</th>
+        <th>Status</th>
+        <th>Title</th>
+        <th>Tech Stack</th>
+        <th>Target / Domain</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for app in apps %}
+      <tr onclick="window.location='{% url 'webapp_detail' app.pk %}'">
+        <td style="padding-left: 24px; color: var(--accent-primary); font-weight: 500;">{{ app.url }}</td>
+        <td>
+          <span class="status-badge 
+            {% if app.status_code >= 200 and app.status_code < 300 %}status-2xx
+            {% elif app.status_code >= 300 and app.status_code < 400 %}status-3xx
+            {% else %}status-4xx{% endif %}">
+            {{ app.status_code }}
+          </span>
+        </td>
+        <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          {{ app.title|default:"—" }}
+        </td>
+        <td>
+          {% for tech in app.tech_stack %}
+            <span class="tech-pill">{{ tech }}</span>
+          {% empty %}
+            —
+          {% endfor %}
+        </td>
+        <td style="font-size: 11px; color: var(--text-dim); padding-right: 24px;">
+          <div>{{ app.subdomain.domain.target.name }}</div>
+          <div>{{ app.subdomain.domain.hostname }}</div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5" style="text-align: center; padding: 48px; color: var(--text-dim);">
+          No analyzed web apps found.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

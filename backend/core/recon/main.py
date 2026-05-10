@@ -42,7 +42,7 @@ def validate_api_keys():
     return invalid_providers
 
 
-def recon(domain, chunk_size=None):
+def recon(domain, chunk_size=None, multiplicity=3):
     print(f"[*] Starting recon pipeline for {domain}")
 
     print("[*] Validating API keys for paid providers...")
@@ -59,7 +59,7 @@ def recon(domain, chunk_size=None):
     print()
 
     if chunk_size is not None:
-        generate_permutations(domain, chunk_size)
+        generate_permutations(domain, chunk_size, multiplicity=multiplicity)
         print()
 
     dns_recon(domain)

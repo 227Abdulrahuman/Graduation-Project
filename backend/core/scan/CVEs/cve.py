@@ -7,7 +7,7 @@ from backend.core.scan.notify.notify import notify_discord
 
 def cve_scan(domain):
 
-    out_dir = f'/work/backend/core/output/{domain}'
+    out_dir = f'/work/output/{domain}'
     os.makedirs(out_dir, exist_ok=True)
     targets_file = f'{out_dir}/urls.txt'
 

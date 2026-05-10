@@ -40,6 +40,7 @@ class WebApplication(models.Model):
     tech_stack = models.JSONField(default=list,null=True, blank=True)
     location = models.CharField(max_length=1000,null=True, blank=True)
     title = models.CharField(max_length=1000,null=True, blank=True)
+    analyzed = models.BooleanField(default=False)
 
     def __str__(self):
         return self.url

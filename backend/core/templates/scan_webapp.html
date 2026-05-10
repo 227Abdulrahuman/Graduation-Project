@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Recon Scan — Web Sploit{% endblock %}
+{% block title %}Web App Analysis — Web Sploit{% endblock %}
 
 {% block extra_styles %}
   .page-header {
     margin-bottom: 32px;
-    text-align: center; /* Centers the title text */
+    text-align: center;
   }
 
   .page-title {
@@ -23,7 +23,7 @@
     border-radius: var(--radius-md);
     padding: 40px;
     max-width: 600px;
-    margin: 0 auto; /* Centers the box horizontally */
+    margin: 0 auto;
   }
 
   .form-group {
@@ -31,7 +31,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    text-align: left; /* Ensures labels/inputs inside stay left-aligned */
+    text-align: left;
   }
 
   .form-group label {
@@ -43,19 +43,27 @@
     color: var(--text-dim);
   }
 
-  .form-group input {
+  .form-group input, .form-group textarea {
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid var(--border-dim);
     border-radius: var(--radius-sm);
     padding: 14px 16px;
-    font-size: 16px;
+    font-size: 14px;
     color: var(--text-primary);
     font-family: var(--font-mono);
     transition: all var(--transition);
     outline: none;
+    width: 100%;
+    box-sizing: border-box;
   }
 
-  .form-group input:focus {
+  .form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.5;
+  }
+
+  .form-group input:focus, .form-group textarea:focus {
     border-color: var(--accent-primary, rgba(0, 212, 255, 0.8));
     box-shadow: 0 0 10px rgba(0, 212, 255, 0.1);
   }
@@ -195,40 +203,36 @@
 
 {% block content %}
 <div class="page-header">
-  <h1 class="page-title">Reconnaissance Scan</h1>
+  <h1 class="page-title">Web App Analysis</h1>
 </div>
 
 <div class="scan-panel">
   <div id="scan-form-container">
-    <form id="reconForm">
+    <form id="webappForm">
       {% csrf_token %}
+
       <div class="form-group">
-        <label for="domain">Target Domain *</label>
-        <input type="text" id="domain" name="domain" placeholder="e.g., example.com" required>
+        <label for="url">Target URL *</label>
+        <input type="url" id="url" name="url" placeholder="https://example.com" required>
       </div>
 
       <div class="form-group">
-        <label for="chunk_size">Permutation Chunk Size (Optional)</label>
-        <input type="number" id="chunk_size" name="chunk_size" placeholder="e.g., 100">
-        <span style="font-size: 12px; color: var(--text-dim); margin-top: 4px;">Leave blank to skip permutations or use default.</span>
+        <label for="logout">Logout Keyword / Path (Optional)</label>
+        <input type="text" id="logout" name="logout" placeholder="e.g., /logout or signout">
+        <span style="font-size: 12px; color: var(--text-dim); margin-top: 4px;">Prevent the crawler from invalidating the session.</span>
       </div>
 
       <div class="form-group">
-        <label for="multiplicity">Permutation Multiplicity (Optional)</label>
-        <input type="number" id="multiplicity" name="multiplicity" placeholder="e.g., 3" min="1">
-        <span style="font-size: 12px; color: var(--text-dim); margin-top: 4px;">Target multiplier for the number of generated permutations per prompt (Default: 3).</span>
-      </div>
-
-      <div class="form-group">
-        <label for="cookie_content">SecurityTrails Cookie Content (Optional)</label>
-        <textarea id="cookie_content" name="cookie_content" placeholder="Paste full curl command or cookie contents here..." style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-dim); border-radius: var(--radius-sm); padding: 14px 16px; font-size: 14px; color: var(--text-primary); font-family: var(--font-mono); outline: none; resize: vertical; min-height: 100px;"></textarea>
+        <label for="auth_headers">Custom Headers (Optional)</label>
+        <textarea id="auth_headers" name="auth_headers" placeholder="Authorization: Bearer eyJhbGci...&#10;Cookie: session_id=123abc..."></textarea>
+        <span style="font-size: 12px; color: var(--text-dim); margin-top: 4px;">Enter one header per line.</span>
       </div>
 
       <button type="submit" class="btn-submit">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polygon points="5 3 19 12 5 21 5 3"></polygon>
         </svg>
-        Execute Pipeline
+        Execute Analysis
       </button>
     </form>
 
@@ -241,7 +245,7 @@
     <div id="loading-spinner" class="spinner"></div>
     <div id="final-icon" class="status-icon" style="display: none;"></div>
 
-    <div id="status-text" class="status-text">Initializing scan parameters...</div>
+    <div id="status-text" class="status-text">Initializing analysis parameters...</div>
 
     <div id="terminal-window" class="terminal-window">
       <ul id="log-list"></ul>
@@ -250,10 +254,10 @@
     <div class="form-actions-wrapper">
         <button type="button" id="btn-cancel-scan" class="btn-cancel-task" style="display: none;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-          Cancel Scan
+          Cancel Analysis
         </button>
 
-        <a href="{% url 'scan_recon' %}" id="btn-return" class="btn-back" style="display: none;">&larr; Start Another Scan</a>
+        <a href="{% url 'scan_webapp' %}" id="btn-return" class="btn-back" style="display: none;">&larr; Start Another Analysis</a>
     </div>
   </div>
 </div>
@@ -264,31 +268,26 @@
   let currentTaskId = null;
   let pollIntervalId = null;
 
-  document.getElementById('reconForm').addEventListener('submit', async function(e) {
+  document.getElementById('webappForm').addEventListener('submit', async function(e) {
     e.preventDefault();
 
-    // Reset log counter on new submission
     lastLogCount = 0;
     currentTaskId = null;
     document.getElementById('log-list').innerHTML = '';
 
-    // Hide form, show status
     document.getElementById('scan-form-container').style.display = 'none';
     document.getElementById('scan-status-container').style.display = 'block';
 
     // Hide the start again button, show the cancel button
     document.getElementById('btn-return').style.display = 'none';
     document.getElementById('btn-cancel-scan').style.display = 'inline-flex';
-    document.getElementById('status-text').innerText = 'Validating API Keys and Initiating Recon Pipeline...';
+    document.getElementById('status-text').innerText = 'Starting Web Application Analysis...';
 
-    // Get the inputs
-    const domain = document.getElementById('domain').value;
-    const chunkSize = document.getElementById('chunk_size').value;
-    const multiplicity = document.getElementById('multiplicity').value;
-    const cookieContent = document.getElementById('cookie_content').value;
+    const url = document.getElementById('url').value;
+    const logout = document.getElementById('logout').value;
+    const authHeaders = document.getElementById('auth_headers').value;
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-    // Send POST request to start task
     const response = await fetch(window.location.href, {
       method: 'POST',
       headers: {
@@ -296,10 +295,9 @@
         'X-CSRFToken': csrfToken
       },
       body: new URLSearchParams({
-        'domain': domain,
-        'chunk_size': chunkSize,
-        'multiplicity': multiplicity,
-        'cookie_content': cookieContent
+        'url': url,
+        'logout': logout,
+        'auth_headers': authHeaders
       })
     });
 
@@ -333,31 +331,27 @@
 
     // Update UI
     const li = document.createElement('li');
-    li.textContent = "> [!] User sent interrupt signal. Pipeline aborted.";
+    li.textContent = "> [!] User sent interrupt signal. Analysis aborted.";
     li.style.color = "var(--accent-red)";
     document.getElementById('log-list').appendChild(li);
 
-    showError("Scan was cancelled manually.");
+    showError("Analysis was cancelled manually.");
   });
 
   function pollTaskStatus(taskId) {
-    // Poll faster (every 1.5 seconds) to make the terminal feel responsive
     pollIntervalId = setInterval(async () => {
       const response = await fetch(`/task-status/${taskId}/`);
       const data = await response.json();
 
-      // Handle streaming logs
       if ((data.state === 'PROGRESS' || data.state === 'SUCCESS') && data.logs) {
         if (data.logs.length > lastLogCount) {
           document.getElementById('terminal-window').style.display = 'block';
           const logList = document.getElementById('log-list');
 
-          // Append only new logs
           for (let i = lastLogCount; i < data.logs.length; i++) {
             const li = document.createElement('li');
             li.textContent = "> " + data.logs[i];
 
-            // Color-code the output based on your Python print markers
             if (data.logs[i].includes('[+]')) {
                 li.style.color = "var(--accent-green)";
             } else if (data.logs[i].includes('[-]')) {
@@ -371,24 +365,17 @@
 
           lastLogCount = data.logs.length;
 
-          // Auto-scroll the terminal to the bottom
           const terminal = document.getElementById('terminal-window');
           terminal.scrollTop = terminal.scrollHeight;
         }
       }
 
-      // Handle UI states
       if (data.state === 'PENDING' || data.state === 'STARTED' || data.state === 'PROGRESS') {
-        document.getElementById('status-text').innerText = 'Scan is actively running. Streaming live logs...';
+        document.getElementById('status-text').innerText = 'Analysis is actively running. Streaming live logs...';
       }
       else if (data.state === 'SUCCESS') {
         clearInterval(pollIntervalId);
-
-        if (data.result === true) {
-          showSuccess("Recon pipeline completed successfully!");
-        } else if (Array.isArray(data.result)) {
-          showError(`Pipeline Aborted! Invalid API keys detected for:<br><br><strong style="color:white;">${data.result.join(', ')}</strong>`);
-        }
+        showSuccess("Web App Analysis completed successfully!");
       }
       else if (data.state === 'FAILURE' || data.state === 'REVOKED') {
         clearInterval(pollIntervalId);

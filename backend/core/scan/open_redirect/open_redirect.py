@@ -10,7 +10,7 @@ def open_redirect_scan(url, auth_headers=None):
     Scans for Path based and Parameter based open redirect.
     """
     domain = urlparse(url).hostname
-    output_dir = f'/work/backend/core/output/{domain}'
+    output_dir = f'/work/output/{domain}'
     targets_file = f"{output_dir}/open_redirect_targets.txt"
 
     out_file = f"{output_dir}/open_redirect.json"

@@ -10,7 +10,7 @@ def xss_scan(url, auth_headers=None):
     Scans for XSS by testing for Unsanitized reflection of Query Parameters.
     """
     domain = urlparse(url).hostname
-    output_dir = f'/work/backend/core/output/{domain}'
+    output_dir = f'/work/output/{domain}'
     targets_file = f"{output_dir}/xss_scan_targets.txt"
 
     out_file = f"{output_dir}/xss.json"

@@ -10,7 +10,7 @@ def sqli_scan(url, auth_headers=None):
     Scans for error based SQL Injection.
     """
     domain = urlparse(url).hostname
-    output_dir = f'/work/backend/core/output/{domain}'
+    output_dir = f'/work/output/{domain}'
     targets_file = f"{output_dir}/sqli_scan_targets.txt"
 
     out_file = f"{output_dir}/sqli.json"

@@ -1,234 +1,64 @@
 {% extends "base.html" %}
 
-{% block title %}Recon Scan — Web Sploit{% endblock %}
+{% block title %}General Scan — Web Sploit{% endblock %}
 
 {% block extra_styles %}
-  .page-header {
-    margin-bottom: 32px;
-    text-align: center; /* Centers the title text */
-  }
+  .page-header { margin-bottom: 32px; text-align: center; }
+  .page-title { font-family: var(--font-display); font-size: 26px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-primary); }
 
-  .page-title {
-    font-family: var(--font-display);
-    font-size: 26px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-primary);
-  }
+  .scan-panel { background: var(--bg-surface, rgba(255, 255, 255, 0.02)); border: 1px solid var(--border-mid); border-radius: var(--radius-md); padding: 40px; max-width: 600px; margin: 0 auto; }
 
-  .scan-panel {
-    background: var(--bg-surface, rgba(255, 255, 255, 0.02));
-    border: 1px solid var(--border-mid);
-    border-radius: var(--radius-md);
-    padding: 40px;
-    max-width: 600px;
-    margin: 0 auto; /* Centers the box horizontally */
-  }
+  .form-group { margin-bottom: 24px; display: flex; flex-direction: column; gap: 8px; text-align: left; }
+  .form-group label { font-family: var(--font-mono); font-size: 13px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); }
+  .form-group input { background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-dim); border-radius: var(--radius-sm); padding: 14px 16px; font-size: 16px; color: var(--text-primary); font-family: var(--font-mono); transition: all var(--transition); outline: none; }
+  .form-group input:focus { border-color: var(--accent-primary, rgba(0, 212, 255, 0.8)); box-shadow: 0 0 10px rgba(0, 212, 255, 0.1); }
 
-  .form-group {
-    margin-bottom: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    text-align: left; /* Ensures labels/inputs inside stay left-aligned */
-  }
-
-  .form-group label {
-    font-family: var(--font-mono);
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-  }
-
-  .form-group input {
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid var(--border-dim);
-    border-radius: var(--radius-sm);
-    padding: 14px 16px;
-    font-size: 16px;
-    color: var(--text-primary);
-    font-family: var(--font-mono);
-    transition: all var(--transition);
-    outline: none;
-  }
-
-  .form-group input:focus {
-    border-color: var(--accent-primary, rgba(0, 212, 255, 0.8));
-    box-shadow: 0 0 10px rgba(0, 212, 255, 0.1);
-  }
-
-  .btn-submit {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    gap: 8px;
-    padding: 14px 24px;
-    border-radius: var(--radius-sm);
-    font-family: var(--font-mono);
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    cursor: pointer;
-    border: 1px solid rgba(0, 212, 255, 0.45);
-    background: rgba(0, 212, 255, 0.08);
-    color: var(--accent-primary);
-    transition: all var(--transition);
-    margin-top: 16px;
-  }
-
-  .btn-submit:hover {
-    background: rgba(0, 212, 255, 0.16);
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 20px rgba(0, 212, 255, 0.18);
-  }
+  .btn-submit { display: inline-flex; align-items: center; justify-content: center; width: 100%; gap: 8px; padding: 14px 24px; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 14px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; border: 1px solid rgba(0, 212, 255, 0.45); background: rgba(0, 212, 255, 0.08); color: var(--accent-primary); transition: all var(--transition); margin-top: 16px; }
+  .btn-submit:hover { background: rgba(0, 212, 255, 0.16); border-color: var(--accent-primary); box-shadow: 0 0 20px rgba(0, 212, 255, 0.18); }
 
   /* ── NEW: Cancel Button Style ── */
   .btn-cancel-task { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 20px; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; border: 1px solid rgba(255, 59, 92, 0.45); background: rgba(255, 59, 92, 0.08); color: var(--accent-red); transition: all var(--transition); margin-top: 24px; }
   .btn-cancel-task:hover { background: rgba(255, 59, 92, 0.16); border-color: var(--accent-red); box-shadow: 0 0 20px rgba(255, 59, 92, 0.18); }
 
   /* ── Status UI ── */
-  .status-container {
-    display: none;
-    text-align: center;
-    padding: 20px 0;
-  }
-
-  .spinner {
-    border: 3px solid rgba(255,255,255,0.1);
-    border-top: 3px solid var(--accent-primary);
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 20px auto;
-  }
-
+  .status-container { display: none; text-align: center; padding: 20px 0; }
+  .spinner { border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--accent-primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px auto; }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-  .status-text {
-    font-family: var(--font-mono);
-    font-size: 15px;
-    color: var(--text-primary);
-    line-height: 1.5;
-  }
+  .status-text { font-family: var(--font-mono); font-size: 15px; color: var(--text-primary); line-height: 1.5; }
+  .status-icon { width: 48px; height: 48px; margin: 0 auto 20px auto; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+  .status-icon.success { background: rgba(0, 255, 157, 0.1); color: var(--accent-green, #00ff9d); border: 1px solid rgba(0, 255, 157, 0.3); }
+  .status-icon.error { background: rgba(255, 59, 92, 0.1); color: var(--accent-red, #ff3b5c); border: 1px solid rgba(255, 59, 92, 0.3); }
 
-  .status-icon {
-    width: 48px;
-    height: 48px;
-    margin: 0 auto 20px auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-  }
-
-  .status-icon.success {
-    background: rgba(0, 255, 157, 0.1);
-    color: var(--accent-green, #00ff9d);
-    border: 1px solid rgba(0, 255, 157, 0.3);
-  }
-
-  .status-icon.error {
-    background: rgba(255, 59, 92, 0.1);
-    color: var(--accent-red, #ff3b5c);
-    border: 1px solid rgba(255, 59, 92, 0.3);
-  }
-
-  .btn-back {
-    display: inline-block;
-    margin-top: 24px;
-    margin-left: 12px;
-    margin-right: 12px;
-    font-family: var(--font-mono);
-    font-size: 13px;
-    color: var(--text-dim);
-    text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    border-bottom: 1px solid transparent;
-    transition: all var(--transition);
-    text-align: center;
-  }
-
-  .btn-back:hover {
-    color: var(--accent-primary);
-    border-color: var(--accent-primary);
-  }
-
-  .form-actions-wrapper {
-    text-align: center;
-  }
+  .btn-back { display: inline-block; margin-top: 24px; font-family: var(--font-mono); font-size: 13px; color: var(--text-dim); text-decoration: none; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid transparent; transition: all var(--transition); text-align: center; margin-left: 12px; margin-right: 12px;}
+  .btn-back:hover { color: var(--accent-primary); border-color: var(--accent-primary); }
+  .form-actions-wrapper { text-align: center; }
 
   /* Terminal Window Styling */
-  .terminal-window {
-    display: none;
-    background: #0f0f15;
-    border: 1px solid var(--border-mid);
-    border-radius: var(--radius-sm);
-    padding: 16px;
-    margin-top: 24px;
-    text-align: left;
-    height: 300px;
-    overflow-y: auto;
-    font-family: var(--font-mono);
-    font-size: 13px;
-    color: #a9b1d6;
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
-  }
-
-  .terminal-window ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .terminal-window li {
-    margin-bottom: 6px;
-    word-wrap: break-word;
-  }
+  .terminal-window { display: none; background: #0f0f15; border: 1px solid var(--border-mid); border-radius: var(--radius-sm); padding: 16px; margin-top: 24px; text-align: left; height: 300px; overflow-y: auto; font-family: var(--font-mono); font-size: 13px; color: #a9b1d6; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+  .terminal-window ul { list-style: none; margin: 0; padding: 0; }
+  .terminal-window li { margin-bottom: 6px; word-wrap: break-word; }
 {% endblock %}
 
 {% block content %}
 <div class="page-header">
-  <h1 class="page-title">Reconnaissance Scan</h1>
+  <h1 class="page-title">General Scan</h1>
 </div>
 
 <div class="scan-panel">
   <div id="scan-form-container">
-    <form id="reconForm">
+    <form id="generalScanForm">
       {% csrf_token %}
       <div class="form-group">
         <label for="domain">Target Domain *</label>
         <input type="text" id="domain" name="domain" placeholder="e.g., example.com" required>
       </div>
 
-      <div class="form-group">
-        <label for="chunk_size">Permutation Chunk Size (Optional)</label>
-        <input type="number" id="chunk_size" name="chunk_size" placeholder="e.g., 100">
-        <span style="font-size: 12px; color: var(--text-dim); margin-top: 4px;">Leave blank to skip permutations or use default.</span>
-      </div>
-
-      <div class="form-group">
-        <label for="multiplicity">Permutation Multiplicity (Optional)</label>
-        <input type="number" id="multiplicity" name="multiplicity" placeholder="e.g., 3" min="1">
-        <span style="font-size: 12px; color: var(--text-dim); margin-top: 4px;">Target multiplier for the number of generated permutations per prompt (Default: 3).</span>
-      </div>
-
-      <div class="form-group">
-        <label for="cookie_content">SecurityTrails Cookie Content (Optional)</label>
-        <textarea id="cookie_content" name="cookie_content" placeholder="Paste full curl command or cookie contents here..." style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-dim); border-radius: var(--radius-sm); padding: 14px 16px; font-size: 14px; color: var(--text-primary); font-family: var(--font-mono); outline: none; resize: vertical; min-height: 100px;"></textarea>
-      </div>
-
       <button type="submit" class="btn-submit">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polygon points="5 3 19 12 5 21 5 3"></polygon>
         </svg>
-        Execute Pipeline
+        Execute General Scan
       </button>
     </form>
 
@@ -241,7 +71,7 @@
     <div id="loading-spinner" class="spinner"></div>
     <div id="final-icon" class="status-icon" style="display: none;"></div>
 
-    <div id="status-text" class="status-text">Initializing scan parameters...</div>
+    <div id="status-text" class="status-text">Initializing general scan...</div>
 
     <div id="terminal-window" class="terminal-window">
       <ul id="log-list"></ul>
@@ -253,7 +83,7 @@
           Cancel Scan
         </button>
 
-        <a href="{% url 'scan_recon' %}" id="btn-return" class="btn-back" style="display: none;">&larr; Start Another Scan</a>
+        <a href="{% url 'scan_general' %}" id="btn-return" class="btn-back" style="display: none;">&larr; Start Another Scan</a>
     </div>
   </div>
 </div>
@@ -264,31 +94,24 @@
   let currentTaskId = null;
   let pollIntervalId = null;
 
-  document.getElementById('reconForm').addEventListener('submit', async function(e) {
+  document.getElementById('generalScanForm').addEventListener('submit', async function(e) {
     e.preventDefault();
 
-    // Reset log counter on new submission
     lastLogCount = 0;
     currentTaskId = null;
     document.getElementById('log-list').innerHTML = '';
 
-    // Hide form, show status
     document.getElementById('scan-form-container').style.display = 'none';
     document.getElementById('scan-status-container').style.display = 'block';
 
     // Hide the start again button, show the cancel button
     document.getElementById('btn-return').style.display = 'none';
     document.getElementById('btn-cancel-scan').style.display = 'inline-flex';
-    document.getElementById('status-text').innerText = 'Validating API Keys and Initiating Recon Pipeline...';
+    document.getElementById('status-text').innerText = 'Starting General Scan Pipeline...';
 
-    // Get the inputs
     const domain = document.getElementById('domain').value;
-    const chunkSize = document.getElementById('chunk_size').value;
-    const multiplicity = document.getElementById('multiplicity').value;
-    const cookieContent = document.getElementById('cookie_content').value;
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-    // Send POST request to start task
     const response = await fetch(window.location.href, {
       method: 'POST',
       headers: {
@@ -296,10 +119,7 @@
         'X-CSRFToken': csrfToken
       },
       body: new URLSearchParams({
-        'domain': domain,
-        'chunk_size': chunkSize,
-        'multiplicity': multiplicity,
-        'cookie_content': cookieContent
+        'domain': domain
       })
     });
 
@@ -341,23 +161,20 @@
   });
 
   function pollTaskStatus(taskId) {
-    // Poll faster (every 1.5 seconds) to make the terminal feel responsive
+    // Store the interval ID globally so the cancel button can clear it
     pollIntervalId = setInterval(async () => {
       const response = await fetch(`/task-status/${taskId}/`);
       const data = await response.json();
 
-      // Handle streaming logs
       if ((data.state === 'PROGRESS' || data.state === 'SUCCESS') && data.logs) {
         if (data.logs.length > lastLogCount) {
           document.getElementById('terminal-window').style.display = 'block';
           const logList = document.getElementById('log-list');
 
-          // Append only new logs
           for (let i = lastLogCount; i < data.logs.length; i++) {
             const li = document.createElement('li');
             li.textContent = "> " + data.logs[i];
 
-            // Color-code the output based on your Python print markers
             if (data.logs[i].includes('[+]')) {
                 li.style.color = "var(--accent-green)";
             } else if (data.logs[i].includes('[-]')) {
@@ -371,24 +188,17 @@
 
           lastLogCount = data.logs.length;
 
-          // Auto-scroll the terminal to the bottom
           const terminal = document.getElementById('terminal-window');
           terminal.scrollTop = terminal.scrollHeight;
         }
       }
 
-      // Handle UI states
       if (data.state === 'PENDING' || data.state === 'STARTED' || data.state === 'PROGRESS') {
-        document.getElementById('status-text').innerText = 'Scan is actively running. Streaming live logs...';
+        document.getElementById('status-text').innerText = 'General Scan is actively running. Streaming live logs...';
       }
       else if (data.state === 'SUCCESS') {
         clearInterval(pollIntervalId);
-
-        if (data.result === true) {
-          showSuccess("Recon pipeline completed successfully!");
-        } else if (Array.isArray(data.result)) {
-          showError(`Pipeline Aborted! Invalid API keys detected for:<br><br><strong style="color:white;">${data.result.join(', ')}</strong>`);
-        }
+        showSuccess("General Scan completed successfully!");
       }
       else if (data.state === 'FAILURE' || data.state === 'REVOKED') {
         clearInterval(pollIntervalId);
@@ -423,5 +233,4 @@
     document.getElementById('btn-return').style.display = 'inline-block';
   }
 </script>
-
 {% endblock %}

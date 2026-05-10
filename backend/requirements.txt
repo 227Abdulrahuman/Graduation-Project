@@ -10,3 +10,4 @@ uro
 dotenv
 waymore
 shodan
+tldextract

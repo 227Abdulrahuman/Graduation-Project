@@ -30,69 +30,6 @@
     margin-left: 12px;
   }
 
-  /* ── Header Actions ── */
-  .header-actions {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .btn-add {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    border-radius: var(--radius-sm);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    cursor: pointer;
-    text-decoration: none;
-    border: 1px solid rgba(0, 212, 255, 0.45);
-    background: rgba(0, 212, 255, 0.08);
-    color: var(--accent-primary);
-    transition: all var(--transition);
-  }
-
-  .btn-add:hover {
-    background: rgba(0, 212, 255, 0.16);
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 20px rgba(0, 212, 255, 0.18);
-    color: var(--accent-primary);
-  }
-
-  .btn-add svg { flex-shrink: 0; }
-
-  /* Start Scan Button Styling */
-  .btn-scan {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    border-radius: var(--radius-sm);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    cursor: pointer;
-    text-decoration: none;
-    border: 1px solid rgba(0, 255, 157, 0.45); /* Green Accent */
-    background: rgba(0, 255, 157, 0.08);
-    color: var(--accent-green, #00ff9d);
-    transition: all var(--transition);
-  }
-
-  .btn-scan:hover {
-    background: rgba(0, 255, 157, 0.16);
-    border-color: var(--accent-green, #00ff9d);
-    box-shadow: 0 0 20px rgba(0, 255, 157, 0.18);
-  }
-
-  .btn-scan svg { flex-shrink: 0; }
-
   /* ── Empty state ── */
   .empty-state {
     display: flex;
@@ -125,8 +62,7 @@
   .target-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 18px;
-    min-width: 900px;
+    font-size: 14px;
   }
 
   .target-table thead tr {
@@ -135,18 +71,18 @@
 
   .target-table th {
     font-family: var(--font-mono);
-    font-size: 16px;
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--text-dim);
-    padding: 12px 20px 28px 20px;
+    padding: 12px 10px 20px 10px;
     text-align: left;
     white-space: nowrap;
   }
 
-  .target-table th:first-child { padding-left: 32px; }
-  .target-table th:last-child  { padding-right: 32px; text-align: right; }
+  .target-table th:first-child { padding-left: 24px; }
+  .target-table th:last-child  { padding-right: 24px; text-align: right; }
 
   .target-table tbody tr {
     border-bottom: 1px solid var(--border-dim);
@@ -159,13 +95,13 @@
   .target-table tbody tr:hover { background: var(--bg-elevated); }
 
   .target-table td {
-    padding: 24px 20px;
+    padding: 16px 10px;
     vertical-align: middle;
     color: var(--text-primary);
   }
 
-  .target-table td:first-child { padding-left: 32px; }
-  .target-table td:last-child  { padding-right: 32px; text-align: right; }
+  .target-table td:first-child { padding-left: 24px; }
+  .target-table td:last-child  { padding-right: 24px; text-align: right; }
 
   /* ── Target name cell ── */
   .target-name {
@@ -175,8 +111,8 @@
   }
 
   .target-icon {
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     border-radius: var(--radius-sm);
     background: rgba(0, 212, 255, 0.06);
     border: 1px solid var(--border-mid);
@@ -189,28 +125,32 @@
 
   .target-name-text {
     font-family: var(--font-display);
-    font-size: 19px;
+    font-size: 15px;
     font-weight: 600;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.02em;
     color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
   }
 
   .target-type {
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: 10px;
     color: var(--text-dim);
-    letter-spacing: 0.08em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
-    margin-top: 4px;
+    margin-top: 2px;
   }
 
   /* ── Platform badge ── */
   .platform-badge {
     display: inline-block;
-    padding: 5px 12px;
+    padding: 3px 8px;
     border-radius: var(--radius-sm);
-    font-size: 12px;
-    letter-spacing: 0.1em;
+    font-size: 10px;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
     font-weight: 500;
     background: var(--bg-surface);
@@ -221,7 +161,7 @@
   /* ── Stat cells ── */
   .stat {
     font-family: var(--font-mono);
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 500;
     color: var(--text-primary);
   }
@@ -232,18 +172,19 @@
   .vuln-count {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
+    flex-wrap: wrap;
   }
 
   .vuln-pill {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 10px;
-    border-radius: 3px;
-    font-size: 13px;
+    gap: 3px;
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.04em;
   }
 
   .vuln-pill.critical { background: rgba(255,59,92,0.12);  color: var(--accent-red);   border: 1px solid rgba(255,59,92,0.25); }
@@ -257,16 +198,16 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 24px;
+    gap: 12px;
   }
 
   .row-link {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    font-size: 16px;
+    gap: 6px;
+    font-size: 12px;
     font-weight: 500;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.05em;
     color: var(--text-dim);
     transition: color var(--transition);
     text-decoration: none;
@@ -445,48 +386,6 @@
     box-shadow: 0 0 15px rgba(255, 59, 92, 0.2);
   }
 
-  /* ── Scan Options Grid ── */
-  .scan-options {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .scan-option-btn {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px;
-    background: rgba(0, 212, 255, 0.05);
-    border: 1px solid rgba(0, 212, 255, 0.2);
-    border-radius: var(--radius-sm);
-    color: var(--text-primary);
-    text-decoration: none;
-    font-family: var(--font-mono);
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    transition: all var(--transition);
-  }
-
-  .scan-option-btn:hover {
-    background: rgba(0, 212, 255, 0.15);
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 15px rgba(0, 212, 255, 0.15);
-    transform: translateX(4px);
-  }
-
-  .scan-option-btn svg {
-    color: var(--accent-primary);
-    opacity: 0.7;
-    transition: opacity var(--transition);
-  }
-
-  .scan-option-btn:hover svg {
-    opacity: 1;
-  }
-
 {% endblock %}
 
 {% block content %}
@@ -497,23 +396,6 @@
       Targets
       <span>{{ targets|length }} total</span>
     </h1>
-  </div>
-
-  <div class="header-actions">
-    <button class="btn-scan" onclick="openScanModal()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-      </svg>
-      Start Scan
-    </button>
-
-    <a href="{% url 'target_add' %}" class="btn-add">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="12" y1="5" x2="12" y2="19"/>
-        <line x1="5" y1="12" x2="19" y2="12"/>
-      </svg>
-      Add Target
-    </a>
   </div>
 </div>
 
@@ -722,36 +604,6 @@
   </div>
 </div>
 
-<div id="scanModal" class="modal-overlay">
-  <div class="modal-content">
-    <h3 class="modal-title">Start Scan</h3>
-    <p class="modal-body" style="margin-bottom: 24px;">Select a scan profile to begin. You will configure the scan details on the next page.</p>
-
-    <div class="scan-options">
-      <a href="/scan/recon/" class="scan-option-btn">
-        Recon
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
-      <a href="/scan/webapp/" class="scan-option-btn">
-        Web App Analysis
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
-      <a href="/scan/comprehensive/" class="scan-option-btn">
-        Comprehensive Scan
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
-      <a href="/scan/general/" class="scan-option-btn">
-        General Scan
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
-    </div>
-
-    <div class="modal-actions" style="margin-top: 32px;">
-      <button type="button" class="btn-modal btn-cancel" onclick="closeScanModal()">Close</button>
-    </div>
-  </div>
-</div>
-
 <script>
   /* ── Edit Modal Logic ── */
   function openEditModal(targetId, targetName, targetType, targetPlatform, targetProgramUrl, targetDomains) {
@@ -780,15 +632,6 @@
 
   function closeDeleteModal() {
     document.getElementById('deleteModal').classList.remove('active');
-  }
-
-  /* ── Scan Modal Logic ── */
-  function openScanModal() {
-    document.getElementById('scanModal').classList.add('active');
-  }
-
-  function closeScanModal() {
-    document.getElementById('scanModal').classList.remove('active');
   }
 </script>
 
