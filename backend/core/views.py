@@ -5,6 +5,7 @@ from celery.result import AsyncResult
 from backend.websploit.tasks import recon_task
 from django.core.paginator import Paginator
 from django.http import JsonResponse
+import os
 
 from django.shortcuts import render
 from django.db.models import Count, Q, F
@@ -95,6 +96,15 @@ def webapps_list(request):
         'selected_domain': domain_id,
     }
     return render(request, 'webapps_list.html', context)
+
+
+def add_webapp_manual(request):
+    if request.method == 'POST':
+        url = request.POST.get('url')
+        if url:
+            task = add_webapp_manual_task.delay(url)
+            return JsonResponse({'task_id': task.id})
+    return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
 def target_add(request):
@@ -358,7 +368,7 @@ def target_edit(request, pk):
     return redirect('home')
 
 
-from backend.websploit.tasks import webapp_task
+from backend.websploit.tasks import webapp_task, add_webapp_manual_task
 
 
 def scan_webapp(request):
@@ -386,22 +396,160 @@ def scan_webapp(request):
     return render(request, 'scan_webapp.html')
 
 
+def get_webapp_counts(webapp):
+    return {
+        'endpoints': webapp.endpoint.count(),
+        'js_files': webapp.js_files.count(),
+        'archives': webapp.subdomain.ArchivedURLs.count(),
+        'client_routes': webapp.client_side_routes.count(),
+    }
+
+
 def webapp_detail(request, pk):
     webapp = get_object_or_404(WebApplication, pk=pk)
-
     endpoints = webapp.endpoint.all().prefetch_related('parameter')
-    archived_urls = webapp.subdomain.ArchivedURLs.all()
-
-    # NEW: Fetch vulnerabilities linked to this web app
-    vulnerabilities = webapp.vulnerabilities.select_related('endpoint', 'parameter').all()
-
+    
     context = {
         'webapp': webapp,
         'endpoints': endpoints,
-        'archived_urls': archived_urls,
-        'vulnerabilities': vulnerabilities,
+        'counts': get_webapp_counts(webapp),
+        'active_tab': 'endpoints',
     }
-    return render(request, 'webapp_detail.html', context)
+    return render(request, 'webapp_endpoints.html', context)
+
+
+def webapp_js_files(request, pk):
+    webapp = get_object_or_404(WebApplication, pk=pk)
+    js_files = list(webapp.js_files.values_list('name', flat=True))
+    
+    if not js_files:
+        # Fallback for legacy filesystem files
+        subdomain = webapp.subdomain.hostname
+        clean_webapp_url = webapp.url.replace("://", "_").replace("/", "_").replace(".", "_").replace(":", "_")
+        js_dir = os.path.join('/work', 'output', subdomain, clean_webapp_url, 'js')
+        if os.path.exists(js_dir):
+            js_files = [f for f in os.listdir(js_dir) if f.endswith('.js')]
+
+    context = {
+        'webapp': webapp,
+        'js_files': sorted(js_files),
+        'counts': get_webapp_counts(webapp),
+        'active_tab': 'js_files',
+    }
+    return render(request, 'webapp_js_files.html', context)
+
+
+def webapp_archives(request, pk):
+    webapp = get_object_or_404(WebApplication, pk=pk)
+    archived_urls = webapp.subdomain.ArchivedURLs.all()
+    
+    context = {
+        'webapp': webapp,
+        'archived_urls': archived_urls,
+        'counts': get_webapp_counts(webapp),
+        'active_tab': 'archives',
+    }
+    return render(request, 'webapp_archives.html', context)
+
+
+def webapp_client_routes(request, pk):
+    webapp = get_object_or_404(WebApplication, pk=pk)
+    client_routes = webapp.client_side_routes.all()
+    
+    context = {
+        'webapp': webapp,
+        'client_routes': client_routes,
+        'counts': get_webapp_counts(webapp),
+        'active_tab': 'client_routes',
+    }
+    return render(request, 'webapp_client_routes.html', context)
+
+
+def webapp_delete(request, pk):
+    if request.method == 'POST':
+        webapp = get_object_or_404(WebApplication, pk=pk)
+        
+        # Delete associated data generated during analysis
+        webapp.endpoint.all().delete()
+        webapp.js_files.all().delete()
+        webapp.client_side_routes.all().delete()
+        webapp.vulnerabilities.all().delete()
+        
+        # ArchivedURLs are linked to the subdomain
+        webapp.subdomain.ArchivedURLs.all().delete()
+        
+        # Reset analyzed state instead of deleting the webapp
+        webapp.analyzed = False
+        webapp.save()
+        
+    return redirect('webapps_list')
+
+
+def view_js_file(request, pk):
+    webapp = get_object_or_404(WebApplication, pk=pk)
+    filename = request.GET.get('filename')
+    
+    if not filename:
+        return JsonResponse({'error': 'No filename provided'}, status=400)
+
+    # Try database first
+    js_obj = webapp.js_files.filter(name=filename).first()
+    if js_obj:
+        return JsonResponse({'content': js_obj.content, 'filename': filename})
+
+    # Fallback to filesystem
+    subdomain = webapp.subdomain.hostname
+    clean_webapp_url = webapp.url.replace("://", "_").replace("/", "_").replace(".", "_").replace(":", "_")
+    js_dir = os.path.join('/work', 'output', subdomain, clean_webapp_url, 'js')
+    file_path = os.path.join(js_dir, filename)
+
+    if not os.path.realpath(file_path).startswith(os.path.realpath(js_dir)):
+        return JsonResponse({'error': 'Invalid file path'}, status=403)
+
+    if not os.path.exists(file_path):
+        return JsonResponse({'error': 'File not found'}, status=404)
+
+    try:
+        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            content = f.read()
+        return JsonResponse({'content': content, 'filename': filename})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+def js_viewer(request, pk):
+    webapp = get_object_or_404(WebApplication, pk=pk)
+    filename = request.GET.get('filename')
+    
+    if not filename:
+        return redirect('webapp_detail', pk=pk)
+
+    # Try database first
+    js_obj = webapp.js_files.filter(name=filename).first()
+    if js_obj:
+        content = js_obj.content
+    else:
+        # Fallback to filesystem
+        subdomain = webapp.subdomain.hostname
+        clean_webapp_url = webapp.url.replace("://", "_").replace("/", "_").replace(".", "_").replace(":", "_")
+        js_dir = os.path.join('/work', 'output', subdomain, clean_webapp_url, 'js')
+        file_path = os.path.join(js_dir, filename)
+
+        if os.path.realpath(file_path).startswith(os.path.realpath(js_dir)) and os.path.exists(file_path):
+            try:
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    content = f.read()
+            except:
+                content = "Error reading file content."
+        else:
+            return redirect('webapp_detail', pk=pk)
+
+    context = {
+        'webapp': webapp,
+        'filename': filename,
+        'content': content,
+    }
+    return render(request, 'js_viewer.html', context)
 
 
 from backend.websploit.tasks import general_scan_task

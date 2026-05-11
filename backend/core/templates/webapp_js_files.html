@@ -1,0 +1,30 @@
+{% extends "webapp_base.html" %}
+
+{% block section_title %}JS Files{% endblock %}
+
+{% block webapp_content %}
+<div class="panel">
+  <table class="target-table">
+    <thead>
+      <tr>
+        <th>File Name</th>
+        <th style="width: 150px; text-align: center;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for js_file in js_files %}
+        <tr>
+          <td class="font-mono" style="color: var(--accent-primary);">{{ js_file }}</td>
+          <td style="text-align: center;">
+            <a href="{% url 'js_viewer' webapp.id %}?filename={{ js_file|urlencode }}" class="view-btn">Analyze JS</a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="2" style="text-align: center; padding: 40px;" class="text-muted">No JavaScript files downloaded for this web app.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

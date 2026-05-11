@@ -11,3 +11,4 @@ dotenv
 waymore
 shodan
 tldextract
+jsbeautifier==1.15.4

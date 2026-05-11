@@ -1,0 +1,173 @@
+{% extends "webapp_base.html" %}
+
+{% block section_title %}Endpoints{% endblock %}
+
+{% block webapp_styles %}
+  .table-toolbar { display: flex; gap: 16px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+  .toolbar-input, .toolbar-select { background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-dim); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 14px; color: var(--text-primary); font-family: var(--font-sans); outline: none; transition: border-color var(--transition); min-width: 180px; }
+  .toolbar-select option { background: var(--bg-surface, #1a1b26); color: var(--text-primary); }
+  .toolbar-input:focus, .toolbar-select:focus { border-color: var(--accent-primary); }
+
+  .status-code { font-family: var(--font-mono); font-weight: 600; padding: 4px 8px; border-radius: 4px; font-size: 13px; }
+  .status-code.success { color: var(--accent-green); background: rgba(0,255,157,0.1); }
+  .status-code.redirect { color: var(--accent-primary); background: rgba(0,212,255,0.1); }
+  .status-code.client-error { color: #ff9800; background: rgba(255,152,0,0.1); }
+  .status-code.server-error { color: var(--accent-red); background: rgba(255,59,92,0.1); }
+  .status-code.unknown { color: var(--text-dim); background: var(--bg-elevated); }
+
+  .endpoint-row.has-params { cursor: pointer; transition: background var(--transition); }
+  .endpoint-row.has-params:hover { background: rgba(0, 212, 255, 0.05); }
+  .params-row { display: none; background: rgba(0, 0, 0, 0.3); }
+  .params-row.open { display: table-row; }
+  .params-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 13px; }
+  .params-table th, .params-table td { padding: 8px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left; }
+  .params-table th { color: var(--text-dim); text-transform: uppercase; width: 30%; }
+{% endblock %}
+
+{% block webapp_content %}
+<div class="table-toolbar">
+  <input type="text" id="statusFilter" class="toolbar-input" placeholder="Status Code (e.g., 200)" onkeyup="filterEndpoints()" style="max-width: 180px;">
+  <input type="text" id="contentTypeFilter" class="toolbar-input" placeholder="Content Type (e.g., json)" onkeyup="filterEndpoints()">
+  <select id="paramsFilter" class="toolbar-select" onchange="filterEndpoints()">
+    <option value="all">Parameters: All</option>
+    <option value="yes">Has Parameters</option>
+    <option value="no">No Parameters</option>
+  </select>
+</div>
+
+<div class="panel">
+  <table class="target-table">
+    <thead>
+      <tr>
+        <th>Path</th>
+        <th>Status Code</th>
+        <th>Content Type</th>
+        <th>Length</th>
+        <th>Location Header</th>
+        <th>Parameters</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ep in endpoints %}
+        <tr class="endpoint-row {% if ep.parameter.exists %}has-params{% endif %}"
+            onclick="toggleParams('params-{{ ep.id }}')"
+            data-status="{{ ep.status_code|default:'' }}"
+            data-content="{{ ep.content_type|default:''|lower }}"
+            data-has-params="{% if ep.parameter.exists %}yes{% else %}no{% endif %}">
+
+          <td class="font-mono" style="color: var(--accent-primary); max-width: 300px; word-wrap: break-word;">
+            {{ ep.path|default:"/" }}
+          </td>
+          <td>
+            {% if ep.status_code %}
+              <span class="status-code
+                {% if ep.status_code >= 200 and ep.status_code < 300 %}success
+                {% elif ep.status_code >= 300 and ep.status_code < 400 %}redirect
+                {% elif ep.status_code >= 400 and ep.status_code < 500 %}client-error
+                {% elif ep.status_code >= 500 %}server-error
+                {% else %}unknown{% endif %}">
+                {{ ep.status_code }}
+              </span>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>{{ ep.content_type|default:"<span class='text-muted'>—</span>"|safe }}</td>
+          <td class="font-mono">{{ ep.content_length|default:"<span class='text-muted'>—</span>"|safe }}</td>
+          <td class="font-mono" style="font-size: 13px; max-width: 200px; word-wrap: break-word;">
+            {{ ep.location_header|default:"<span class='text-muted'>—</span>"|safe }}
+          </td>
+          <td>
+            {% if ep.parameter.exists %}
+              <span class="tech-badge" style="border-color: var(--accent-primary); color: var(--accent-primary);">
+                {{ ep.parameter.count }} Found
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-left: 4px;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </span>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+        </tr>
+
+        {% if ep.parameter.exists %}
+        <tr id="params-{{ ep.id }}" class="params-row">
+          <td colspan="6" style="padding: 0;">
+            <table class="params-table">
+              <thead>
+                <tr>
+                  <th>Parameter Key</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for param in ep.parameter.all %}
+                <tr>
+                  <td style="color: var(--text-primary);">{{ param.key }}</td>
+                  <td style="color: var(--text-dim); word-break: break-all;">{{ param.value|default:"<em>Empty</em>"|safe }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </td>
+        </tr>
+        {% endif %}
+      {% empty %}
+        <tr id="emptyEndpointRow">
+          <td colspan="6" style="text-align: center; padding: 40px;" class="text-muted">No endpoints found for this web app.</td>
+        </tr>
+      {% endfor %}
+
+      <tr id="noMatchRow" style="display: none;">
+          <td colspan="6" style="text-align: center; padding: 40px;" class="text-muted">No endpoints match your filters.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+  function toggleParams(rowId) {
+    const row = document.getElementById(rowId);
+    if (row) { row.classList.toggle('open'); }
+  }
+
+  function filterEndpoints() {
+    const statusFilter = document.getElementById('statusFilter').value.trim();
+    const contentTypeFilter = document.getElementById('contentTypeFilter').value.toLowerCase().trim();
+    const paramsFilter = document.getElementById('paramsFilter').value;
+
+    const rows = document.querySelectorAll('.endpoint-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+      const rowStatus = row.getAttribute('data-status');
+      const rowContent = row.getAttribute('data-content');
+      const rowHasParams = row.getAttribute('data-has-params');
+
+      let matchesStatus = (statusFilter === "") || rowStatus.startsWith(statusFilter);
+      let matchesContent = (contentTypeFilter === "") || rowContent.includes(contentTypeFilter);
+      let matchesParams = (paramsFilter === "all") || (paramsFilter === rowHasParams);
+
+      if (matchesStatus && matchesContent && matchesParams) {
+        row.style.display = '';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+        if (rowHasParams === 'yes') {
+            const clickAttr = row.getAttribute('onclick');
+            if (clickAttr) {
+                const paramsRowId = clickAttr.match(/'([^']+)'/)[1];
+                const paramsRow = document.getElementById(paramsRowId);
+                if (paramsRow) { paramsRow.classList.remove('open'); }
+            }
+        }
+      }
+    });
+
+    const emptyDbRow = document.getElementById('emptyEndpointRow');
+    const noMatchRow = document.getElementById('noMatchRow');
+    if (!emptyDbRow && rows.length > 0) {
+        noMatchRow.style.display = visibleCount === 0 ? '' : 'none';
+    }
+  }
+</script>
+{% endblock %}

@@ -76,6 +76,28 @@ class ArchivedURLs(models.Model):
         unique_together = ("subdomain", "url")
 
 
+class JSFile(models.Model):
+    web_app = models.ForeignKey(WebApplication, on_delete=models.CASCADE, related_name="js_files")
+    name = models.CharField(max_length=1000)
+    content = models.TextField(null=True, blank=True)
+    url = models.CharField(max_length=1000)
+
+    class Meta:
+        unique_together = ("web_app", "name")
+
+    def __str__(self):
+        return self.name
+
+class ClientSideRoute(models.Model):
+    web_app = models.ForeignKey(WebApplication, on_delete=models.CASCADE, related_name="client_side_routes")
+    url = models.CharField(max_length=2000)
+
+    class Meta:
+        unique_together = ("web_app", "url")
+
+    def __str__(self):
+        return self.url
+
 class Vulnerability(models.Model):
     web_app = models.ForeignKey(WebApplication, on_delete=models.CASCADE, related_name="vulnerabilities", null=True, blank=True)
     endpoint = models.ForeignKey(EndPoint, on_delete=models.CASCADE, related_name="endpoint", null=True, blank=True)

@@ -6,6 +6,7 @@ from backend.core.recon.main import recon
 from backend.core.scan.webapp_analysis import analyze_webapp
 from backend.core.scan.general_scan import general_scan
 from backend.core.scan.comperehensive_scan import comprehensive_scan
+from backend.core.utilities.webapp_manual import add_webapp_manually
 
 # --- THIS IS YOUR EXISTING RECON LOGIC (UNTOUCHED) ---
 class LogCapture(io.StringIO):
@@ -123,3 +124,14 @@ def comprehensive_task(self, url, auth_headers=None, logout=None):
     finally:
         # Clean up the logger when done
         logger.removeHandler(log_handler)
+@shared_task(bind=True)
+def add_webapp_manual_task(self, url):
+    old_stdout = sys.stdout
+    capture = LogCapture(self)
+    sys.stdout = capture
+
+    try:
+        result = add_webapp_manually(url)
+        return {'status': 'SUCCESS', 'result': result, 'logs': capture.logs}
+    finally:
+        sys.stdout = old_stdout

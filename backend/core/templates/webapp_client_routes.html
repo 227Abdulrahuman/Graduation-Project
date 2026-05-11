@@ -1,0 +1,66 @@
+{% extends "webapp_base.html" %}
+
+{% block section_title %}Client Side Routes{% endblock %}
+
+{% block webapp_styles %}
+  .table-toolbar { display: flex; gap: 16px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+  .toolbar-input { background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-dim); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 14px; color: var(--text-primary); font-family: var(--font-sans); outline: none; transition: border-color var(--transition); min-width: 300px; width: 100%; max-width: 500px; }
+  .toolbar-input:focus { border-color: var(--accent-primary); }
+{% endblock %}
+
+{% block webapp_content %}
+<div class="table-toolbar">
+  <input type="text" id="routeSearch" class="toolbar-input" placeholder="Search routes..." onkeyup="filterRoutes()">
+</div>
+
+<div class="panel">
+  <table class="target-table">
+    <thead>
+      <tr>
+        <th>Client Side Route</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for route in client_routes %}
+        <tr class="route-row">
+          <td class="font-mono route-url" style="color: var(--accent-primary); word-break: break-all;">
+            {{ route.url }}
+          </td>
+        </tr>
+      {% empty %}
+        <tr id="emptyRouteRow">
+          <td style="text-align: center; padding: 40px;" class="text-muted">No client side routes extracted for this web application.</td>
+        </tr>
+      {% endfor %}
+      <tr id="noMatchRow" style="display: none;">
+          <td style="text-align: center; padding: 40px;" class="text-muted">No routes match your search.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+  function filterRoutes() {
+    const searchFilter = document.getElementById('routeSearch').value.toLowerCase().trim();
+    const rows = document.querySelectorAll('.route-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+      const routeUrl = row.querySelector('.route-url').textContent.toLowerCase();
+
+      if (routeUrl.includes(searchFilter)) {
+        row.style.display = '';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    const emptyDbRow = document.getElementById('emptyRouteRow');
+    const noMatchRow = document.getElementById('noMatchRow');
+    if (!emptyDbRow && rows.length > 0) {
+        noMatchRow.style.display = visibleCount === 0 ? '' : 'none';
+    }
+  }
+</script>
+{% endblock %}

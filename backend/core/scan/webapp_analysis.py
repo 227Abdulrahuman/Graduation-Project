@@ -27,27 +27,11 @@ def analyze_webapp(url, auth_headers=None, logout=None):
     else:
         apex_domain = full_hostname
 
-    target_obj, _ = Target.objects.get_or_create(
-        name=apex_domain,
-        defaults={'type': 'Auto-Generated'}
-    )
-
-    domain_obj, _ = Domain.objects.get_or_create(
-        hostname=apex_domain,
-        defaults={'target': target_obj}
-    )
-
-    sub_obj, _ = Subdomain.objects.get_or_create(
-        hostname=full_hostname,
-        defaults={'domain': domain_obj}
-    )
-
-    web_app, _ = WebApplication.objects.get_or_create(
-        url=clean_url,
-        defaults={
-            'subdomain': sub_obj
-        }
-    )
+    try:
+        web_app = WebApplication.objects.get(url=clean_url)
+    except WebApplication.DoesNotExist:
+        print(f"[-] Web Application {clean_url} does not exist in the database. Aborting.")
+        return
 
     web_app.analyzed = True
     web_app.save()
@@ -71,5 +55,13 @@ def analyze_webapp(url, auth_headers=None, logout=None):
     #Get Archived URLs
     from backend.core.enum.archived_URLs import get_archived_urls
     get_archived_urls(full_hostname)
+
+    #Download JS Files
+    from backend.core.js_analysis.js_downloader import download_js_files
+    download_js_files(clean_url)
+
+    #Extract Client Side Routes
+    from backend.core.js_analysis.route_extractor import extract_client_side_routes
+    extract_client_side_routes(clean_url)
 
 
