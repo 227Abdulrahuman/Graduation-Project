@@ -82,6 +82,8 @@ class JSFile(models.Model):
     content = models.TextField(null=True, blank=True)
     url = models.CharField(max_length=1000)
     usage_summary = models.TextField(null=True, blank=True)
+    routes_analysis = models.TextField(null=True, blank=True)
+    code_review = models.TextField(null=True, blank=True)
 
     class Meta:
         unique_together = ("web_app", "name")

@@ -23,6 +23,8 @@ RUN apt-get update && apt-get install -y \
 
 RUN npm install -g @google/gemini-cli
 
+RUN npm i -g @openai/codex
+
 RUN wget https://go.dev/dl/go1.23.0.linux-amd64.tar.gz && \
     rm -rf /usr/local/go && \
     tar -C /usr/local -xzf go1.23.0.linux-amd64.tar.gz && \

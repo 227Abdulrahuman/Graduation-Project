@@ -49,20 +49,22 @@ def generate_permutations(domain, chunk_size, multiplicity=3):
 
         while not success and attempt < max_retries:
             try:
-                proc = subprocess.run(["gemini", "-p", prompt, "-m", "gemini-3-flash-preview"], capture_output=True, text=True, check=True)
+                from backend.core.agents.call_agent import call_agent
+
+                result = call_agent(prompt)
                 
-                if proc.stdout:
+                if result:
                     with open(perm_file, 'a') as file:
-                        file.write(proc.stdout)
+                        file.write(result)
 
                 success = True
 
             except subprocess.CalledProcessError as e:
-                print(f"Gemini CLI error: {e.stderr}. Retrying in 5s...")
+                print(f"LLM CLI error: {e.stderr}. Retrying in 5s...")
                 time.sleep(5)
                 attempt += 1
             except Exception as e:
-                print(f"Unexpected error calling Gemini CLI: {e}")
+                print(f"Unexpected error calling LLM CLI: {e}")
                 break
 
 

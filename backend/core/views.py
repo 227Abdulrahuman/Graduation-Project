@@ -600,6 +600,104 @@ def js_summary_status(request, pk):
         return JsonResponse({'status': 'ready', 'content': js_obj.usage_summary})
     return JsonResponse({'status': 'generating'})
 
+
+_routes_in_progress = set()
+
+def js_routes(request, pk):
+    webapp = get_object_or_404(WebApplication, pk=pk)
+    filename = request.GET.get('filename')
+
+    if not filename:
+        return redirect('webapp_detail', pk=pk)
+
+    js_obj = webapp.js_files.filter(name=filename).first()
+    if not js_obj:
+        return redirect('webapp_detail', pk=pk)
+
+    if not js_obj.routes_analysis:
+        key = f"{pk}:{filename}"
+        if key not in _routes_in_progress:
+            import threading
+            from backend.core.js_analysis.routes_analysis import analyze_routes
+            _routes_in_progress.add(key)
+            def _run():
+                try:
+                    analyze_routes(webapp.url, filename)
+                finally:
+                    _routes_in_progress.discard(key)
+            threading.Thread(target=_run, daemon=True).start()
+
+        return render(request, 'js_routes.html', {
+            'webapp': webapp,
+            'filename': filename,
+            'generating': True,
+        })
+
+    return render(request, 'js_routes.html', {
+        'webapp': webapp,
+        'filename': filename,
+        'routes_content': js_obj.routes_analysis,
+    })
+
+
+def js_routes_status(request, pk):
+    from django.http import JsonResponse
+    webapp = get_object_or_404(WebApplication, pk=pk)
+    filename = request.GET.get('filename')
+    js_obj = webapp.js_files.filter(name=filename).first()
+    if js_obj and js_obj.routes_analysis:
+        return JsonResponse({'status': 'ready', 'content': js_obj.routes_analysis})
+    return JsonResponse({'status': 'generating'})
+
+
+_code_review_in_progress = set()
+
+def js_code_review(request, pk):
+    webapp = get_object_or_404(WebApplication, pk=pk)
+    filename = request.GET.get('filename')
+
+    if not filename:
+        return redirect('webapp_detail', pk=pk)
+
+    js_obj = webapp.js_files.filter(name=filename).first()
+    if not js_obj:
+        return redirect('webapp_detail', pk=pk)
+
+    if not js_obj.code_review:
+        key = f"{pk}:{filename}"
+        if key not in _code_review_in_progress:
+            import threading
+            from backend.core.js_analysis.code_review import review_code
+            _code_review_in_progress.add(key)
+            def _run():
+                try:
+                    review_code(webapp.url, filename)
+                finally:
+                    _code_review_in_progress.discard(key)
+            threading.Thread(target=_run, daemon=True).start()
+
+        return render(request, 'js_code_review.html', {
+            'webapp': webapp,
+            'filename': filename,
+            'generating': True,
+        })
+
+    return render(request, 'js_code_review.html', {
+        'webapp': webapp,
+        'filename': filename,
+        'code_review_content': js_obj.code_review,
+    })
+
+
+def js_code_review_status(request, pk):
+    from django.http import JsonResponse
+    webapp = get_object_or_404(WebApplication, pk=pk)
+    filename = request.GET.get('filename')
+    js_obj = webapp.js_files.filter(name=filename).first()
+    if js_obj and js_obj.code_review:
+        return JsonResponse({'status': 'ready', 'content': js_obj.code_review})
+    return JsonResponse({'status': 'generating'})
+
 from backend.websploit.tasks import general_scan_task
 
 def scan_general(request):

@@ -18,6 +18,8 @@
           <td style="text-align: center; white-space: nowrap;">
             <a href="{% url 'js_viewer' webapp.id %}?filename={{ js_file|urlencode }}" class="ws-btn ws-btn--ghost">View JS</a>
             <a href="{% url 'js_summary' webapp.id %}?filename={{ js_file|urlencode }}" class="ws-btn ws-btn--primary" style="margin-left: 8px;">Usage Summary</a>
+            <a href="{% url 'js_routes' webapp.id %}?filename={{ js_file|urlencode }}" class="ws-btn ws-btn--primary" style="margin-left: 8px;">Routes Analysis</a>
+            <a href="{% url 'js_code_review' webapp.id %}?filename={{ js_file|urlencode }}" class="ws-btn ws-btn--primary" style="margin-left: 8px;">Code Review</a>
           </td>
         </tr>
       {% empty %}
