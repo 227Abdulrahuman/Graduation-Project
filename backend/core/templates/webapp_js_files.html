@@ -15,8 +15,9 @@
       {% for js_file in js_files %}
         <tr>
           <td class="font-mono" style="color: var(--accent-primary);">{{ js_file }}</td>
-          <td style="text-align: center;">
-            <a href="{% url 'js_viewer' webapp.id %}?filename={{ js_file|urlencode }}" class="view-btn">Analyze JS</a>
+          <td style="text-align: center; white-space: nowrap;">
+            <a href="{% url 'js_viewer' webapp.id %}?filename={{ js_file|urlencode }}" class="ws-btn ws-btn--ghost">View JS</a>
+            <a href="{% url 'js_summary' webapp.id %}?filename={{ js_file|urlencode }}" class="ws-btn ws-btn--primary" style="margin-left: 8px;">Usage Summary</a>
           </td>
         </tr>
       {% empty %}

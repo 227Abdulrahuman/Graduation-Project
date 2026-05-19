@@ -17,6 +17,8 @@ backend/resources/cookie.txt
 #Keys
 .env
 GEMINI.md
+AGENTS.md
+CLAUDE.md
 
 # Logs
 logs

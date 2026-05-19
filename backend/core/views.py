@@ -520,7 +520,7 @@ def view_js_file(request, pk):
 def js_viewer(request, pk):
     webapp = get_object_or_404(WebApplication, pk=pk)
     filename = request.GET.get('filename')
-    
+
     if not filename:
         return redirect('webapp_detail', pk=pk)
 
@@ -551,6 +551,54 @@ def js_viewer(request, pk):
     }
     return render(request, 'js_viewer.html', context)
 
+
+_summary_in_progress = set()
+
+def js_summary(request, pk):
+    webapp = get_object_or_404(WebApplication, pk=pk)
+    filename = request.GET.get('filename')
+
+    if not filename:
+        return redirect('webapp_detail', pk=pk)
+
+    js_obj = webapp.js_files.filter(name=filename).first()
+    if not js_obj:
+        return redirect('webapp_detail', pk=pk)
+
+    if not js_obj.usage_summary:
+        key = f"{pk}:{filename}"
+        if key not in _summary_in_progress:
+            import threading
+            from backend.core.js_analysis.usage_summary import generate_usage_summary
+            _summary_in_progress.add(key)
+            def _run():
+                try:
+                    generate_usage_summary(webapp.url, filename)
+                finally:
+                    _summary_in_progress.discard(key)
+            threading.Thread(target=_run, daemon=True).start()
+
+        return render(request, 'js_summary.html', {
+            'webapp': webapp,
+            'filename': filename,
+            'generating': True,
+        })
+
+    return render(request, 'js_summary.html', {
+        'webapp': webapp,
+        'filename': filename,
+        'summary_content': js_obj.usage_summary,
+    })
+
+
+def js_summary_status(request, pk):
+    from django.http import JsonResponse
+    webapp = get_object_or_404(WebApplication, pk=pk)
+    filename = request.GET.get('filename')
+    js_obj = webapp.js_files.filter(name=filename).first()
+    if js_obj and js_obj.usage_summary:
+        return JsonResponse({'status': 'ready', 'content': js_obj.usage_summary})
+    return JsonResponse({'status': 'generating'})
 
 from backend.websploit.tasks import general_scan_task
 

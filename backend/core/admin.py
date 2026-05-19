@@ -43,3 +43,7 @@ class VulnerabilityAdmin(admin.ModelAdmin):
 @admin.register(models.Port)
 class PortAdmin(admin.ModelAdmin):
     list_display = ('subdomain','number','service')
+
+@admin.register(models.JSFile)
+class JSFileAdmin(admin.ModelAdmin):
+    list_display = ("web_app", "name")
