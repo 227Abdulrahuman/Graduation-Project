@@ -40,7 +40,7 @@
     font-weight: 500;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--text-dim);
+    color: var(--text-primary);
   }
 
   .form-group input {
@@ -164,6 +164,101 @@
     text-align: center;
   }
 
+  /* Provider Selection */
+  .providers-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .providers-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .provider-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-dim);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: border-color var(--transition), background var(--transition);
+    user-select: none;
+  }
+
+  .provider-item:hover {
+    border-color: rgba(0, 212, 255, 0.35);
+    background: rgba(0, 212, 255, 0.04);
+  }
+
+  .provider-item input[type="checkbox"] {
+    accent-color: var(--accent-primary);
+    color-scheme: dark;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .provider-item .provider-name {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-primary);
+    flex: 1;
+  }
+
+  .provider-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .badge-api {
+    background: rgba(255, 183, 0, 0.1);
+    border: 1px solid rgba(255, 183, 0, 0.3);
+    color: var(--accent-amber);
+  }
+
+  .badge-free {
+    background: rgba(0, 255, 157, 0.08);
+    border: 1px solid rgba(0, 255, 157, 0.25);
+    color: var(--accent-green);
+  }
+
+  .badge-cookie {
+    background: rgba(147, 97, 255, 0.1);
+    border: 1px solid rgba(147, 97, 255, 0.3);
+    color: #9361ff;
+  }
+
+  .providers-toggle-links {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    display: flex;
+    gap: 10px;
+  }
+
+  .providers-toggle-links a {
+    color: var(--text-dim);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: color var(--transition);
+  }
+
+  .providers-toggle-links a:hover {
+    color: var(--accent-primary);
+  }
+
   /* Terminal Window Styling */
   .terminal-window {
     display: none;
@@ -220,7 +315,29 @@
       </div>
 
       <div class="form-group">
-        <label for="cookie_content">SecurityTrails Cookie Content (Optional)</label>
+        <div class="providers-header">
+          <label style="margin-bottom: 0;">Subdomain Providers</label>
+          <div class="providers-toggle-links">
+            <a href="#" id="select-all-providers">All</a>
+            <a href="#" id="deselect-all-providers">None</a>
+          </div>
+        </div>
+        <div class="providers-grid">
+          {% for provider in providers %}
+          <label class="provider-item">
+            <input type="checkbox" name="providers" value="{{ provider.id }}" data-auth="{{ provider.auth }}" checked>
+            <span class="provider-name">{{ provider.name }}</span>
+            <span class="provider-badge badge-{{ provider.auth }}">
+              {% if provider.auth == "api" %}API Key{% elif provider.auth == "cookie" %}Cookie{% else %}Free{% endif %}
+            </span>
+          </label>
+          {% endfor %}
+        </div>
+        <span style="font-size: 12px; color: var(--text-dim); margin-top: 8px; display: block;">Select which sources to use for passive subdomain enumeration.</span>
+      </div>
+
+      <div class="form-group" id="cookie-group">
+        <label for="cookie_content">SecurityTrails Cookie Content</label>
         <textarea id="cookie_content" name="cookie_content" placeholder="Paste full curl command or cookie contents here..." style="background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-dim); border-radius: var(--radius-sm); padding: 14px 16px; font-size: 14px; color: var(--text-primary); font-family: var(--font-mono); outline: none; resize: vertical; min-height: 100px;"></textarea>
       </div>
 
@@ -260,9 +377,32 @@
 
 <script>
   let lastLogCount = 0;
-  // NEW: Globals to track the current task and the polling interval
   let currentTaskId = null;
   let pollIntervalId = null;
+
+  function syncCookieField() {
+    const anyCookieChecked = [...document.querySelectorAll('input[name="providers"][data-auth="cookie"]')]
+      .some(cb => cb.checked);
+    document.getElementById('cookie-group').style.display = anyCookieChecked ? '' : 'none';
+  }
+
+  // Toggle cookie field whenever a cookie-type provider changes
+  document.querySelectorAll('input[name="providers"][data-auth="cookie"]').forEach(cb => {
+    cb.addEventListener('change', syncCookieField);
+  });
+
+  // Select / deselect all providers
+  document.getElementById('select-all-providers').addEventListener('click', function(e) {
+    e.preventDefault();
+    document.querySelectorAll('input[name="providers"]').forEach(cb => cb.checked = true);
+    syncCookieField();
+  });
+
+  document.getElementById('deselect-all-providers').addEventListener('click', function(e) {
+    e.preventDefault();
+    document.querySelectorAll('input[name="providers"]').forEach(cb => cb.checked = false);
+    syncCookieField();
+  });
 
   document.getElementById('reconForm').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -288,6 +428,16 @@
     const cookieContent = document.getElementById('cookie_content').value;
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
+    // Build params — append each selected provider individually
+    const params = new URLSearchParams();
+    params.append('domain', domain);
+    params.append('chunk_size', chunkSize);
+    params.append('multiplicity', multiplicity);
+    params.append('cookie_content', cookieContent);
+    document.querySelectorAll('input[name="providers"]:checked').forEach(cb => {
+      params.append('providers', cb.value);
+    });
+
     // Send POST request to start task
     const response = await fetch(window.location.href, {
       method: 'POST',
@@ -295,12 +445,7 @@
         'Content-Type': 'application/x-www-form-urlencoded',
         'X-CSRFToken': csrfToken
       },
-      body: new URLSearchParams({
-        'domain': domain,
-        'chunk_size': chunkSize,
-        'multiplicity': multiplicity,
-        'cookie_content': cookieContent
-      })
+      body: params
     });
 
     if (response.ok) {

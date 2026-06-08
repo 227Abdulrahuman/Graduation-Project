@@ -45,6 +45,47 @@
       --transition:   0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
+    /* ─── Toast Notification ───────────────────────────────────────── */
+    .toast-container {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .toast {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      border-left: 4px solid var(--accent-primary);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: toast-in 0.3s ease forwards;
+      min-width: 200px;
+    }
+
+    @keyframes toast-in {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .toast.fade-out {
+      animation: toast-out 0.3s ease forwards;
+    }
+
+    @keyframes toast-out {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+
     /* ─── Reset & Base ────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
@@ -451,9 +492,39 @@
     </div>
   </div>
 
+  <div class="toast-container" id="toastContainer"></div>
+
   <script>
     function openScanModal() { document.getElementById('scanModal').classList.add('active'); }
     function closeScanModal() { document.getElementById('scanModal').classList.remove('active'); }
+
+    function showToast(message, duration = 3000) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 6L9 17l-5-5"/>
+        </svg>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.add('fade-out');
+        setTimeout(() => toast.remove(), 300);
+      }, duration);
+    }
+
+    async function copyToClipboard(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast('Copied to clipboard!');
+      } catch (err) {
+        console.error('Failed to copy: ', err);
+        showToast('Failed to copy', 3000);
+      }
+    }
   </script>
   <!-- ══════════════════ END SCAN MODAL ══════════════════ -->
 

@@ -1,7 +1,6 @@
 from urllib.parse import urlparse
 import requests
 from backend.core.models import *
-import tldextract
 
 def can_connect(url, timeout_seconds=5):
     try:
@@ -20,12 +19,6 @@ def analyze_webapp(url, auth_headers=None, logout=None):
     # Strip port number if it exists in netloc
     full_hostname = parsed_url.hostname or parsed_url.netloc.split(':')[0]
 
-    ext = tldextract.extract(full_hostname)
-
-    if ext.suffix:
-        apex_domain = f"{ext.domain}.{ext.suffix}"
-    else:
-        apex_domain = full_hostname
 
     try:
         web_app = WebApplication.objects.get(url=clean_url)
@@ -44,7 +37,7 @@ def analyze_webapp(url, auth_headers=None, logout=None):
 
     #Crawl Target URL
     from backend.core.enum.crawler import crawl
-    crawl(clean_url, auth_headers=auth_headers, logout=logout)
+    crawl(clean_url, url ,auth_headers=auth_headers, logout=logout)
 
 
     #Extract Parameters

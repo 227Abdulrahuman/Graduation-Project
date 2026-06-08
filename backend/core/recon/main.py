@@ -12,22 +12,29 @@ from backend.core.recon.llm_permutations import generate_permutations
 from backend.core.recon.port_scanner import scan_ports
 
 
-def validate_api_keys():
+# Providers that require API key / cookie validation, keyed by provider ID
+_KEY_CHECKS = {
+    "virustotal":         virustotal_check,
+    "key_chaos":          chaos_check,
+    "key_shodan":         shodan_check,
+    "key_digitalyama":    digitalyama_check,
+    "securitytrails_web": securitytrailsweb_check,
+}
+
+def validate_api_keys(providers=None):
     """
-    Checks all paid providers.
+    Checks API keys for paid providers.
+    providers: list of selected provider IDs, or None to check all.
     Returns a list of names of providers with invalid keys.
     """
-    providers_to_check = [
-        ("key_chaos", chaos_check),
-        ("key_digitalyama", digitalyama_check),
-        ("key_shodan", shodan_check),
-        ("securitytrails_web", securitytrailsweb_check),
-        ("key_virustotal", virustotal_check),
-    ]
+    if providers is not None:
+        checks = [(name, func) for name, func in _KEY_CHECKS.items() if name in providers]
+    else:
+        checks = list(_KEY_CHECKS.items())
 
     invalid_providers = []
 
-    for name, check_func in providers_to_check:
+    for name, check_func in checks:
         try:
 
             result = check_func()
@@ -42,11 +49,14 @@ def validate_api_keys():
     return invalid_providers
 
 
-def recon(domain, chunk_size=None, multiplicity=3):
+def recon(domain, chunk_size=None, multiplicity=3, providers=None):
     print(f"[*] Starting recon pipeline for {domain}")
 
+    if providers is not None:
+        print(f"[*] Selected providers: {', '.join(providers)}")
+
     print("[*] Validating API keys for paid providers...")
-    invalid_keys = validate_api_keys()
+    invalid_keys = validate_api_keys(providers)
 
     if invalid_keys:
         print(f"[-] Pipeline aborted! Invalid API keys detected for: {', '.join(invalid_keys)}")
@@ -55,7 +65,7 @@ def recon(domain, chunk_size=None, multiplicity=3):
     print("[+] All API keys are valid.")
 
     print()
-    fetch_subdomains(domain)
+    fetch_subdomains(domain, providers=providers)
     print()
 
     if chunk_size is not None:

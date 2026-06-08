@@ -45,7 +45,7 @@ class CeleryTaskLogHandler(logging.Handler):
 
 
 @shared_task(bind=True)
-def recon_task(self, domain, chunk_size=None, multiplicity=3):
+def recon_task(self, domain, chunk_size=None, multiplicity=3, providers=None):
     if chunk_size == '':
         chunk_size = None
     elif chunk_size is not None:
@@ -56,12 +56,15 @@ def recon_task(self, domain, chunk_size=None, multiplicity=3):
     elif multiplicity is not None:
         multiplicity = int(multiplicity)
 
+    if not providers:
+        providers = None
+
     old_stdout = sys.stdout
     capture = LogCapture(self)
     sys.stdout = capture
 
     try:
-        result = recon(domain, chunk_size=chunk_size, multiplicity=multiplicity)
+        result = recon(domain, chunk_size=chunk_size, multiplicity=multiplicity, providers=providers)
 
         return {'status': 'SUCCESS', 'result': result, 'logs': capture.logs}
 

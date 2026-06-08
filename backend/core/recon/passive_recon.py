@@ -14,10 +14,19 @@ django.setup()
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from backend.core.models import *
 
+# Registry — add new providers here; everything else (view, template) picks them up automatically.
+# auth: "api" = needs API key, "cookie" = needs cookie/session, "free" = no credentials
+PROVIDERS = [
+    {"id": "virustotal",         "name": "VirusTotal",     "auth": "api",    "func": virustotal},
+    {"id": "c99",                "name": "C99",            "auth": "free",   "func": c99},
+    {"id": "securitytrails_web", "name": "SecurityTrails", "auth": "cookie", "func": securitytrailsweb},
+    {"id": "key_chaos",          "name": "Chaos",          "auth": "api",    "func": chaos},
+    {"id": "key_shodan",         "name": "Shodan",         "auth": "api",    "func": shodan},
+    {"id": "key_digitalyama",    "name": "DigitalYama",    "auth": "api",    "func": digitalyama},
+    {"id": "subfinder",          "name": "Subfinder",      "auth": "free",   "func": subfinder},
+]
+
 def run_provider(name, func, domain):
-    """
-    Gets subdomains from a single provider.
-    """
     try:
         result = func(domain)
 
@@ -32,9 +41,10 @@ def run_provider(name, func, domain):
     except Exception as e:
         print(f"[Error] {name}: {e}")
 
-def fetch_subdomains(domain):
+def fetch_subdomains(domain, providers=None):
     """
     Enumerates Subdomains from passive sources and saves the result to the database.
+    providers: list of provider IDs to run, or None to run all.
     """
     print(f"\n[*] Starting passive subdomains enumeration for {domain}")
 
@@ -45,28 +55,27 @@ def fetch_subdomains(domain):
     all_subs = set()
     all_subs.add(domain)
 
-    scrapers = [
-        ("VirusTotal", virustotal),
-        ("C99", c99),
-        ("securityTrailsWeb", securitytrailsweb),
-        ("key_chaos",chaos),
-        ("key_shodan", shodan),
-        ("key_digitalyama", digitalyama),
-        ("subfinder", subfinder),
-    ]
+    if providers is not None:
+        scrapers = [(p["name"], p["func"]) for p in PROVIDERS if p["id"] in providers]
+    else:
+        scrapers = [(p["name"], p["func"]) for p in PROVIDERS]
+
+    if scrapers:
+        print(f"[*] Running {len(scrapers)} provider(s): {', '.join(name for name, _ in scrapers)}")
 
     #Run passive providers.
-    with ThreadPoolExecutor(max_workers=len(scrapers)) as executor:
-        futures = {
-            executor.submit(run_provider, name, func, domain): name
-            for name, func in scrapers
-        }
+    if scrapers:
+        with ThreadPoolExecutor(max_workers=len(scrapers)) as executor:
+            futures = {
+                executor.submit(run_provider, name, func, domain): name
+                for name, func in scrapers
+            }
 
-        for future in as_completed(futures):
-            result = future.result()
+            for future in as_completed(futures):
+                result = future.result()
 
-            if result != {-1} and result is not None:
-                all_subs.update(result)
+                if result != {-1} and result is not None:
+                    all_subs.update(result)
 
 
     with open(subs_file, "w") as f:

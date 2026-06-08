@@ -259,6 +259,40 @@
   .text-muted { color: var(--text-dim); font-size: 14px; }
   .font-mono { font-family: var(--font-mono); }
 
+  .row-tested { background: rgba(0, 255, 157, 0.03); }
+  .row-tested:hover { background: rgba(0, 255, 157, 0.06) !important; }
+
+  .tested-checkbox-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-dim);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: border-color var(--transition), background var(--transition);
+    user-select: none;
+  }
+
+  .tested-checkbox-wrap:hover {
+    border-color: rgba(0, 212, 255, 0.35);
+    background: rgba(0, 212, 255, 0.04);
+  }
+
+  .tested-checkbox {
+    accent-color: var(--accent-primary);
+    color-scheme: dark;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .tested-label {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-primary);
+  }
+
   /* ── Pagination UI ── */
   .pagination-wrapper {
     display: flex;
@@ -388,8 +422,15 @@
     </select>
 
     <input type="text" id="hostSearchApp" class="toolbar-input" placeholder="Search Hostname..." onkeyup="debounceFetchWebApps()">
+    <input type="text" id="titleSearch" class="toolbar-input" placeholder="Search Title..." onkeyup="debounceFetchWebApps()">
     <input type="text" id="techSearch" class="toolbar-input" placeholder="Search Tech Stack..." onkeyup="debounceFetchWebApps()">
     <input type="text" id="statusSearch" class="toolbar-input" placeholder="Status (e.g., 404)" onkeyup="debounceFetchWebApps()" style="max-width: 220px;">
+
+    <select id="testedFilter" class="toolbar-select" onchange="fetchWebApps(1)" style="max-width: 180px;">
+      <option value="all">Tested: All</option>
+      <option value="yes">Tested</option>
+      <option value="no">Not Tested</option>
+    </select>
 
     <button class="toolbar-btn" onclick="toggleWebAppSort()" id="sortBtn">
       Sort Status
@@ -409,6 +450,7 @@
           <th>Title</th>
           <th>Content Length</th>
           <th>Tech Stack</th>
+          <th style="text-align: center;">Actions</th>
         </tr>
       </thead>
       <tbody id="webappsTbody"></tbody>
@@ -493,6 +535,30 @@
   const debounceFetchWebApps = debounce(() => fetchWebApps(1));
   const debounceFetchVulnerabilities = debounce(() => fetchVulnerabilities(1));
 
+  async function toggleTested(checkbox) {
+    const appId = checkbox.dataset.id;
+    const row = checkbox.closest('tr');
+    checkbox.disabled = true;
+
+    const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+    const response = await fetch(`/api/webapps/${appId}/toggle-tested/`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrfToken }
+    });
+    const data = await response.json();
+
+    checkbox.disabled = false;
+    checkbox.checked = data.tested;
+    const label = checkbox.nextElementSibling;
+    label.textContent = data.tested ? 'Tested' : 'Untested';
+    checkbox.parentElement.title = data.tested ? 'Mark as untested' : 'Mark as tested';
+    if (data.tested) {
+      row.classList.add('row-tested');
+    } else {
+      row.classList.remove('row-tested');
+    }
+  }
+
   // ==================== SUBDOMAINS API CALL ====================
   async function fetchSubdomains(page) {
     const domain = document.getElementById('domainFilterSub').value;
@@ -563,15 +629,19 @@
   async function fetchWebApps(page) {
     const domain = document.getElementById('domainFilterApp').value;
     const host = document.getElementById('hostSearchApp').value;
+    const title = document.getElementById('titleSearch').value;
     const tech = document.getElementById('techSearch').value;
     const status = document.getElementById('statusSearch').value;
+    const tested = document.getElementById('testedFilter').value;
 
     const params = new URLSearchParams({
       page: page,
       domain: domain,
       host: host,
+      title: title,
       tech: tech,
       status: status,
+      tested: tested,
       sort: appSortOrder
     });
 
@@ -601,17 +671,29 @@
         let lengthHtml = app.content_length ? app.content_length : `<span class='text-muted'>—</span>`;
 
         const tr = document.createElement('tr');
+        tr.dataset.appId = app.id;
+        if (app.tested) tr.classList.add('row-tested');
         tr.innerHTML = `
           <td class="font-mono text-muted">${globalIndex}</td>
-          <td class="font-mono">
-            <a href="/webapps/${app.id}/" style="color: var(--accent-primary); text-decoration: none;">${app.url}</a>
+          <td class="font-mono" style="cursor: pointer;" onclick="copyToClipboard('${app.url}')">
+            <span style="color: var(--accent-primary);">${app.url}</span>
           </td>
           <td>${statusHtml}</td>
           <td>${titleHtml}</td>
           <td class="font-mono">${lengthHtml}</td>
           <td>${techHtml}</td>
+          <td style="text-align: center; display: flex; gap: 8px; justify-content: center; align-items: center;">
+            <label class="tested-checkbox-wrap" title="${app.tested ? 'Mark as untested' : 'Mark as tested'}">
+              <input type="checkbox" class="tested-checkbox" data-id="${app.id}" ${app.tested ? 'checked' : ''} onchange="toggleTested(this)">
+              <span class="tested-label">${app.tested ? 'Tested' : 'Untested'}</span>
+            </label>
+            <a href="/webapps/${app.id}/" class="ws-btn ws-btn--ghost" style="padding: 4px 8px;" title="View Details">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </a>
+          </td>
         `;
         tbody.appendChild(tr);
+
       });
     }
 

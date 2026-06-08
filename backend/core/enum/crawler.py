@@ -4,22 +4,22 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.websploit.settings")
 django.setup()
 from backend.core.models import *
 
-def crawl(url, auth_headers=None, logout=None):
+def crawl(web_app_url, target_page, auth_headers=None, logout=None):
     """
     Crawl a target webapp, and saves endpoints and parameters to the database.
     """
     try:
-        parsed = urlparse(url)
+        parsed = urlparse(web_app_url)
         hostname = parsed.hostname
     except:
-        print(f"[-] Not a valid url {url}")
+        print(f"[-] Not a valid url {web_app_url}")
         return
 
     out_dir = f'/work/output/{hostname}'
     out_file = f'{out_dir}/crawler.json'
     os.makedirs(out_dir, exist_ok=True)
 
-    cmd = ["katana", "-u", url, "-j", "-o", out_file]
+    cmd = ["katana", "-u", target_page, "-j", "-o", out_file]
 
     if auth_headers:
         for header in auth_headers:
@@ -28,11 +28,11 @@ def crawl(url, auth_headers=None, logout=None):
     if logout:
         cmd.extend(["-cos", logout])
 
-    print(f"[*] Started Crawling {url}")
+    print(f"[*] Started Crawling {target_page}")
 
     subprocess.run(cmd, capture_output=True, text=True)
 
-    web_app = WebApplication.objects.get(url=url)
+    web_app = WebApplication.objects.get(url=web_app_url)
 
     with open(out_file, 'r') as file:
         for line in file:
@@ -76,4 +76,4 @@ def crawl(url, auth_headers=None, logout=None):
             except:
                 pass
 
-    print(f"[+] Finished Crawling {url}")
+    print(f"[+] Finished Crawling {target_page}")

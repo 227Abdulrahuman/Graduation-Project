@@ -31,5 +31,6 @@ urlpatterns = [
     path('scan/general/', views.scan_general, name='scan_general'),
     path('task-cancel/<str:task_id>/', views.cancel_task, name='cancel_task'),
     path('api/targets/<int:pk>/vulnerabilities/', views.api_target_vulnerabilities, name='api_target_vulnerabilities'),
+    path('api/webapps/<int:pk>/toggle-tested/', views.api_webapp_toggle_tested, name='api_webapp_toggle_tested'),
     path('scan/comprehensive/', views.scan_comprehensive, name='scan_comprehensive'),
     ]

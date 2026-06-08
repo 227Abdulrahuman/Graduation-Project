@@ -5,6 +5,7 @@ from celery.result import AsyncResult
 from backend.websploit.tasks import recon_task
 from django.core.paginator import Paginator
 from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 import os
 
 from django.shortcuts import render
@@ -72,17 +73,18 @@ def webapps_list(request):
     # Filtering logic
     target_id = request.GET.get('target')
     domain_id = request.GET.get('domain')
+    title_search = request.GET.get('title', '').strip()
 
     if target_id and target_id != 'all':
         apps = apps.filter(subdomain__domain__target_id=target_id)
     if domain_id and domain_id != 'all':
         apps = apps.filter(subdomain__domain_id=domain_id)
+    if title_search:
+        apps = apps.filter(title__icontains=title_search)
 
     # For filter dropdowns
     targets = Target.objects.all()
 
-    # If a target is selected, we could narrow down domains, but let's keep it simple for now
-    # or actually let's filter domains if target is selected
     if target_id and target_id != 'all':
         domains = Domain.objects.filter(target_id=target_id)
     else:
@@ -94,6 +96,7 @@ def webapps_list(request):
         'domains': domains,
         'selected_target': target_id,
         'selected_domain': domain_id,
+        'title_search': title_search,
     }
     return render(request, 'webapps_list.html', context)
 
@@ -250,9 +253,19 @@ def api_target_webapps(request, pk):
     if tech_search:
         apps = apps.filter(tech_stack__icontains=tech_search)
 
+    title_search = request.GET.get('title', '').strip()
+    if title_search:
+        apps = apps.filter(title__icontains=title_search)
+
     status_search = request.GET.get('status', '').strip()
     if status_search:
         apps = apps.filter(status_code__icontains=status_search)
+
+    tested_filter = request.GET.get('tested', 'all')
+    if tested_filter == 'yes':
+        apps = apps.filter(tested=True)
+    elif tested_filter == 'no':
+        apps = apps.filter(tested=False)
 
     # Sorting
     sort_order = request.GET.get('sort', 'desc')
@@ -275,7 +288,8 @@ def api_target_webapps(request, pk):
             'status_code': a.status_code,
             'title': a.title,
             'content_length': a.content_length,
-            'tech_stack': a.tech_stack or []
+            'tech_stack': a.tech_stack or [],
+            'tested': a.tested,
         })
 
     return JsonResponse({
@@ -286,7 +300,20 @@ def api_target_webapps(request, pk):
     })
 
 
+@require_POST
+def api_webapp_toggle_tested(request, pk):
+    webapp = get_object_or_404(WebApplication, pk=pk)
+    webapp.tested = not webapp.tested
+    webapp.save(update_fields=['tested'])
+    return JsonResponse({'tested': webapp.tested})
+
+
 import os
+from backend.core.recon.passive_recon import PROVIDERS as RECON_PROVIDERS
+
+def _provider_meta():
+    """Strip the func reference before passing providers to a template."""
+    return [{"id": p["id"], "name": p["name"], "auth": p["auth"]} for p in RECON_PROVIDERS]
 
 def scan_recon(request):
     if request.method == 'POST':
@@ -294,16 +321,17 @@ def scan_recon(request):
         chunk_size = request.POST.get('chunk_size')
         multiplicity = request.POST.get('multiplicity')
         cookie_content = request.POST.get('cookie_content')
+        providers = request.POST.getlist('providers') or None
 
         if cookie_content and cookie_content.strip():
             os.makedirs('/work/resources/securitytrails', exist_ok=True)
             with open('/work/resources/securitytrails/cookie.txt', 'w') as f:
                 f.write(cookie_content.strip())
 
-        task = recon_task.delay(domain, chunk_size=chunk_size, multiplicity=multiplicity)
+        task = recon_task.delay(domain, chunk_size=chunk_size, multiplicity=multiplicity, providers=providers)
         return JsonResponse({'task_id': task.id})
 
-    return render(request, 'scan_recon.html')
+    return render(request, 'scan_recon.html', {'providers': _provider_meta()})
 
 
 def check_task_status(request, task_id):
