@@ -1,0 +1,350 @@
+{% extends "base.html" %}
+
+{% block title %}Terminal — Web Sploit{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.min.css" />
+{% endblock %}
+
+{% block extra_styles %}
+.terminal-page {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--header-h) - 64px);
+  min-height: 400px;
+}
+
+.terminal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+
+.terminal-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.terminal-title h1 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.terminal-meta {
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+}
+
+.terminal-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-amber);
+  transition: background 0.3s ease;
+}
+
+.status-dot.connected {
+  background: var(--accent-green);
+  box-shadow: 0 0 8px rgba(0, 255, 157, 0.5);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+.status-dot.error {
+  background: var(--accent-red);
+}
+
+.terminal-wrap {
+  flex: 1;
+  background: #0a0e14;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.terminal-topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-dim);
+  flex-shrink: 0;
+}
+
+.topbar-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.topbar-dot.red   { background: #ff5f57; }
+.topbar-dot.amber { background: #febc2e; }
+.topbar-dot.green { background: #28c840; }
+
+.topbar-label {
+  margin-left: 8px;
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  flex: 1;
+}
+
+.topbar-restart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+
+.topbar-restart:hover {
+  background: rgba(0, 212, 255, 0.08);
+  border-color: rgba(0, 212, 255, 0.3);
+  color: var(--accent-primary);
+}
+
+#terminal-container {
+  flex: 1;
+  padding: 8px;
+  overflow: hidden;
+}
+
+#terminal-container .xterm {
+  height: 100%;
+}
+
+#terminal-container .xterm-viewport::-webkit-scrollbar {
+  width: 6px;
+}
+
+#terminal-container .xterm-viewport::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#terminal-container .xterm-viewport::-webkit-scrollbar-thumb {
+  background: var(--border-bright);
+  border-radius: 3px;
+}
+
+#terminal-container .xterm-viewport::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-glow);
+}
+
+.terminal-reconnect {
+  display: none;
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 11, 15, 0.85);
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+  z-index: 10;
+}
+
+.terminal-reconnect.visible {
+  display: flex;
+}
+
+.reconnect-msg {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+{% endblock %}
+
+{% block content %}
+<div class="terminal-page">
+  <div class="terminal-header">
+    <div class="terminal-title">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="4 17 10 11 4 5"></polyline>
+        <line x1="12" y1="19" x2="20" y2="19"></line>
+      </svg>
+      <h1>Terminal</h1>
+      <span class="terminal-meta">agent/</span>
+    </div>
+    <div class="terminal-status">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">Connecting…</span>
+    </div>
+  </div>
+
+  <div class="terminal-wrap">
+    <div class="terminal-topbar">
+      <div class="topbar-dot red"></div>
+      <div class="topbar-dot amber"></div>
+      <div class="topbar-dot green"></div>
+      <span class="topbar-label">bash — agent/</span>
+      <button class="topbar-restart" onclick="restartTerminal()" title="New session">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div id="terminal-container"></div>
+
+    <div class="terminal-reconnect" id="reconnectOverlay">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span class="reconnect-msg">Session closed</span>
+      <button class="ws-btn ws-btn--primary" onclick="initTerminal()">Reconnect</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-web-links@0.9.0/lib/xterm-addon-web-links.min.js"></script>
+<script>
+  let term, fitAddon, ws;
+
+  function setStatus(state) {
+    const dot  = document.getElementById('statusDot');
+    const text = document.getElementById('statusText');
+    dot.className = 'status-dot';
+    if (state === 'connected') {
+      dot.classList.add('connected');
+      text.textContent = 'Connected';
+    } else if (state === 'error' || state === 'closed') {
+      dot.classList.add('error');
+      text.textContent = state === 'error' ? 'Connection error' : 'Disconnected';
+    } else {
+      text.textContent = 'Connecting…';
+    }
+  }
+
+  function initTerminal() {
+    document.getElementById('reconnectOverlay').classList.remove('visible');
+
+    if (term) {
+      term.dispose();
+    }
+
+    term = new Terminal({
+      cursorBlink: true,
+      fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
+      fontSize: 14,
+      lineHeight: 1.4,
+      theme: {
+        background:    '#0a0e14',
+        foreground:    '#e8f0fe',
+        cursor:        '#00d4ff',
+        cursorAccent:  '#0a0e14',
+        selectionBackground: 'rgba(0, 212, 255, 0.25)',
+        black:         '#1e2d3d',
+        red:           '#ff3b5c',
+        green:         '#00ff9d',
+        yellow:        '#ffb700',
+        blue:          '#00d4ff',
+        magenta:       '#a855f7',
+        cyan:          '#00aacc',
+        white:         '#e8f0fe',
+        brightBlack:   '#3d5166',
+        brightRed:     '#ff6b7a',
+        brightGreen:   '#4dffb8',
+        brightYellow:  '#ffd060',
+        brightBlue:    '#40e0ff',
+        brightMagenta: '#c084fc',
+        brightCyan:    '#40c8e8',
+        brightWhite:   '#ffffff',
+      },
+      allowProposedApi: true,
+    });
+
+    fitAddon = new FitAddon.FitAddon();
+    term.loadAddon(fitAddon);
+    term.loadAddon(new WebLinksAddon.WebLinksAddon());
+
+    term.open(document.getElementById('terminal-container'));
+    fitAddon.fit();
+
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    ws = new WebSocket(`${protocol}//${window.location.host}/ws/terminal/`);
+    ws.binaryType = 'arraybuffer';
+
+    ws.onopen = () => {
+      setStatus('connected');
+      sendResize();
+    };
+
+    ws.onmessage = (evt) => {
+      const data = evt.data instanceof ArrayBuffer
+        ? new Uint8Array(evt.data)
+        : evt.data;
+      term.write(data);
+    };
+
+    ws.onerror = () => setStatus('error');
+
+    ws.onclose = () => {
+      setStatus('closed');
+      document.getElementById('reconnectOverlay').classList.add('visible');
+    };
+
+    term.onData(data => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(new TextEncoder().encode(data));
+      }
+    });
+
+    term.onResize(() => sendResize());
+  }
+
+  function restartTerminal() {
+    if (ws) {
+      ws.onclose = null;
+      ws.close();
+    }
+    document.getElementById('reconnectOverlay').classList.remove('visible');
+    initTerminal();
+  }
+
+  function sendResize() {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: 'resize', cols: term.cols, rows: term.rows }));
+    }
+  }
+
+  window.addEventListener('resize', () => {
+    if (fitAddon) {
+      fitAddon.fit();
+    }
+  });
+
+  initTerminal();
+</script>
+{% endblock %}

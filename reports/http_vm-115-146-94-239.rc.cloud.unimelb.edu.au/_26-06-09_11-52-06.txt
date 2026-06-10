@@ -1,0 +1,18 @@
+# Dirsearch started Tue Jun  9 11:52:22 2026 as: /usr/lib/python3/dist-packages/dirsearch/dirsearch.py -u http://vm-115-146-94-239.rc.cloud.unimelb.edu.au
+
+403   306B   http://vm-115-146-94-239.rc.cloud.unimelb.edu.au/.ht_wsr.txt
+403   306B   http://vm-115-146-94-239.rc.cloud.unimelb.edu.au/.htaccess.bak1
+403   306B   http://vm-115-146-94-239.rc.cloud.unimelb.edu.au/.htaccess.sample
+403   306B   http://vm-115-146-94-239.rc.cloud.unimelb.edu.au/.htaccess.save
+403   306B   http://vm-115-146-94-239.rc.cloud.unimelb.edu.au/.htaccess.orig
+403   306B   http://vm-115-146-94-239.rc.cloud.unimelb.edu.au/.htaccess_extra
+403   306B   http://vm-115-146-94-239.rc.cloud.unimelb.edu.au/.htaccess_orig
+403   306B   http://vm-115-146-94-239.rc.cloud.unimelb.edu.au/.htaccess_sc
+403   306B   http://vm-115-146-94-239.rc.cloud.unimelb.edu.au/.htaccessBAK
+403   306B   http://vm-115-146-94-239.rc.cloud.unimelb.edu.au/.htaccessOLD
+403   306B   http://vm-115-146-94-239.rc.cloud.unimelb.edu.au/.htaccessOLD2
+403   306B   http://vm-115-146-94-239.rc.cloud.unimelb.edu.au/.htm
+403   306B   http://vm-115-146-94-239.rc.cloud.unimelb.edu.au/.html
+403   306B   http://vm-115-146-94-239.rc.cloud.unimelb.edu.au/.htpasswd_test
+403   306B   http://vm-115-146-94-239.rc.cloud.unimelb.edu.au/.htpasswds
+403   306B   http://vm-115-146-94-239.rc.cloud.unimelb.edu.au/.httr-oauth

@@ -12,6 +12,7 @@ agent_cmds = {
     "gemini": ["/usr/bin/gemini", "--yolo", "-m", get_model_name(), "-p"],
     "claude": ["/root/.local/bin/claude", "--dangerously-skip-permissions", "--model", get_model_name(), "-p"],
     "codex": ["/usr/bin/codex", "exec", "--dangerously-bypass-approvals-and-sandbox", "-m", get_model_name()],
+    "xicode" : ["xicode", "--dangerously-skip-permissions", "-p"]
 }
 
 

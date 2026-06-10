@@ -818,6 +818,10 @@ def api_target_vulnerabilities(request, pk):
     })
 
 
+def terminal_view(request):
+    return render(request, 'terminal.html')
+
+
 from backend.websploit.tasks import comprehensive_task
 
 

@@ -12,3 +12,5 @@ waymore
 shodan
 tldextract
 jsbeautifier==1.15.4
+channels==4.2.0
+daphne==4.1.2
