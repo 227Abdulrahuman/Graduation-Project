@@ -1,9 +1,0 @@
-# Dirsearch started Mon Jun  1 21:28:15 2026 as: /usr/lib/python3/dist-packages/dirsearch/dirsearch.py -u https://yok-test.stage.att.com/lrr/ --exclude-sizes=246B
-
-302     2KB  https://yok-test.stage.att.com/lrr/%C0%AE%C0%AE%C0%AF    -> REDIRECTS TO: https://vh.stage.att.com/lrr/attLRR/LrrController?TAM_OP=error&USERNAME=&ERROR_CODE=0x38cf0424&ERROR_TEXT=Bad%20Request&METHOD=GET&URL=%2Flrr%2F%25C0%25AE%25C0%25AE%25C0%25AF&HOSTNAME=vh.stage.att.com&AUTHNLEVEL=&FAILREASON=&PROTOCOL=https&OLDSESSION=&EXPIRE_SECS=0
-302     2KB  https://yok-test.stage.att.com/lrr/%ff    -> REDIRECTS TO: https://vh.stage.att.com/lrr/attLRR/LrrController?TAM_OP=error&USERNAME=&ERROR_CODE=0x38cf0424&ERROR_TEXT=Bad%20Request&METHOD=GET&URL=%2Flrr%2F%25FF&HOSTNAME=vh.stage.att.com&AUTHNLEVEL=&FAILREASON=&PROTOCOL=https&OLDSESSION=&EXPIRE_SECS=0
-400    48B   https://yok-test.stage.att.com/lrr/a%5c.aspx
-200   321B   https://yok-test.stage.att.com/lrr/actuator
-200    15B   https://yok-test.stage.att.com/lrr/actuator/health
-500    48B   https://yok-test.stage.att.com/lrr/error
-302     2KB  https://yok-test.stage.att.com/lrr/servlet/%C0%AE%C0%AE%C0%AF    -> REDIRECTS TO: https://vh.stage.att.com/lrr/attLRR/LrrController?TAM_OP=error&USERNAME=&ERROR_CODE=0x38cf0424&ERROR_TEXT=Bad%20Request&METHOD=GET&URL=%2Flrr%2Fservlet%2F%25C0%25AE%25C0%25AE%25C0%25AF&HOSTNAME=vh.stage.att.com&AUTHNLEVEL=&FAILREASON=&PROTOCOL=https&OLDSESSION=&EXPIRE_SECS=0

@@ -1,7 +1,0 @@
-# Dirsearch started Sat May 30 10:52:00 2026 as: /usr/lib/python3/dist-packages/dirsearch/dirsearch.py -u https://144.160.57.168:8445/
-
-404   555B   https://144.160.57.168:8445/jsp.zip
-404   555B   https://144.160.57.168:8445/html.zip
-404   555B   https://144.160.57.168:8445/js.zip
-404   555B   https://144.160.57.168:8445/php.zip
-404   555B   https://144.160.57.168:8445/aspx.zip
