@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}Vulnerability Scan — Web Sploit{% endblock %}
+
+{% block extra_styles %}
+  .page-header { margin-bottom: 32px; text-align: center; }
+  .page-title { font-family: var(--font-display); font-size: 26px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-primary); }
+
+  .scan-panel { background: var(--bg-surface, rgba(255, 255, 255, 0.02)); border: 1px solid var(--border-mid); border-radius: var(--radius-md); padding: 40px; max-width: 640px; margin: 0 auto; }
+
+  .form-group { margin-bottom: 24px; display: flex; flex-direction: column; gap: 8px; text-align: left; }
+  .form-group label { font-family: var(--font-mono); font-size: 13px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); }
+  .form-group input:not([type="checkbox"]), .form-group textarea { background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-dim); border-radius: var(--radius-sm); padding: 14px 16px; font-size: 14px; color: var(--text-primary); font-family: var(--font-mono); transition: all var(--transition); outline: none; width: 100%; box-sizing: border-box; }
+  .form-group textarea { resize: vertical; min-height: 100px; line-height: 1.5; }
+  .form-group input:not([type="checkbox"]):focus, .form-group textarea:focus { border-color: var(--accent-primary, rgba(0, 212, 255, 0.8)); box-shadow: 0 0 10px rgba(0, 212, 255, 0.1); }
+
+  /* ── Scan Toggles ── */
+  .scan-toggles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 24px; }
+  .scan-toggle { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-dim); border-radius: var(--radius-sm); cursor: pointer; transition: border-color var(--transition), background var(--transition); user-select: none; }
+  .scan-toggle:hover { border-color: rgba(0, 212, 255, 0.35); background: rgba(0, 212, 255, 0.04); }
+  .scan-toggle input[type="checkbox"] { accent-color: var(--accent-primary); color-scheme: dark; cursor: pointer; flex-shrink: 0; }
+  .toggle-label { font-family: var(--font-mono); font-size: 13px; color: var(--text-primary); flex: 1; }
+
+  .section-label { font-family: var(--font-mono); font-size: 13px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-primary); margin-bottom: 8px; }
+
+  .btn-submit { display: inline-flex; align-items: center; justify-content: center; width: 100%; gap: 8px; padding: 14px 24px; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 14px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; border: 1px solid rgba(0, 212, 255, 0.45); background: rgba(0, 212, 255, 0.08); color: var(--accent-primary); transition: all var(--transition); margin-top: 16px; }
+  .btn-submit:hover { background: rgba(0, 212, 255, 0.16); border-color: var(--accent-primary); box-shadow: 0 0 20px rgba(0, 212, 255, 0.18); }
+
+  .btn-cancel-task { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 20px; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; border: 1px solid rgba(255, 59, 92, 0.45); background: rgba(255, 59, 92, 0.08); color: var(--accent-red); transition: all var(--transition); margin-top: 24px; }
+  .btn-cancel-task:hover { background: rgba(255, 59, 92, 0.16); border-color: var(--accent-red); box-shadow: 0 0 20px rgba(255, 59, 92, 0.18); }
+
+  /* ── Status UI ── */
+  .status-container { display: none; text-align: center; padding: 20px 0; }
+  .spinner { border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--accent-primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px auto; }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+  .status-text { font-family: var(--font-mono); font-size: 15px; color: var(--text-primary); line-height: 1.5; }
+  .status-icon { width: 48px; height: 48px; margin: 0 auto 20px auto; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+  .status-icon.success { background: rgba(0, 255, 157, 0.1); color: var(--accent-green, #00ff9d); border: 1px solid rgba(0, 255, 157, 0.3); }
+  .status-icon.error { background: rgba(255, 59, 92, 0.1); color: var(--accent-red, #ff3b5c); border: 1px solid rgba(255, 59, 92, 0.3); }
+
+  .btn-back { display: inline-block; margin-top: 24px; margin-left: 12px; margin-right: 12px; font-family: var(--font-mono); font-size: 13px; color: var(--text-dim); text-decoration: none; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid transparent; transition: all var(--transition); text-align: center; }
+  .btn-back:hover { color: var(--accent-primary); border-color: var(--accent-primary); }
+  .form-actions-wrapper { text-align: center; }
+
+  .terminal-window { display: none; background: #0f0f15; border: 1px solid var(--border-mid); border-radius: var(--radius-sm); padding: 16px; margin-top: 24px; text-align: left; height: 300px; overflow-y: auto; font-family: var(--font-mono); font-size: 13px; color: #a9b1d6; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+  .terminal-window ul { list-style: none; margin: 0; padding: 0; }
+  .terminal-window li { margin-bottom: 6px; word-wrap: break-word; }
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Vulnerability Scan</h1>
+</div>
+
+<div class="scan-panel">
+  <div id="scan-form-container">
+    <form id="vulnScanForm">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label for="url">Target URL *</label>
+        <input type="url" id="url" name="url" placeholder="https://example.com" required>
+      </div>
+
+      <div class="form-group">
+        <label for="auth_headers">Custom Headers (Optional)</label>
+        <textarea id="auth_headers" name="auth_headers" placeholder="Authorization: Bearer eyJhbGci...&#10;Cookie: session_id=123abc..."></textarea>
+        <span style="font-size: 12px; color: var(--text-dim); margin-top: 4px;">Enter one header per line.</span>
+      </div>
+
+      <div class="form-group">
+        <label>Select Scans to Run</label>
+        <div class="scan-toggles">
+          <label class="scan-toggle">
+            <input type="checkbox" name="run_xss" value="1" checked>
+            <span class="toggle-label">XSS</span>
+          </label>
+          <label class="scan-toggle">
+            <input type="checkbox" name="run_sqli" value="1" checked>
+            <span class="toggle-label">SQL Injection</span>
+          </label>
+          <label class="scan-toggle">
+            <input type="checkbox" name="run_open_redirect" value="1" checked>
+            <span class="toggle-label">Open Redirect</span>
+          </label>
+          <label class="scan-toggle">
+            <input type="checkbox" name="run_path_traversal" value="1" checked>
+            <span class="toggle-label">Path Traversal</span>
+          </label>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+        Execute Vulnerability Scan
+      </button>
+    </form>
+
+    <div class="form-actions-wrapper">
+      <a href="{% url 'home' %}" class="btn-back">&larr; Cancel and return to Targets</a>
+    </div>
+  </div>
+
+  <div id="scan-status-container" class="status-container">
+    <div id="loading-spinner" class="spinner"></div>
+    <div id="final-icon" class="status-icon" style="display: none;"></div>
+
+    <div id="status-text" class="status-text">Initializing vulnerability scan...</div>
+
+    <div id="terminal-window" class="terminal-window">
+      <ul id="log-list"></ul>
+    </div>
+
+    <div class="form-actions-wrapper">
+      <button type="button" id="btn-cancel-scan" class="btn-cancel-task" style="display: none;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+        Cancel Scan
+      </button>
+      <a href="{% url 'scan_vuln' %}" id="btn-return" class="btn-back" style="display: none;">&larr; Start Another Scan</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  let lastLogCount = 0;
+  let currentTaskId = null;
+  let pollIntervalId = null;
+
+  document.getElementById('vulnScanForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    lastLogCount = 0;
+    currentTaskId = null;
+    document.getElementById('log-list').innerHTML = '';
+
+    document.getElementById('scan-form-container').style.display = 'none';
+    document.getElementById('scan-status-container').style.display = 'block';
+
+    document.getElementById('btn-return').style.display = 'none';
+    document.getElementById('btn-cancel-scan').style.display = 'inline-flex';
+    document.getElementById('status-text').innerText = 'Starting Vulnerability Scan...';
+
+    const url = document.getElementById('url').value;
+    const authHeaders = document.getElementById('auth_headers').value;
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    const formData = new FormData(document.getElementById('vulnScanForm'));
+
+    const response = await fetch(window.location.href, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrfToken
+      },
+      body: new URLSearchParams({
+        url: url,
+        auth_headers: authHeaders,
+        run_xss: formData.has('run_xss') ? '1' : '0',
+        run_sqli: formData.has('run_sqli') ? '1' : '0',
+        run_open_redirect: formData.has('run_open_redirect') ? '1' : '0',
+        run_path_traversal: formData.has('run_path_traversal') ? '1' : '0',
+      })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      currentTaskId = data.task_id;
+      pollTaskStatus(currentTaskId);
+    } else {
+      showError("Failed to communicate with the server to start the scan.");
+    }
+  });
+
+  document.getElementById('btn-cancel-scan').addEventListener('click', async function() {
+    if (!currentTaskId) return;
+
+    if (pollIntervalId) clearInterval(pollIntervalId);
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    await fetch(`/task-cancel/${currentTaskId}/`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrfToken }
+    });
+
+    const li = document.createElement('li');
+    li.textContent = "> [!] User sent interrupt signal. Vulnerability scan aborted.";
+    li.style.color = "var(--accent-red)";
+    document.getElementById('log-list').appendChild(li);
+
+    showError("Scan was cancelled manually.");
+  });
+
+  function pollTaskStatus(taskId) {
+    pollIntervalId = setInterval(async () => {
+      const response = await fetch(`/task-status/${taskId}/`);
+      const data = await response.json();
+
+      if ((data.state === 'PROGRESS' || data.state === 'SUCCESS') && data.logs) {
+        if (data.logs.length > lastLogCount) {
+          document.getElementById('terminal-window').style.display = 'block';
+          const logList = document.getElementById('log-list');
+
+          for (let i = lastLogCount; i < data.logs.length; i++) {
+            const li = document.createElement('li');
+            li.textContent = "> " + data.logs[i];
+
+            if (data.logs[i].includes('[+]')) {
+              li.style.color = "var(--accent-green)";
+            } else if (data.logs[i].includes('[-]')) {
+              li.style.color = "var(--accent-red)";
+            } else if (data.logs[i].includes('[*]')) {
+              li.style.color = "var(--accent-primary)";
+            }
+
+            logList.appendChild(li);
+          }
+
+          lastLogCount = data.logs.length;
+          const terminal = document.getElementById('terminal-window');
+          terminal.scrollTop = terminal.scrollHeight;
+        }
+      }
+
+      if (data.state === 'PENDING' || data.state === 'STARTED' || data.state === 'PROGRESS') {
+        document.getElementById('status-text').innerText = 'Vulnerability scan is actively running. Streaming live logs...';
+      } else if (data.state === 'SUCCESS') {
+        clearInterval(pollIntervalId);
+        showSuccess("Vulnerability Scan completed successfully!");
+      } else if (data.state === 'FAILURE' || data.state === 'REVOKED') {
+        clearInterval(pollIntervalId);
+        showError("A fatal error occurred, or the task was revoked.");
+      }
+    }, 1500);
+  }
+
+  function showSuccess(message) {
+    document.getElementById('loading-spinner').style.display = 'none';
+    document.getElementById('btn-cancel-scan').style.display = 'none';
+
+    const icon = document.getElementById('final-icon');
+    icon.style.display = 'flex';
+    icon.className = 'status-icon success';
+    icon.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
+    document.getElementById('status-text').innerHTML = `<span style="color: var(--accent-green);">${message}</span>`;
+    document.getElementById('btn-return').style.display = 'inline-block';
+  }
+
+  function showError(message) {
+    document.getElementById('loading-spinner').style.display = 'none';
+    document.getElementById('btn-cancel-scan').style.display = 'none';
+
+    const icon = document.getElementById('final-icon');
+    icon.style.display = 'flex';
+    icon.className = 'status-icon error';
+    icon.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+
+    document.getElementById('status-text').innerHTML = `<span style="color: var(--accent-red);">${message}</span>`;
+    document.getElementById('btn-return').style.display = 'inline-block';
+  }
+</script>
+{% endblock %}

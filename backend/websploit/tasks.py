@@ -4,9 +4,8 @@ import logging
 from celery import shared_task
 from backend.core.recon.main import recon
 from backend.core.scan.webapp_analysis import analyze_webapp
-from backend.core.scan.general_scan import general_scan
-from backend.core.scan.comperehensive_scan import comprehensive_scan
 from backend.core.utilities.webapp_manual import add_webapp_manually
+from backend.core.scan.vuln_scan import vuln_scan
 
 # --- THIS IS YOUR EXISTING RECON LOGIC (UNTOUCHED) ---
 class LogCapture(io.StringIO):
@@ -92,41 +91,25 @@ def webapp_task(self, url, auth_headers=None, logout=None):
 
 
 @shared_task(bind=True)
-def general_scan_task(self, domain):
-    # Hook into the logger
-    logger = logging.getLogger()
-    log_handler = CeleryTaskLogHandler(self)
-    log_handler.setFormatter(logging.Formatter('%(message)s'))
-    logger.addHandler(log_handler)
+def vuln_scan_task(self, url, auth_headers=None, run_xss=True, run_sqli=True, run_open_redirect=True, run_path_traversal=True):
+    old_stdout = sys.stdout
+    capture = LogCapture(self)
+    sys.stdout = capture
 
     try:
-        # Run the general scan
-        result = general_scan(domain)
-
-        # Return the result AND the final logs array
-        return {'status': 'SUCCESS', 'result': result, 'logs': log_handler.logs}
+        result = vuln_scan(
+            url,
+            auth_headers=auth_headers,
+            run_xss=run_xss,
+            run_sqli=run_sqli,
+            run_open_redirect=run_open_redirect,
+            run_path_traversal=run_path_traversal,
+        )
+        return {'status': 'SUCCESS', 'result': result, 'logs': capture.logs}
     finally:
-        # Clean up the logger when done
-        logger.removeHandler(log_handler)
+        sys.stdout = old_stdout
 
 
-@shared_task(bind=True)
-def comprehensive_task(self, url, auth_headers=None, logout=None):
-    # Hook into the logger
-    logger = logging.getLogger()
-    log_handler = CeleryTaskLogHandler(self)
-    log_handler.setFormatter(logging.Formatter('%(message)s'))
-    logger.addHandler(log_handler)
-
-    try:
-        # Run the comprehensive scan
-        result = comprehensive_scan(url, auth_headers=auth_headers, logout=logout)
-
-        # Return the result AND the final logs array
-        return {'status': 'SUCCESS', 'result': result, 'logs': log_handler.logs}
-    finally:
-        # Clean up the logger when done
-        logger.removeHandler(log_handler)
 @shared_task(bind=True)
 def add_webapp_manual_task(self, url):
     old_stdout = sys.stdout

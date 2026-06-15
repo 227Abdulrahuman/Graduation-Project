@@ -726,19 +726,6 @@ def js_code_review_status(request, pk):
         return JsonResponse({'status': 'ready', 'content': js_obj.code_review})
     return JsonResponse({'status': 'generating'})
 
-from backend.websploit.tasks import general_scan_task
-
-def scan_general(request):
-    if request.method == 'POST':
-        domain = request.POST.get('domain')
-
-        # Trigger the Celery task
-        task = general_scan_task.delay(domain)
-        return JsonResponse({'task_id': task.id})
-
-    return render(request, 'scan_general.html')
-
-
 def cancel_task(request, task_id):
     if request.method == 'POST':
         task = AsyncResult(task_id)
@@ -822,29 +809,33 @@ def terminal_view(request):
     return render(request, 'terminal.html')
 
 
-from backend.websploit.tasks import comprehensive_task
+from backend.websploit.tasks import vuln_scan_task
 
 
-def scan_comprehensive(request):
+def scan_vuln(request):
     if request.method == 'POST':
         url = request.POST.get('url')
-        logout = request.POST.get('logout')
         auth_headers_raw = request.POST.get('auth_headers')
 
-        # Convert the textarea input into a list of strings
         auth_headers = []
         if auth_headers_raw:
-            auth_headers = [
-                line.strip()
-                for line in auth_headers_raw.splitlines()
-                if line.strip()
-            ]
+            auth_headers = [line.strip() for line in auth_headers_raw.splitlines() if line.strip()]
 
-        # If logout is empty string, set to None
-        if not logout:
-            logout = None
+        run_xss = request.POST.get('run_xss') == '1'
+        run_sqli = request.POST.get('run_sqli') == '1'
+        run_open_redirect = request.POST.get('run_open_redirect') == '1'
+        run_path_traversal = request.POST.get('run_path_traversal') == '1'
 
-        task = comprehensive_task.delay(url, auth_headers=auth_headers, logout=logout)
+        task = vuln_scan_task.delay(
+            url,
+            auth_headers=auth_headers,
+            run_xss=run_xss,
+            run_sqli=run_sqli,
+            run_open_redirect=run_open_redirect,
+            run_path_traversal=run_path_traversal,
+        )
         return JsonResponse({'task_id': task.id})
 
-    return render(request, 'scan_comprehensive.html')
+    return render(request, 'scan_vuln.html')
+
+
