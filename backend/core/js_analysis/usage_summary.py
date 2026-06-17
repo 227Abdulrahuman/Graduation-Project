@@ -17,9 +17,9 @@ def generate_usage_summary(webapp_url, js_filename):
 
     # Prepare Prompt
     prompt = f"""
-    Explain the main functionality of in the js file {output_dir}/{js_filename}
-    Explain tech stack used.
-    Explain the purpose of this file.
+    For the js file: {output_dir}/{js_filename}
+    Explain the main functionalities of this file.
+    Explain tech stack & Libraries used.
     
     Generate md report at {output_dir}
     md report should STRICTLY FOLLOW THIS NAMING CONVENSION

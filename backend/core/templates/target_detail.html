@@ -483,6 +483,7 @@
           <th>Web App</th>
           <th>Endpoint</th>
           <th>Parameter</th>
+          <th style="text-align: center;">Report</th>
         </tr>
       </thead>
       <tbody id="vulnerabilitiesTbody"></tbody>
@@ -720,8 +721,7 @@ async function fetchVulnerabilities(page) {
   tbody.innerHTML = '';
 
   if (data.results.length === 0) {
-    // Changed colspan from 5 to 6 to match the new table headers
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 40px;" class="text-muted">No vulnerabilities match your filters.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 40px;" class="text-muted">No vulnerabilities match your filters.</td></tr>`;
   } else {
     data.results.forEach((vuln, index) => {
       const globalIndex = ((data.current_page - 1) * 500) + index + 1;
@@ -750,6 +750,10 @@ async function fetchVulnerabilities(page) {
           ? `<span class="tech-badge">${vuln.parameter}</span>`
           : `<span class='text-muted'>—</span>`;
 
+      let reportBtnHtml = vuln.has_report
+        ? `<a href="/vulnerabilities/${vuln.id}/report/" class="ws-btn ws-btn--ghost" style="padding: 4px 10px; font-size: 12px;">View</a>`
+        : `<span class="text-muted">—</span>`;
+
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td class="font-mono text-muted">${globalIndex}</td>
@@ -758,6 +762,7 @@ async function fetchVulnerabilities(page) {
         <td class="font-mono">${webAppHtml}</td>
         <td class="font-mono">${endpointHtml}</td>
         <td>${paramHtml}</td>
+        <td style="text-align: center;">${reportBtnHtml}</td>
       `;
       tbody.appendChild(tr);
     });

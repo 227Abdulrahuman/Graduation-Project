@@ -790,11 +790,13 @@ def api_target_vulnerabilities(request, pk):
             resolved_web_app = v.web_app.url
 
         data.append({
+            'id': v.id,
             'name': v.name,
             'severity': v.severity,
             'web_app': resolved_web_app,
             'endpoint': resolved_endpoint,
-            'parameter': resolved_param
+            'parameter': resolved_param,
+            'has_report': bool(v.report),
         })
 
     return JsonResponse({
@@ -803,6 +805,11 @@ def api_target_vulnerabilities(request, pk):
         'current_page': page_obj.number,
         'total_count': paginator.count
     })
+
+
+def vuln_report(request, pk):
+    vuln = get_object_or_404(Vulnerability, pk=pk)
+    return render(request, 'vuln_report.html', {'vuln': vuln})
 
 
 def terminal_view(request):

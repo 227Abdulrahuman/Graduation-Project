@@ -110,6 +110,7 @@ class Vulnerability(models.Model):
     location = models.CharField(max_length=1000)
     severity = models.CharField(max_length=1000)
     type = models.CharField(max_length=1000)
+    report = models.TextField(null=True, blank=True)
 
     class Meta:
         constraints = [
