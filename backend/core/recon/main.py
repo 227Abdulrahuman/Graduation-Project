@@ -9,10 +9,8 @@ from backend.core.recon.passive_recon import fetch_subdomains
 from backend.core.recon.dns_recon import dns_recon
 from backend.core.recon.web_fingerprinting import web_fingerprint
 from backend.core.recon.llm_permutations import generate_permutations
-from backend.core.recon.port_scanner import scan_ports
 
 
-# Providers that require API key / cookie validation, keyed by provider ID
 _KEY_CHECKS = {
     "virustotal":         virustotal_check,
     "key_chaos":          chaos_check,
@@ -22,11 +20,7 @@ _KEY_CHECKS = {
 }
 
 def validate_api_keys(providers=None):
-    """
-    Checks API keys for paid providers.
-    providers: list of selected provider IDs, or None to check all.
-    Returns a list of names of providers with invalid keys.
-    """
+
     if providers is not None:
         checks = [(name, func) for name, func in _KEY_CHECKS.items() if name in providers]
     else:
@@ -76,8 +70,6 @@ def recon(domain, chunk_size=None, multiplicity=3, providers=None):
     print()
     web_fingerprint(domain)
     print()
-    scan_ports(domain)
-
     print(f"[+] Finished recon pipline for {domain}")
 
     return True

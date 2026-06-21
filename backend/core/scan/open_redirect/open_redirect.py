@@ -3,7 +3,6 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.websploit.settings")
 django.setup()
 from backend.core.models import *
 from urllib.parse import urlparse
-from backend.core.scan.notify.notify import notify_discord
 
 def open_redirect_scan(url, auth_headers=None):
     """
@@ -54,12 +53,12 @@ def open_redirect_scan(url, auth_headers=None):
             defaults={
                 "location": u,
                 "severity": "Low",
-                "type": "Client Side"
+
             }
         )
 
         message = f"[+] Found Open Redirect at {u}"
-        notify_discord(message)
+
         print(message)
 
     print(f"[+] Finished Open Redirect Scanning on {url}")

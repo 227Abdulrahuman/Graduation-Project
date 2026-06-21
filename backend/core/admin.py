@@ -37,12 +37,8 @@ class ArchivedURLsAdmin(admin.ModelAdmin):
 
 @admin.register(models.Vulnerability)
 class VulnerabilityAdmin(admin.ModelAdmin):
-    list_display = ('name', 'location', 'severity', 'type')
+    list_display = ('name', 'location', 'severity')
     list_filter = ('web_app__url',)
-
-@admin.register(models.Port)
-class PortAdmin(admin.ModelAdmin):
-    list_display = ('subdomain','number','service')
 
 @admin.register(models.JSFile)
 class JSFileAdmin(admin.ModelAdmin):

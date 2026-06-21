@@ -202,7 +202,6 @@
     width: 100%;
     border-collapse: collapse;
     font-size: 15px;
-    min-width: 900px;
   }
 
   .target-table thead tr { border-bottom: 1px solid var(--border-mid); }
@@ -214,15 +213,16 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--text-dim);
-    padding: 16px 24px;
-    text-align: left;
+    padding: 16px 14px;
+    text-align: center;
     white-space: nowrap;
     background: rgba(0,0,0,0.2);
   }
 
   .target-table td {
-    padding: 16px 24px;
+    padding: 16px 14px;
     vertical-align: middle;
+    text-align: center;
     color: var(--text-primary);
     border-bottom: 1px solid var(--border-dim);
   }
@@ -383,16 +383,6 @@
 
     <input type="text" id="hostSearchSub" class="toolbar-input" placeholder="Search Hostname..." onkeyup="debounceFetchSubdomains()">
 
-    <div style="display: flex; gap: 8px;">
-      <select id="portSearch" class="toolbar-select" style="max-width: 140px;">
-        <option value="all">Port: All</option>
-        {% for p in available_ports %}
-          <option value="{{ p }}">Port: {{ p }}</option>
-        {% endfor %}
-      </select>
-
-      <input type="text" id="serviceSearch" class="toolbar-input" placeholder="Service (e.g., http)" style="max-width: 180px;" disabled onkeyup="debounceFetchSubdomains()">
-    </div>
   </div>
 
   <div class="panel">
@@ -403,7 +393,6 @@
           <th>Hostname</th>
           <th>IP Address</th>
           <th>CNAME</th>
-          <th>Ports</th>
         </tr>
       </thead>
       <tbody id="subdomainsTbody"></tbody>
@@ -446,6 +435,7 @@
         <tr>
           <th style="width: 50px;">#</th>
           <th>URL</th>
+          <th>CNAME</th>
           <th>Status</th>
           <th>Title</th>
           <th>Content Length</th>
@@ -510,19 +500,6 @@
     btnElement.classList.add('active');
   }
 
-  // --- Port/Service Input Toggle Logic ---
-  const portInput = document.getElementById('portSearch');
-  const serviceInput = document.getElementById('serviceSearch');
-  portInput.addEventListener('change', function() {
-    if (this.value !== 'all') {
-      serviceInput.disabled = false;
-    } else {
-      serviceInput.disabled = true;
-      serviceInput.value = '';
-    }
-    fetchSubdomains(1);
-  });
-
   // --- Debounce Utility (prevents API spam when typing fast) ---
   let debounceTimer;
   function debounce(func, delay = 300) {
@@ -566,8 +543,6 @@
     const ip = document.getElementById('ipFilter').value;
     const cname = document.getElementById('cnameFilter').value;
     const host = document.getElementById('hostSearchSub').value;
-    const port = document.getElementById('portSearch').value;
-    const service = document.getElementById('serviceSearch').value;
 
     const params = new URLSearchParams({
       page: page,
@@ -575,8 +550,6 @@
       ip: ip,
       cname: cname,
       host: host,
-      port: port,
-      service: service
     });
 
     const response = await fetch(`/api/targets/${targetId}/subdomains/?` + params.toString());
@@ -588,12 +561,11 @@
     tbody.innerHTML = '';
 
     if (data.results.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 40px;" class="text-muted">No subdomains match your filters.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 40px;" class="text-muted">No subdomains match your filters.</td></tr>`;
     } else {
       data.results.forEach((sub, index) => {
         const globalIndex = ((data.current_page - 1) * 500) + index + 1;
 
-        let portsHtml = sub.ports.map(p => `<span class="tech-badge">${p}</span>`).join('') || `<span class="text-muted">—</span>`;
         let ipHtml = sub.ip ? sub.ip : `<span class='text-muted'>—</span>`;
         let cnameHtml = sub.cname ? sub.cname : `<span class='text-muted'>—</span>`;
 
@@ -606,7 +578,6 @@
           </td>
           <td class="font-mono">${ipHtml}</td>
           <td class="font-mono">${cnameHtml}</td>
-          <td>${portsHtml}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -655,7 +626,7 @@
     tbody.innerHTML = '';
 
     if (data.results.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 40px;" class="text-muted">No web applications match your filters.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 40px;" class="text-muted">No web applications match your filters.</td></tr>`;
     } else {
       data.results.forEach((app, index) => {
         const globalIndex = ((data.current_page - 1) * 500) + index + 1;
@@ -670,6 +641,7 @@
         let techHtml = app.tech_stack.map(t => `<span class="tech-badge">${t}</span>`).join('') || `<span class="text-muted">—</span>`;
         let titleHtml = app.title ? app.title : `<span class='text-muted'>—</span>`;
         let lengthHtml = app.content_length ? app.content_length : `<span class='text-muted'>—</span>`;
+        let cnameHtml = app.cname ? app.cname : `<span class='text-muted'>—</span>`;
 
         const tr = document.createElement('tr');
         tr.dataset.appId = app.id;
@@ -679,6 +651,7 @@
           <td class="font-mono" style="cursor: pointer;" onclick="copyToClipboard('${app.url}')">
             <span style="color: var(--accent-primary);">${app.url}</span>
           </td>
+          <td class="font-mono">${cnameHtml}</td>
           <td>${statusHtml}</td>
           <td>${titleHtml}</td>
           <td class="font-mono">${lengthHtml}</td>

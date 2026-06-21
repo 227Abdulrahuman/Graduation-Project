@@ -23,7 +23,6 @@ def call_agent(prompt):
     """
 
     agent = get_agent_name()
-    model = get_model_name()
 
     cmd = agent_cmds[agent].copy()
 
@@ -34,5 +33,32 @@ def call_agent(prompt):
     return proc.stdout
 
 
+def check_agent():
+    """
+    Verifies the agent is reachable and responding correctly.
+    Returns (True, response) on success or (False, error_message) on failure.
+    """
+    agent = get_agent_name()
+
+    if agent not in agent_cmds:
+        return False, f"Unknown agent: {agent}"
+
+    try:
+        result = call_agent("Respond with only the word OK")
+    except FileNotFoundError:
+        return False, f"Agent binary not found for '{agent}'"
+    except Exception as e:
+        return False, f"Agent call failed: {e}"
+
+    if not result or not result.strip():
+        return False, "Agent returned empty response"
+
+    return True, result.strip()
+
+
 if __name__ == "__main__":
-    print(call_agent("What is ur name"))
+    ok, msg = check_agent()
+    if ok:
+        print(f"Agent is working. Response: {msg}")
+    else:
+        print(f"Agent check failed: {msg}")

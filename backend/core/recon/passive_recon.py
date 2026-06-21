@@ -82,6 +82,8 @@ def fetch_subdomains(domain, providers=None):
         for sub in all_subs:
             f.write(f"{sub}\n")
 
+    print(f"[+] Found {len(all_subs)} subdomains for {domain}")
+
 
     #Resolve live subdomains.
     print(f"\n[*] Resolving live subdomains for {domain}")

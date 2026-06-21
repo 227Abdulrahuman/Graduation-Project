@@ -26,7 +26,11 @@ def generate_usage_summary(webapp_url, js_filename):
     nameofjsfile_usage.md example: main.js -> main_usage.md NOT main.js  -> main_usage.js.md
     """
 
-    from backend.core.agents.call_agent import call_agent
+    from backend.core.agents.call_agent import call_agent, check_agent
+    ok, msg = check_agent()
+    if not ok:
+        print(f"[-] Agent check failed: {msg}")
+        return
     call_agent(prompt)
 
     #Store the summary Usage in the database.

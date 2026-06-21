@@ -156,14 +156,8 @@ def target_delete(request, pk):
 def target_detail(request, pk):
     target = get_object_or_404(Target, pk=pk)
 
-    # Get unique ports dynamically for the dropdown
-    ports = Port.objects.filter(subdomain__domain__target=target).values_list('number', flat=True).distinct()
-    available_ports = sorted([p for p in ports if p is not None])
-
-    # Notice we removed subdomains and webapps from here to save memory!
     context = {
         'target': target,
-        'available_ports': available_ports,
     }
     return render(request, 'target_detail.html', context)
 
@@ -171,7 +165,7 @@ def target_detail(request, pk):
 # --- NEW: Backend API for Subdomains ---
 def api_target_subdomains(request, pk):
     target = get_object_or_404(Target, pk=pk)
-    subs = Subdomain.objects.filter(domain__target=target).select_related('domain').prefetch_related('ports')
+    subs = Subdomain.objects.filter(domain__target=target).select_related('domain')
 
     # Apply Filters
     domain_filter = request.GET.get('domain', 'all')
@@ -194,13 +188,6 @@ def api_target_subdomains(request, pk):
     if host_search:
         subs = subs.filter(hostname__icontains=host_search)
 
-    port_search = request.GET.get('port', 'all')
-    if port_search != 'all':
-        subs = subs.filter(ports__number=port_search)
-        service_search = request.GET.get('service', '').strip()
-        if service_search:
-            subs = subs.filter(ports__service__icontains=service_search)
-
     # Distinct and order for consistent pagination
     subs = subs.distinct().order_by('hostname')
 
@@ -212,19 +199,11 @@ def api_target_subdomains(request, pk):
     # Serialize
     data = []
     for s in page_obj:
-        ports_data = []
-        for p in s.ports.all():
-            p_str = str(p.number)
-            if p.service:
-                p_str += f"/{p.service}"
-            ports_data.append(p_str)
-
         data.append({
             'hostname': s.hostname,
             'domain': s.domain.hostname,
             'ip': s.ip,
             'cname': s.cname,
-            'ports': ports_data
         })
 
     return JsonResponse({
@@ -285,6 +264,7 @@ def api_target_webapps(request, pk):
         data.append({
             'id': a.id,
             'url': a.url,
+            'cname': a.subdomain.cname or '',
             'status_code': a.status_code,
             'title': a.title,
             'content_length': a.content_length,

@@ -1,4 +1,4 @@
-import os, subprocess
+import subprocess
 import time
 from dotenv import load_dotenv
 from backend.core.models import *
@@ -25,6 +25,12 @@ def generate_permutations(domain, chunk_size, multiplicity=3):
 
     length = len(subdomains)
 
+    from backend.core.agents.call_agent import call_agent, check_agent
+    ok, msg = check_agent()
+    if not ok:
+        print(f"[-] Agent check failed: {msg}")
+        return
+
     print(f"[*] Generating permutations for {domain}")
     for start in range(0, length, chunk_size):
         print(f"[*] Generating permutations for subdomains from {start} to {start + chunk_size} for {domain}")
@@ -32,13 +38,14 @@ def generate_permutations(domain, chunk_size, multiplicity=3):
         batch_content = "".join(batch)
 
         prompt = f"""
-        You are an AI agent that does subdomains permutations for bug bounty hunting.
+        You are an AI agent that generates subdomains permutations for bug bounty hunting.
         The target domain is {domain}
         I will give you subdomains line by line that belong to this domain and I want you to generate permutations for them.
         Make sure that permutations are subdomains for {domain}
         Your response should only contain permutations.
         Don't place the results inside "```"
-        The Generated permutations should be {multiplicity}x the size of the provided subdomains.
+        The multiplicity for generation is {multiplicity}
+        For example if I gave you 100 subdomains and the multiplicity is 10 I want you to return 1000 potential subdomain.
         Here are the subdomains:
         {batch_content}
         """
@@ -49,8 +56,6 @@ def generate_permutations(domain, chunk_size, multiplicity=3):
 
         while not success and attempt < max_retries:
             try:
-                from backend.core.agents.call_agent import call_agent
-
                 result = call_agent(prompt)
                 
                 if result:

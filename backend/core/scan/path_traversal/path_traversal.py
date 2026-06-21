@@ -3,7 +3,6 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.websploit.settings")
 django.setup()
 from backend.core.models import *
 from urllib.parse import urlparse
-from backend.core.scan.notify.notify import notify_discord
 
 def path_traversal_scan(url, auth_headers=None):
     """
@@ -51,12 +50,12 @@ def path_traversal_scan(url, auth_headers=None):
             defaults={
                 "location": u,
                 "severity": "High",
-                "type": "Server Side"
+
             }
         )
 
         message = f"[+] Found Path Traversal at {u}"
-        notify_discord(message)
+
         print(message)
 
     print(f"[+] Finished Path Traversal Scanning on {url}")
