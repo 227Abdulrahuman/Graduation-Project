@@ -263,16 +263,17 @@
   .row-tested:hover { background: rgba(0, 255, 157, 0.06) !important; }
 
   .tested-checkbox-wrap {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
+    gap: 6px;
+    padding: 6px 10px;
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid var(--border-dim);
     border-radius: var(--radius-sm);
     cursor: pointer;
     transition: border-color var(--transition), background var(--transition);
     user-select: none;
+    white-space: nowrap;
   }
 
   .tested-checkbox-wrap:hover {
@@ -792,14 +793,16 @@
           <td>${titleHtml}</td>
           <td class="font-mono">${lengthHtml}</td>
           <td>${techHtml}</td>
-          <td style="text-align: center; display: flex; gap: 8px; justify-content: center; align-items: center;">
-            <label class="tested-checkbox-wrap" title="${app.tested ? 'Mark as untested' : 'Mark as tested'}">
-              <input type="checkbox" class="tested-checkbox" data-id="${app.id}" ${app.tested ? 'checked' : ''} onchange="toggleTested(this)">
-              <span class="tested-label">${app.tested ? 'Tested' : 'Untested'}</span>
-            </label>
-            <a href="/webapps/${app.id}/" class="ws-btn ws-btn--ghost" style="padding: 4px 8px;" title="View Details">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            </a>
+          <td style="text-align: center; white-space: nowrap;">
+            <div style="display: inline-flex; gap: 8px; align-items: center;">
+              <label class="tested-checkbox-wrap" title="${app.tested ? 'Mark as untested' : 'Mark as tested'}">
+                <input type="checkbox" class="tested-checkbox" data-id="${app.id}" ${app.tested ? 'checked' : ''} onchange="toggleTested(this)">
+                <span class="tested-label">${app.tested ? 'Tested' : 'Untested'}</span>
+              </label>
+              <a href="/webapps/${app.id}/" class="ws-btn ws-btn--ghost" style="padding: 4px 8px;" title="View Details">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </a>
+            </div>
           </td>
         `;
         tbody.appendChild(tr);

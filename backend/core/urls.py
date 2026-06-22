@@ -28,6 +28,7 @@ urlpatterns = [
     path('webapps/<int:pk>/js-routes/status/', views.js_routes_status, name='js_routes_status'),
     path('webapps/<int:pk>/js-code-review/', views.js_code_review, name='js_code_review'),
     path('webapps/<int:pk>/js-code-review/status/', views.js_code_review_status, name='js_code_review_status'),
+    path('webapps/<int:pk>/js-analysis/cancel/', views.js_analysis_cancel, name='js_analysis_cancel'),
     path('task-cancel/<str:task_id>/', views.cancel_task, name='cancel_task'),
     path('api/targets/<int:pk>/vulnerabilities/', views.api_target_vulnerabilities, name='api_target_vulnerabilities'),
     path('api/webapps/<int:pk>/toggle-tested/', views.api_webapp_toggle_tested, name='api_webapp_toggle_tested'),

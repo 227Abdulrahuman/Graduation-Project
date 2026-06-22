@@ -150,7 +150,8 @@
       <div class="loading-screen" id="loading-screen">
         <div class="spinner"></div>
         <div class="loading-label">Generating Summary</div>
-        <div class="loading-sub">Analyzing {{ filename }} with Claude&hellip;</div>
+        <div class="loading-sub">Analyzing {{ filename }} with {{ agent_name }}&hellip;</div>
+        <button class="ws-btn ws-btn--ghost" id="cancel-btn" onclick="cancelAnalysis()" style="margin-top: 12px; color: #ff4444; border-color: #ff4444;">Cancel</button>
       </div>
       <div id="raw-markdown" style="display:none;"></div>
       <div id="rendered-content" style="display:none;"></div>
@@ -173,18 +174,34 @@
   }
 
   {% if generating %}
+  let _cancelled = false;
+
+  function cancelAnalysis() {
+    _cancelled = true;
+    fetch("{% url 'js_analysis_cancel' webapp.id %}?filename={{ filename|urlencode }}&type=summary", {method: 'POST'})
+      .then(() => {
+        document.getElementById('loading-screen').innerHTML =
+          '<div class="error-msg">Analysis cancelled.</div>';
+      });
+  }
+
   (function poll() {
+    if (_cancelled) return;
     fetch("{% url 'js_summary_status' webapp.id %}?filename={{ filename|urlencode }}")
       .then(r => r.json())
       .then(data => {
+        if (_cancelled) return;
         if (data.status === 'ready') {
           document.getElementById('loading-screen').style.display = 'none';
           renderMarkdown(data.content);
+        } else if (data.status === 'error') {
+          document.getElementById('loading-screen').innerHTML =
+            '<div class="error-msg">Analysis failed: ' + (data.message || 'Unknown error') + '</div>';
         } else {
           setTimeout(poll, 3000);
         }
       })
-      .catch(() => setTimeout(poll, 5000));
+      .catch(() => { if (!_cancelled) setTimeout(poll, 5000); });
   })();
   {% else %}
   document.addEventListener('DOMContentLoaded', function() {

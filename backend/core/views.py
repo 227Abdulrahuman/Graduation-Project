@@ -6,6 +6,7 @@ from backend.websploit.tasks import recon_task
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
 import os
 
 from django.shortcuts import render
@@ -592,7 +593,47 @@ def js_viewer(request, pk):
     return render(request, 'js_viewer.html', context)
 
 
-_summary_in_progress = set()
+_js_analysis_in_progress = {}
+_js_analysis_errors = {}
+
+def _get_agent_display_name():
+    from backend.core.agents.call_agent import get_agent_name
+    try:
+        return get_agent_name()
+    except KeyError:
+        return "agent"
+
+def _start_js_analysis(key, task_fn, *args):
+    import threading, signal
+    _js_analysis_errors.pop(key, None)
+    if key in _js_analysis_in_progress:
+        return
+
+    def _run():
+        try:
+            task_fn(*args)
+        except Exception as e:
+            _js_analysis_errors[key] = str(e)
+        finally:
+            _js_analysis_in_progress.pop(key, None)
+
+    t = threading.Thread(target=_run, daemon=True)
+    _js_analysis_in_progress[key] = t
+    t.start()
+
+
+@csrf_exempt
+def js_analysis_cancel(request, pk):
+    from django.http import JsonResponse
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
+    filename = request.GET.get('filename', '')
+    analysis_type = request.GET.get('type', '')
+    key = f"{pk}:{filename}:{analysis_type}"
+    _js_analysis_in_progress.pop(key, None)
+    _js_analysis_errors[key] = 'Cancelled by user'
+    return JsonResponse({'status': 'cancelled'})
+
 
 def js_summary(request, pk):
     webapp = get_object_or_404(WebApplication, pk=pk)
@@ -605,29 +646,25 @@ def js_summary(request, pk):
     if not js_obj:
         return redirect('webapp_detail', pk=pk)
 
+    agent_name = _get_agent_display_name()
+
     if not js_obj.usage_summary:
-        key = f"{pk}:{filename}"
-        if key not in _summary_in_progress:
-            import threading
-            from backend.core.js_analysis.usage_summary import generate_usage_summary
-            _summary_in_progress.add(key)
-            def _run():
-                try:
-                    generate_usage_summary(webapp.url, filename)
-                finally:
-                    _summary_in_progress.discard(key)
-            threading.Thread(target=_run, daemon=True).start()
+        key = f"{pk}:{filename}:summary"
+        from backend.core.js_analysis.usage_summary import generate_usage_summary
+        _start_js_analysis(key, generate_usage_summary, webapp.url, filename)
 
         return render(request, 'js_summary.html', {
             'webapp': webapp,
             'filename': filename,
             'generating': True,
+            'agent_name': agent_name,
         })
 
     return render(request, 'js_summary.html', {
         'webapp': webapp,
         'filename': filename,
         'summary_content': js_obj.usage_summary,
+        'agent_name': agent_name,
     })
 
 
@@ -635,13 +672,16 @@ def js_summary_status(request, pk):
     from django.http import JsonResponse
     webapp = get_object_or_404(WebApplication, pk=pk)
     filename = request.GET.get('filename')
+    key = f"{pk}:{filename}:summary"
     js_obj = webapp.js_files.filter(name=filename).first()
     if js_obj and js_obj.usage_summary:
         return JsonResponse({'status': 'ready', 'content': js_obj.usage_summary})
+    if key in _js_analysis_errors:
+        return JsonResponse({'status': 'error', 'message': _js_analysis_errors[key]})
+    if key not in _js_analysis_in_progress:
+        return JsonResponse({'status': 'error', 'message': 'Analysis failed — no report was generated. Check agent configuration.'})
     return JsonResponse({'status': 'generating'})
 
-
-_routes_in_progress = set()
 
 def js_routes(request, pk):
     webapp = get_object_or_404(WebApplication, pk=pk)
@@ -654,29 +694,25 @@ def js_routes(request, pk):
     if not js_obj:
         return redirect('webapp_detail', pk=pk)
 
+    agent_name = _get_agent_display_name()
+
     if not js_obj.routes_analysis:
-        key = f"{pk}:{filename}"
-        if key not in _routes_in_progress:
-            import threading
-            from backend.core.js_analysis.routes_analysis import analyze_routes
-            _routes_in_progress.add(key)
-            def _run():
-                try:
-                    analyze_routes(webapp.url, filename)
-                finally:
-                    _routes_in_progress.discard(key)
-            threading.Thread(target=_run, daemon=True).start()
+        key = f"{pk}:{filename}:routes"
+        from backend.core.js_analysis.routes_analysis import analyze_routes
+        _start_js_analysis(key, analyze_routes, webapp.url, filename)
 
         return render(request, 'js_routes.html', {
             'webapp': webapp,
             'filename': filename,
             'generating': True,
+            'agent_name': agent_name,
         })
 
     return render(request, 'js_routes.html', {
         'webapp': webapp,
         'filename': filename,
         'routes_content': js_obj.routes_analysis,
+        'agent_name': agent_name,
     })
 
 
@@ -684,13 +720,16 @@ def js_routes_status(request, pk):
     from django.http import JsonResponse
     webapp = get_object_or_404(WebApplication, pk=pk)
     filename = request.GET.get('filename')
+    key = f"{pk}:{filename}:routes"
     js_obj = webapp.js_files.filter(name=filename).first()
     if js_obj and js_obj.routes_analysis:
         return JsonResponse({'status': 'ready', 'content': js_obj.routes_analysis})
+    if key in _js_analysis_errors:
+        return JsonResponse({'status': 'error', 'message': _js_analysis_errors[key]})
+    if key not in _js_analysis_in_progress:
+        return JsonResponse({'status': 'error', 'message': 'Analysis failed — no report was generated. Check agent configuration.'})
     return JsonResponse({'status': 'generating'})
 
-
-_code_review_in_progress = set()
 
 def js_code_review(request, pk):
     webapp = get_object_or_404(WebApplication, pk=pk)
@@ -703,29 +742,25 @@ def js_code_review(request, pk):
     if not js_obj:
         return redirect('webapp_detail', pk=pk)
 
+    agent_name = _get_agent_display_name()
+
     if not js_obj.code_review:
-        key = f"{pk}:{filename}"
-        if key not in _code_review_in_progress:
-            import threading
-            from backend.core.js_analysis.code_review import review_code
-            _code_review_in_progress.add(key)
-            def _run():
-                try:
-                    review_code(webapp.url, filename)
-                finally:
-                    _code_review_in_progress.discard(key)
-            threading.Thread(target=_run, daemon=True).start()
+        key = f"{pk}:{filename}:code_review"
+        from backend.core.js_analysis.code_review import review_code
+        _start_js_analysis(key, review_code, webapp.url, filename)
 
         return render(request, 'js_code_review.html', {
             'webapp': webapp,
             'filename': filename,
             'generating': True,
+            'agent_name': agent_name,
         })
 
     return render(request, 'js_code_review.html', {
         'webapp': webapp,
         'filename': filename,
         'code_review_content': js_obj.code_review,
+        'agent_name': agent_name,
     })
 
 
@@ -733,9 +768,14 @@ def js_code_review_status(request, pk):
     from django.http import JsonResponse
     webapp = get_object_or_404(WebApplication, pk=pk)
     filename = request.GET.get('filename')
+    key = f"{pk}:{filename}:code_review"
     js_obj = webapp.js_files.filter(name=filename).first()
     if js_obj and js_obj.code_review:
         return JsonResponse({'status': 'ready', 'content': js_obj.code_review})
+    if key in _js_analysis_errors:
+        return JsonResponse({'status': 'error', 'message': _js_analysis_errors[key]})
+    if key not in _js_analysis_in_progress:
+        return JsonResponse({'status': 'error', 'message': 'Analysis failed — no report was generated. Check agent configuration.'})
     return JsonResponse({'status': 'generating'})
 
 def cancel_task(request, task_id):

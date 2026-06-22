@@ -31,11 +31,9 @@ def generate_usage_summary(webapp_url, js_filename):
     from backend.core.agents.call_agent import call_agent, check_agent
     ok, msg = check_agent()
     if not ok:
-        print(f"[-] Agent check failed: {msg}")
-        return
+        raise RuntimeError(f"Agent check failed: {msg}")
     call_agent(prompt)
 
-    #Store the summary Usage in the database.
     js_basename = os.path.splitext(js_filename)[0]
     md_file_path = os.path.join(output_dir, f"{js_basename}_usage.md")
     if os.path.exists(md_file_path):
@@ -47,7 +45,7 @@ def generate_usage_summary(webapp_url, js_filename):
             js_file.usage_summary = summary_content
             js_file.save()
     else:
-        print("md file not found")
+        raise RuntimeError(f"Agent did not generate the expected report file: {md_file_path}")
 
 
 
