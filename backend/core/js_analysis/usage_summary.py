@@ -19,7 +19,9 @@ def generate_usage_summary(webapp_url, js_filename):
     prompt = f"""
     For the js file: {output_dir}/{js_filename}
     Explain the main functionalities of this file.
+    Explain what functions does this file serve.
     Explain tech stack & Libraries used.
+    Flag weather this is a third party script, a library script or a script developed by the developers of the app.
     
     Generate md report at {output_dir}
     md report should STRICTLY FOLLOW THIS NAMING CONVENSION

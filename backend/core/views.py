@@ -288,6 +288,38 @@ def api_webapp_toggle_tested(request, pk):
     return JsonResponse({'tested': webapp.tested})
 
 
+@require_POST
+def api_add_subdomain(request, pk):
+    """Launch a Celery task to run dnsx on a single hostname and insert into DB."""
+    target = get_object_or_404(Target, pk=pk)
+    hostname = request.POST.get('hostname', '').strip()
+    domain_id = request.POST.get('domain_id', '').strip()
+
+    if not hostname:
+        return JsonResponse({'error': 'Hostname is required'}, status=400)
+    if not domain_id:
+        return JsonResponse({'error': 'Domain is required'}, status=400)
+
+    # Verify the domain belongs to this target
+    domain = get_object_or_404(Domain, id=domain_id, target=target)
+
+    task = add_subdomain_task.delay(hostname, domain.id)
+    return JsonResponse({'task_id': task.id})
+
+
+@require_POST
+def api_add_webapp(request, pk):
+    """Launch a Celery task to run httpx on a single URL and insert into DB."""
+    target = get_object_or_404(Target, pk=pk)
+    url = request.POST.get('url', '').strip()
+
+    if not url:
+        return JsonResponse({'error': 'URL is required'}, status=400)
+
+    task = add_webapp_task.delay(url)
+    return JsonResponse({'task_id': task.id})
+
+
 import os
 from backend.core.recon.passive_recon import PROVIDERS as RECON_PROVIDERS
 
@@ -376,7 +408,7 @@ def target_edit(request, pk):
     return redirect('home')
 
 
-from backend.websploit.tasks import webapp_task, add_webapp_manual_task
+from backend.websploit.tasks import webapp_task, add_webapp_manual_task, add_subdomain_task, add_webapp_task
 
 
 def scan_webapp(request):

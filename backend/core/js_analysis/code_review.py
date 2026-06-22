@@ -24,6 +24,7 @@ def review_code(webapp_url, js_filename):
     
     Focus on client side bugs that have a clear source and a sink, that are reproduceable.
     Focus on bugs that can be exploited externally not by proxing victim traffic.
+    You must attempt to find the map file for the js file.(Weather by Searching the file for location for map file, or by attempting to append .map at the end of the script and checking if it exists,. )
     NOT BY CHANGING THE HTTP RESPONSE 
 
 
