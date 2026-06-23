@@ -868,7 +868,30 @@ def terminal_view(request):
     return render(request, 'terminal.html')
 
 
-from backend.websploit.tasks import vuln_scan_task
+from backend.websploit.tasks import vuln_scan_task, dir_fuzz_task
+
+
+def scan_dir_fuzz(request):
+    wordlists_dir = '/work/resources/wordlists/dirs'
+    wordlists = []
+    if os.path.isdir(wordlists_dir):
+        wordlists = sorted([f for f in os.listdir(wordlists_dir) if os.path.isfile(os.path.join(wordlists_dir, f))])
+
+    if request.method == 'POST':
+        url = request.POST.get('url', '').strip()
+        wordlist_name = request.POST.get('wordlist', '').strip()
+
+        if not url or not wordlist_name:
+            return JsonResponse({'error': 'URL and wordlist are required'}, status=400)
+
+        if wordlist_name not in wordlists:
+            return JsonResponse({'error': 'Invalid wordlist'}, status=400)
+
+        wordlist_path = os.path.join(wordlists_dir, wordlist_name)
+        task = dir_fuzz_task.delay(url, wordlist_path)
+        return JsonResponse({'task_id': task.id})
+
+    return render(request, 'scan_dir_fuzz.html', {'wordlists': wordlists})
 
 
 def scan_vuln(request):

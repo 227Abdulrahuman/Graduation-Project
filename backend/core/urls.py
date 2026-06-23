@@ -35,6 +35,7 @@ urlpatterns = [
     path('api/targets/<int:pk>/add-subdomain/', views.api_add_subdomain, name='api_add_subdomain'),
     path('api/targets/<int:pk>/add-webapp/', views.api_add_webapp, name='api_add_webapp'),
     path('scan/vuln/', views.scan_vuln, name='scan_vuln'),
+    path('scan/dir-fuzz/', views.scan_dir_fuzz, name='scan_dir_fuzz'),
     path('vulnerabilities/<int:pk>/report/', views.vuln_report, name='vuln_report'),
     path('terminal/', views.terminal_view, name='terminal'),
     ]

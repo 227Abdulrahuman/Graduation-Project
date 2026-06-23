@@ -6,6 +6,7 @@ from backend.core.recon.main import recon
 from backend.core.scan.webapp_analysis import analyze_webapp
 from backend.core.utilities.webapp_manual import add_webapp_manually
 from backend.core.scan.vuln_scan import vuln_scan
+from backend.core.fuzzer.directory_fuzzer import directory_fuzz
 
 # --- THIS IS YOUR EXISTING RECON LOGIC (UNTOUCHED) ---
 class LogCapture(io.StringIO):
@@ -195,6 +196,22 @@ def add_subdomain_task(self, hostname, domain_id):
             print(f"[+] Finished dnsx for {hostname}")
 
         return {'status': 'SUCCESS', 'result': results, 'logs': capture.logs}
+    except Exception as e:
+        print(f"[-] Error: {e}")
+        return {'status': 'ERROR', 'result': str(e), 'logs': capture.logs}
+    finally:
+        sys.stdout = old_stdout
+
+
+@shared_task(bind=True)
+def dir_fuzz_task(self, url, wordlist):
+    old_stdout = sys.stdout
+    capture = LogCapture(self)
+    sys.stdout = capture
+
+    try:
+        directory_fuzz(url, wordlist)
+        return {'status': 'SUCCESS', 'result': None, 'logs': capture.logs}
     except Exception as e:
         print(f"[-] Error: {e}")
         return {'status': 'ERROR', 'result': str(e), 'logs': capture.logs}
