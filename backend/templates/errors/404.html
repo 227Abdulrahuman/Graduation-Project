@@ -1,0 +1,10 @@
+{% extends "errors/base_error.html" %}
+
+{% block title %}404 Not Found{% endblock %}
+
+{% block error_code %}404{% endblock %}
+{% block error_label %}Target Not Found{% endblock %}
+{% block error_message %}
+  The requested endpoint returned no results. The resource may have been moved or deleted.<br>
+  <span style="color: var(--accent-primary);">Verify the URL and retry the operation.</span>
+{% endblock %}

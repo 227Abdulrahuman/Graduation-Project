@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>500 Server Error | WebSploit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 36 36' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolygon points='18,2 32,10 32,26 18,34 4,26 4,10' stroke='%2300d4ff' stroke-width='1.5' fill='rgba(0,212,255,0.05)'/%3E%3Ccircle cx='18' cy='18' r='6' stroke='%2300d4ff' stroke-width='1.2' fill='none' opacity='0.9'/%3E%3Cline x1='18' y1='8' x2='18' y2='12' stroke='%2300d4ff' stroke-width='1.2'/%3E%3Cline x1='18' y1='24' x2='18' y2='28' stroke='%2300d4ff' stroke-width='1.2'/%3E%3Cline x1='8' y1='18' x2='12' y2='18' stroke='%2300d4ff' stroke-width='1.2'/%3E%3Cline x1='24' y1='18' x2='28' y2='18' stroke='%2300d4ff' stroke-width='1.2'/%3E%3Ccircle cx='18' cy='18' r='2' fill='%2300d4ff'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --bg-void: #080b0f; --bg-panel: #0d1117; --bg-elevated: #18222d;
+      --border-dim: #1e2d3d; --border-mid: #243447;
+      --accent-primary: #00d4ff; --accent-red: #ff3b5c;
+      --text-primary: #e8f0fe; --text-secondary: #7a92aa; --text-dim: #3d5166;
+      --font-display: 'Oxanium', sans-serif; --font-mono: 'JetBrains Mono', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-void); color: var(--text-primary); font-family: var(--font-mono);
+      font-size: 14px; line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column;
+      -webkit-font-smoothing: antialiased; overflow-x: hidden;
+    }
+    body::before {
+      content: ''; pointer-events: none; position: fixed; inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,212,255,0.012) 2px, rgba(0,212,255,0.012) 4px);
+      z-index: 9999;
+    }
+    a { color: var(--accent-primary); text-decoration: none; }
+    a:hover { color: var(--text-primary); }
+    .ws-header {
+      height: 96px; background: rgba(8,11,15,0.92); backdrop-filter: blur(16px) saturate(160%);
+      border-bottom: 1px solid var(--border-dim);
+      box-shadow: 0 -2px 0 0 rgba(0,212,255,0.5) inset, 0 4px 32px rgba(0,0,0,0.6); flex-shrink: 0;
+    }
+    .ws-header__inner { height: 100%; padding: 0 32px; display: flex; align-items: center; }
+    .ws-logo { display: flex; align-items: center; gap: 16px; text-decoration: none; user-select: none; }
+    .ws-logo__icon { width: 40px; height: 40px; flex-shrink: 0; }
+    .ws-logo__icon svg {
+      width: 100%; height: 100%; overflow: visible;
+      filter: drop-shadow(0 0 8px rgba(0,212,255,0.7)) drop-shadow(0 0 20px rgba(0,212,255,0.3));
+    }
+    .ws-logo__name {
+      font-family: var(--font-display); font-size: 28px; font-weight: 800;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      background: linear-gradient(90deg, #c8dff0 0%, #00d4ff 35%, #fff 50%, #00d4ff 65%, #c8dff0 100%);
+      background-size: 250% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; animation: shimmer 5s linear infinite;
+    }
+    @keyframes shimmer { 0% { background-position: 250% center; } 100% { background-position: -250% center; } }
+    .error-container { flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 24px; }
+    .error-card { text-align: center; max-width: 540px; width: 100%; }
+    .error-code {
+      font-family: var(--font-display); font-size: 120px; font-weight: 800;
+      letter-spacing: 0.08em; line-height: 1; margin-bottom: 8px;
+      color: var(--accent-red); text-shadow: 0 0 40px rgba(255,59,92,0.3);
+      animation: glitch 4s infinite;
+    }
+    @keyframes glitch {
+      0%, 92%, 100% { opacity: 1; transform: none; }
+      93% { opacity: 0.8; transform: translateX(-2px) skewX(-1deg); }
+      94% { opacity: 1; transform: none; }
+      95% { opacity: 0.7; transform: translateX(3px) skewX(1deg); }
+      96% { opacity: 1; transform: none; }
+    }
+    .error-label {
+      font-family: var(--font-display); font-size: 18px; font-weight: 600;
+      letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 24px;
+    }
+    .error-detail {
+      background: var(--bg-panel); border: 1px solid rgba(255,59,92,0.2);
+      border-radius: 8px; padding: 20px 24px; margin-bottom: 32px;
+    }
+    .error-detail__prompt { display: flex; align-items: flex-start; gap: 10px; text-align: left; }
+    .error-detail__caret { color: var(--accent-red); font-weight: 600; flex-shrink: 0; margin-top: 1px; }
+    .error-detail__msg { color: var(--text-dim); font-size: 13px; line-height: 1.7; }
+    .error-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+    .error-btn {
+      display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 4px;
+      font-family: var(--font-mono); font-size: 12px; font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4,0,0.2,1); text-decoration: none;
+    }
+    .error-btn--primary {
+      border: 1px solid rgba(0,212,255,0.45); background: rgba(0,212,255,0.08); color: var(--accent-primary);
+    }
+    .error-btn--primary:hover {
+      background: rgba(0,212,255,0.16); border-color: var(--accent-primary);
+      box-shadow: 0 0 15px rgba(0,212,255,0.15); color: var(--accent-primary);
+    }
+    .error-btn--ghost {
+      border: 1px solid var(--border-mid); background: transparent; color: var(--text-secondary);
+    }
+    .error-btn--ghost:hover { background: var(--bg-elevated); color: var(--text-primary); }
+  </style>
+</head>
+<body>
+  <header class="ws-header">
+    <div class="ws-header__inner">
+      <a href="/" class="ws-logo">
+        <div class="ws-logo__icon">
+          <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="18,2 32,10 32,26 18,34 4,26 4,10" stroke="#00d4ff" stroke-width="1.5" fill="rgba(0,212,255,0.05)"/>
+            <circle cx="18" cy="18" r="6" stroke="#00d4ff" stroke-width="1.2" fill="none" opacity="0.9"/>
+            <line x1="18" y1="8" x2="18" y2="12" stroke="#00d4ff" stroke-width="1.2"/>
+            <line x1="18" y1="24" x2="18" y2="28" stroke="#00d4ff" stroke-width="1.2"/>
+            <line x1="8" y1="18" x2="12" y2="18" stroke="#00d4ff" stroke-width="1.2"/>
+            <line x1="24" y1="18" x2="28" y2="18" stroke="#00d4ff" stroke-width="1.2"/>
+            <circle cx="18" cy="18" r="2" fill="#00d4ff"/>
+          </svg>
+        </div>
+        <span class="ws-logo__name">WebSploit</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="error-container">
+    <div class="error-card">
+      <div class="error-code">500</div>
+      <div class="error-label">Internal Server Error</div>
+      <div class="error-detail">
+        <div class="error-detail__prompt">
+          <span class="error-detail__caret">$</span>
+          <div class="error-detail__msg">
+            An unexpected error occurred on the server. The operation could not be completed.<br>
+            <span style="color: var(--accent-red);">The incident has been logged. Try again or contact the administrator.</span>
+          </div>
+        </div>
+      </div>
+      <div class="error-actions">
+        <a href="/" class="error-btn error-btn--primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Dashboard
+        </a>
+        <button onclick="location.reload()" class="error-btn error-btn--ghost">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Retry
+        </button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

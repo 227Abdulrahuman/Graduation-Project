@@ -1,0 +1,367 @@
+{% extends "target_base.html" %}
+
+{% block page_styles %}
+  .row-tested { background: rgba(0, 255, 157, 0.03); }
+  .row-tested:hover { background: rgba(0, 255, 157, 0.06) !important; }
+
+  .tested-checkbox-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-dim);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: border-color var(--transition), background var(--transition);
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  .tested-checkbox-wrap:hover {
+    border-color: rgba(0, 212, 255, 0.35);
+    background: rgba(0, 212, 255, 0.04);
+  }
+
+  .tested-checkbox {
+    accent-color: var(--accent-primary);
+    color-scheme: dark;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .tested-label {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-primary);
+  }
+{% endblock %}
+
+{% block page_content %}
+
+<div class="table-toolbar">
+  <select id="domainFilterApp" class="toolbar-select" onchange="fetchWebApps(1)">
+    <option value="all">Domain: All</option>
+    {% for dom in target.domains.all %}
+      <option value="{{ dom.hostname }}">{{ dom.hostname }}</option>
+    {% endfor %}
+  </select>
+
+  <input type="text" id="hostSearchApp" class="toolbar-input" placeholder="Search Hostname..." onkeyup="debounceFetchWebApps()">
+  <input type="text" id="titleSearch" class="toolbar-input" placeholder="Search Title..." onkeyup="debounceFetchWebApps()">
+  <input type="text" id="techSearch" class="toolbar-input" placeholder="Search Tech Stack..." onkeyup="debounceFetchWebApps()">
+  <input type="text" id="statusSearch" class="toolbar-input" placeholder="Status (e.g., 404)" onkeyup="debounceFetchWebApps()" style="max-width: 220px;">
+
+  <select id="testedFilter" class="toolbar-select" onchange="fetchWebApps(1)" style="max-width: 180px;">
+    <option value="all">Tested: All</option>
+    <option value="yes">Tested</option>
+    <option value="no">Not Tested</option>
+  </select>
+
+  <button class="toolbar-btn" onclick="toggleWebAppSort()" id="sortBtn">
+    Sort Status
+    <svg id="sortIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/>
+    </svg>
+  </button>
+
+  <button class="btn-add" onclick="openAddModal()" style="margin-left: auto;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Add WebApp
+  </button>
+</div>
+
+<div class="panel">
+  <table class="target-table">
+    <thead>
+      <tr>
+        <th style="width: 50px;">#</th>
+        <th>URL</th>
+        <th>CNAME</th>
+        <th>Status</th>
+        <th>Title</th>
+        <th>Content Length</th>
+        <th>Tech Stack</th>
+        <th style="text-align: center;">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="webappsTbody"></tbody>
+  </table>
+  <div id="appPagination" class="pagination-wrapper"></div>
+</div>
+
+<!-- ══════════════════ ADD WEBAPP MODAL ══════════════════ -->
+<div id="addModal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 500px;">
+    <h3 class="modal-title">Add Web Application</h3>
+
+    <div id="addModalForm">
+      <div class="form-group" style="margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px;">
+        <label style="font-family: var(--font-mono); font-size: 13px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-primary);">URL *</label>
+        <input type="text" id="addWebAppUrl" class="toolbar-input" placeholder="e.g., https://sub.example.com" style="width: 100%;">
+      </div>
+
+      <div class="modal-actions" style="margin-top: 0;">
+        <button type="button" class="btn-cancel" onclick="closeAddModal()">Cancel</button>
+        <button type="button" class="ws-btn ws-btn--primary" onclick="submitAddItem()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add
+        </button>
+      </div>
+    </div>
+
+    <div id="addModalStatus" style="display: none; text-align: center;">
+      <div id="addModalSpinner" class="spinner" style="border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--accent-primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px auto;"></div>
+      <div id="addModalStatusIcon" class="status-icon" style="display: none;"></div>
+      <div id="addModalStatusText" class="status-text" style="font-family: var(--font-mono); font-size: 14px; color: var(--text-primary); margin-bottom: 12px;">Running...</div>
+      <div id="addModalTerminal" style="display: none; background: #0f0f15; border: 1px solid var(--border-mid); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 16px; text-align: left; height: 180px; overflow-y: auto; font-family: var(--font-mono); font-size: 12px; color: #a9b1d6;">
+        <ul id="addModalLogList" style="list-style: none; margin: 0; padding: 0;"></ul>
+      </div>
+      <button type="button" class="ws-btn ws-btn--primary" id="addModalDoneBtn" style="display: none;" onclick="closeAddModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block page_js %}
+<script>
+  let appSortOrder = 'desc';
+  let addModalTaskId = null;
+  let addModalPollInterval = null;
+  let addModalLastLogCount = 0;
+
+  let debounceTimer;
+  const debounceFetchWebApps = (function() {
+    return function() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => fetchWebApps(1), 300);
+    };
+  })();
+
+  function initPage() {
+    const qDomain = getQueryParam('domain');
+    const qHost = getQueryParam('host');
+    const qTitle = getQueryParam('title');
+    const qTech = getQueryParam('tech');
+    const qStatus = getQueryParam('status');
+    const qTested = getQueryParam('tested');
+    const qSort = getQueryParam('sort');
+    const qPage = getQueryParam('page') || '1';
+
+    if (qDomain) document.getElementById('domainFilterApp').value = qDomain;
+    if (qHost) document.getElementById('hostSearchApp').value = qHost;
+    if (qTitle) document.getElementById('titleSearch').value = qTitle;
+    if (qTech) document.getElementById('techSearch').value = qTech;
+    if (qStatus) document.getElementById('statusSearch').value = qStatus;
+    if (qTested) document.getElementById('testedFilter').value = qTested;
+    if (qSort) appSortOrder = qSort;
+
+    fetchWebApps(parseInt(qPage));
+  }
+
+  function toggleWebAppSort() {
+    appSortOrder = appSortOrder === 'desc' ? 'asc' : 'desc';
+    const sortIcon = document.getElementById('sortIcon');
+    if (appSortOrder === 'asc') {
+      sortIcon.innerHTML = '<path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/>';
+    } else {
+      sortIcon.innerHTML = '<path d="M7 15l5 5 5-5"/>';
+    }
+    fetchWebApps(1);
+  }
+
+  async function toggleTested(checkbox) {
+    const appId = checkbox.dataset.id;
+    const row = checkbox.closest('tr');
+    checkbox.disabled = true;
+    const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+    const response = await fetch(`/api/webapps/${appId}/toggle-tested/`, {
+      method: 'POST', headers: { 'X-CSRFToken': csrfToken }
+    });
+    const data = await response.json();
+    checkbox.disabled = false;
+    checkbox.checked = data.tested;
+    const label = checkbox.nextElementSibling;
+    label.textContent = data.tested ? 'Tested' : 'Untested';
+    checkbox.parentElement.title = data.tested ? 'Mark as untested' : 'Mark as tested';
+    if (data.tested) { row.classList.add('row-tested'); } else { row.classList.remove('row-tested'); }
+  }
+
+  async function fetchWebApps(page) {
+    const domain = document.getElementById('domainFilterApp').value;
+    const host = document.getElementById('hostSearchApp').value;
+    const title = document.getElementById('titleSearch').value;
+    const tech = document.getElementById('techSearch').value;
+    const status = document.getElementById('statusSearch').value;
+    const tested = document.getElementById('testedFilter').value;
+
+    setQueryParams({ domain, host, title, tech, status, tested, sort: appSortOrder !== 'desc' ? appSortOrder : '', page: page > 1 ? page : '' });
+
+    const params = new URLSearchParams({ page, domain, host, title, tech, status, tested, sort: appSortOrder });
+    const response = await fetch(`/api/targets/${targetId}/webapps/?` + params.toString());
+    const data = await response.json();
+
+    document.getElementById('appCountBadge').innerText = data.total_count;
+
+    const tbody = document.getElementById('webappsTbody');
+    tbody.innerHTML = '';
+
+    if (data.results.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 40px;" class="text-muted">No web applications match your filters.</td></tr>`;
+    } else {
+      data.results.forEach((app, index) => {
+        const globalIndex = ((data.current_page - 1) * 500) + index + 1;
+
+        let statusClass = 'unknown';
+        if (app.status_code >= 200 && app.status_code < 300) statusClass = 'success';
+        else if (app.status_code >= 300 && app.status_code < 400) statusClass = 'redirect';
+        else if (app.status_code >= 400 && app.status_code < 500) statusClass = 'client-error';
+        else if (app.status_code >= 500) statusClass = 'server-error';
+
+        let statusHtml = app.status_code ? `<span class="status-code ${statusClass}">${app.status_code}</span>` : `<span class="text-muted">—</span>`;
+        let techHtml = app.tech_stack.map(t => `<span class="tech-badge">${t}</span>`).join('') || `<span class="text-muted">—</span>`;
+        let titleHtml = app.title ? app.title : `<span class='text-muted'>—</span>`;
+        let lengthHtml = app.content_length ? app.content_length : `<span class='text-muted'>—</span>`;
+        let cnameHtml = app.cname ? app.cname : `<span class='text-muted'>—</span>`;
+
+        const tr = document.createElement('tr');
+        tr.dataset.appId = app.id;
+        if (app.tested) tr.classList.add('row-tested');
+        tr.innerHTML = `
+          <td class="font-mono text-muted">${globalIndex}</td>
+          <td class="font-mono" style="cursor: pointer;" onclick="copyToClipboard('${app.url}')">
+            <span style="color: var(--accent-primary);">${app.url}</span>
+          </td>
+          <td class="font-mono">${cnameHtml}</td>
+          <td>${statusHtml}</td>
+          <td>${titleHtml}</td>
+          <td class="font-mono">${lengthHtml}</td>
+          <td>${techHtml}</td>
+          <td style="text-align: center; white-space: nowrap;">
+            <div style="display: inline-flex; gap: 8px; align-items: center;">
+              <label class="tested-checkbox-wrap" title="${app.tested ? 'Mark as untested' : 'Mark as tested'}">
+                <input type="checkbox" class="tested-checkbox" data-id="${app.id}" ${app.tested ? 'checked' : ''} onchange="toggleTested(this)">
+                <span class="tested-label">${app.tested ? 'Tested' : 'Untested'}</span>
+              </label>
+              <a href="/webapps/${app.id}/" class="ws-btn ws-btn--ghost" style="padding: 4px 8px;" title="View Details">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </a>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    renderPaginationUI(data.total_pages, data.current_page, 'appPagination', 'fetchWebApps');
+  }
+
+  function openAddModal() {
+    addModalTaskId = null;
+    addModalLastLogCount = 0;
+    document.getElementById('addModalForm').style.display = 'block';
+    document.getElementById('addModalStatus').style.display = 'none';
+    document.getElementById('addModalDoneBtn').style.display = 'none';
+    document.getElementById('addModalSpinner').style.display = 'block';
+    document.getElementById('addModalStatusIcon').style.display = 'none';
+    document.getElementById('addModalTerminal').style.display = 'none';
+    document.getElementById('addModalLogList').innerHTML = '';
+    document.getElementById('addModal').classList.add('active');
+  }
+
+  function closeAddModal() {
+    if (addModalPollInterval) { clearInterval(addModalPollInterval); addModalPollInterval = null; }
+    document.getElementById('addModal').classList.remove('active');
+    fetchWebApps(parseInt(getQueryParam('page')) || 1);
+  }
+
+  async function submitAddItem() {
+    const webappUrl = document.getElementById('addWebAppUrl').value.trim();
+    if (!webappUrl) { alert('Please enter a URL.'); return; }
+
+    document.getElementById('addModalForm').style.display = 'none';
+    document.getElementById('addModalStatus').style.display = 'block';
+    document.getElementById('addModalStatusText').innerText = 'Starting...';
+    document.getElementById('addModalSpinner').style.display = 'block';
+    document.getElementById('addModalDoneBtn').style.display = 'none';
+
+    const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+    const response = await fetch(`/api/targets/${targetId}/add-webapp/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrfToken },
+      body: new URLSearchParams({ url: webappUrl })
+    });
+
+    if (!response.ok) { const data = await response.json(); showModalError(data.error || 'Failed to start task.'); return; }
+    const data = await response.json();
+    addModalTaskId = data.task_id;
+    pollTask(addModalTaskId);
+  }
+
+  function pollTask(taskId) {
+    addModalPollInterval = setInterval(async () => {
+      const response = await fetch(`/task-status/${taskId}/`);
+      const data = await response.json();
+
+      if ((data.state === 'PROGRESS' || data.state === 'SUCCESS') && data.logs) {
+        if (data.logs.length > addModalLastLogCount) {
+          const terminal = document.getElementById('addModalTerminal');
+          terminal.style.display = 'block';
+          const logList = document.getElementById('addModalLogList');
+          for (let i = addModalLastLogCount; i < data.logs.length; i++) {
+            const li = document.createElement('li');
+            li.textContent = '> ' + data.logs[i];
+            li.style.marginBottom = '4px';
+            li.style.wordWrap = 'break-word';
+            if (data.logs[i].includes('[+]')) li.style.color = 'var(--accent-green)';
+            else if (data.logs[i].includes('[-]')) li.style.color = 'var(--accent-red)';
+            else if (data.logs[i].includes('[*]')) li.style.color = 'var(--accent-primary)';
+            logList.appendChild(li);
+          }
+          addModalLastLogCount = data.logs.length;
+          terminal.scrollTop = terminal.scrollHeight;
+        }
+      }
+
+      if (data.state === 'PROGRESS' || data.state === 'PENDING' || data.state === 'STARTED') {
+        document.getElementById('addModalStatusText').innerText = 'Running...';
+      } else if (data.state === 'SUCCESS') {
+        clearInterval(addModalPollInterval); addModalPollInterval = null;
+        showModalSuccess('Completed successfully!');
+      } else if (data.state === 'FAILURE' || data.state === 'REVOKED') {
+        clearInterval(addModalPollInterval); addModalPollInterval = null;
+        showModalError(data.error || 'Task failed or was cancelled.');
+      }
+    }, 1500);
+  }
+
+  function showModalSuccess(message) {
+    document.getElementById('addModalSpinner').style.display = 'none';
+    const icon = document.getElementById('addModalStatusIcon');
+    icon.style.display = 'flex';
+    icon.style.background = 'rgba(0, 255, 157, 0.1)';
+    icon.style.color = 'var(--accent-green)';
+    icon.style.border = '1px solid rgba(0, 255, 157, 0.3)';
+    icon.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+    document.getElementById('addModalStatusText').innerHTML = `<span style="color: var(--accent-green);">${message}</span>`;
+    document.getElementById('addModalDoneBtn').style.display = 'inline-flex';
+  }
+
+  function showModalError(message) {
+    document.getElementById('addModalSpinner').style.display = 'none';
+    const icon = document.getElementById('addModalStatusIcon');
+    icon.style.display = 'flex';
+    icon.style.background = 'rgba(255, 59, 92, 0.1)';
+    icon.style.color = 'var(--accent-red)';
+    icon.style.border = '1px solid rgba(255, 59, 92, 0.3)';
+    icon.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+    document.getElementById('addModalStatusText').innerHTML = `<span style="color: var(--accent-red);">${message}</span>`;
+    document.getElementById('addModalDoneBtn').style.display = 'inline-flex';
+  }
+</script>
+{% endblock %}

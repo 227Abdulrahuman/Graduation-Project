@@ -1,0 +1,12 @@
+{% extends "errors/base_error.html" %}
+
+{% block title %}400 Bad Request{% endblock %}
+{% block code_color %}var(--accent-amber){% endblock %}
+{% block glow_color %}rgba(255, 183, 0, 0.3){% endblock %}
+
+{% block error_code %}400{% endblock %}
+{% block error_label %}Bad Request{% endblock %}
+{% block error_message %}
+  The server could not process the request due to malformed syntax or invalid parameters.<br>
+  <span style="color: var(--accent-amber);">Check your input and try again.</span>
+{% endblock %}

@@ -1,0 +1,138 @@
+{% extends "target_base.html" %}
+
+{% block page_content %}
+
+<div class="table-toolbar">
+  <select id="domainFilter" class="toolbar-select" onchange="fetchVulnerabilities(1)">
+    <option value="all">Domain: All</option>
+    {% for dom in target.domains.all %}
+      <option value="{{ dom.hostname }}">{{ dom.hostname }}</option>
+    {% endfor %}
+  </select>
+
+  <select id="severityFilter" class="toolbar-select" onchange="fetchVulnerabilities(1)">
+    <option value="all">Severity: All</option>
+    <option value="critical">Critical</option>
+    <option value="high">High</option>
+    <option value="medium">Medium</option>
+    <option value="low">Low</option>
+    <option value="info">Info</option>
+  </select>
+
+  <input type="text" id="hostSearch" class="toolbar-input" placeholder="Search Hostname..." onkeyup="debounceFetchVulnerabilities()">
+  <input type="text" id="vulnSearch" class="toolbar-input" placeholder="Search Vulnerability..." onkeyup="debounceFetchVulnerabilities()">
+</div>
+
+<div class="panel">
+  <table class="target-table">
+    <thead>
+      <tr>
+        <th style="width: 50px;">#</th>
+        <th>Vulnerability Name</th>
+        <th>Severity</th>
+        <th>Web App</th>
+        <th>Endpoint</th>
+        <th>Parameter</th>
+        <th style="text-align: center;">Report</th>
+      </tr>
+    </thead>
+    <tbody id="vulnerabilitiesTbody"></tbody>
+  </table>
+  <div id="vulnPagination" class="pagination-wrapper"></div>
+</div>
+
+{% endblock %}
+
+{% block page_js %}
+<script>
+  let debounceTimer;
+  const debounceFetchVulnerabilities = (function() {
+    return function() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => fetchVulnerabilities(1), 300);
+    };
+  })();
+
+  function initPage() {
+    const qDomain = getQueryParam('domain');
+    const qSeverity = getQueryParam('severity');
+    const qHost = getQueryParam('host');
+    const qSearch = getQueryParam('search');
+    const qPage = getQueryParam('page') || '1';
+
+    if (qDomain) document.getElementById('domainFilter').value = qDomain;
+    if (qSeverity) document.getElementById('severityFilter').value = qSeverity;
+    if (qHost) document.getElementById('hostSearch').value = qHost;
+    if (qSearch) document.getElementById('vulnSearch').value = qSearch;
+
+    fetchVulnerabilities(parseInt(qPage));
+  }
+
+  async function fetchVulnerabilities(page) {
+    const domain = document.getElementById('domainFilter').value;
+    const severity = document.getElementById('severityFilter').value;
+    const host = document.getElementById('hostSearch').value;
+    const search = document.getElementById('vulnSearch').value;
+
+    setQueryParams({ domain, severity, host, search, page: page > 1 ? page : '' });
+
+    const params = new URLSearchParams({ page, domain, severity, host, search });
+    const response = await fetch(`/api/targets/${targetId}/vulnerabilities/?` + params.toString());
+    const data = await response.json();
+
+    document.getElementById('vulnCountBadge').innerText = data.total_count;
+
+    const tbody = document.getElementById('vulnerabilitiesTbody');
+    tbody.innerHTML = '';
+
+    if (data.results.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 40px;" class="text-muted">No vulnerabilities match your filters.</td></tr>`;
+    } else {
+      data.results.forEach((vuln, index) => {
+        const globalIndex = ((data.current_page - 1) * 500) + index + 1;
+
+        let sevClass = 'unknown';
+        let sevText = vuln.severity ? vuln.severity.toUpperCase() : 'UNKNOWN';
+
+        if (sevText === 'CRITICAL') sevClass = 'server-error';
+        else if (sevText === 'HIGH') sevClass = 'client-error';
+        else if (sevText === 'MEDIUM') sevClass = 'redirect';
+        else if (sevText === 'LOW') sevClass = 'success';
+        else if (sevText === 'INFO') sevClass = 'unknown';
+
+        let severityHtml = `<span class="status-code ${sevClass}">${sevText}</span>`;
+
+        let webAppHtml = (vuln.web_app && vuln.web_app !== '—')
+            ? `<a href="${vuln.web_app}" style="color: var(--accent-primary); text-decoration: none;" target="_blank">${vuln.web_app}</a>`
+            : `<span class='text-muted'>—</span>`;
+
+        let endpointHtml = (vuln.endpoint && vuln.endpoint !== '—')
+            ? vuln.endpoint
+            : `<span class='text-muted'>—</span>`;
+
+        let paramHtml = (vuln.parameter && vuln.parameter !== '—')
+            ? `<span class="tech-badge">${vuln.parameter}</span>`
+            : `<span class='text-muted'>—</span>`;
+
+        let reportBtnHtml = vuln.has_report
+          ? `<a href="/vulnerabilities/${vuln.id}/report/" class="ws-btn ws-btn--ghost" style="padding: 4px 10px; font-size: 12px;">View</a>`
+          : `<span class="text-muted">—</span>`;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="font-mono text-muted">${globalIndex}</td>
+          <td style="color: var(--text-primary); font-weight: 600;">${vuln.name}</td>
+          <td>${severityHtml}</td>
+          <td class="font-mono">${webAppHtml}</td>
+          <td class="font-mono">${endpointHtml}</td>
+          <td>${paramHtml}</td>
+          <td style="text-align: center;">${reportBtnHtml}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    renderPaginationUI(data.total_pages, data.current_page, 'vulnPagination', 'fetchVulnerabilities');
+  }
+</script>
+{% endblock %}

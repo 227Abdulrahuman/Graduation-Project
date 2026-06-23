@@ -1,0 +1,18 @@
+{% extends "errors/base_error.html" %}
+
+{% block title %}403 Forbidden{% endblock %}
+{% block code_color %}var(--accent-red){% endblock %}
+{% block glow_color %}rgba(255, 59, 92, 0.3){% endblock %}
+
+{% block extra_error_styles %}
+  .error-detail {
+    border-color: rgba(255, 59, 92, 0.2);
+  }
+{% endblock %}
+
+{% block error_code %}403{% endblock %}
+{% block error_label %}Access Denied{% endblock %}
+{% block error_message %}
+  Permission denied. You do not have authorization to access this resource.<br>
+  <span style="color: var(--accent-red);">Authentication required or insufficient privileges.</span>
+{% endblock %}

@@ -155,12 +155,31 @@ def target_delete(request, pk):
 
 # --- UPDATED: Target Detail View ---
 def target_detail(request, pk):
-    target = get_object_or_404(Target, pk=pk)
+    return redirect('target_subdomains', pk=pk)
 
-    context = {
+
+def target_subdomains(request, pk):
+    target = get_object_or_404(Target, pk=pk)
+    return render(request, 'target_subdomains.html', {
         'target': target,
-    }
-    return render(request, 'target_detail.html', context)
+        'active_tab': 'subdomains',
+    })
+
+
+def target_webapps_page(request, pk):
+    target = get_object_or_404(Target, pk=pk)
+    return render(request, 'target_webapps.html', {
+        'target': target,
+        'active_tab': 'webapps',
+    })
+
+
+def target_vulnerabilities(request, pk):
+    target = get_object_or_404(Target, pk=pk)
+    return render(request, 'target_vulnerabilities.html', {
+        'target': target,
+        'active_tab': 'vulnerabilities',
+    })
 
 
 # --- NEW: Backend API for Subdomains ---
@@ -802,6 +821,24 @@ def api_target_vulnerabilities(request, pk):
         'parameter__endpoint__web_app'
     ).distinct()
 
+    # Apply Domain Filter
+    domain_filter = request.GET.get('domain', 'all').strip()
+    if domain_filter and domain_filter != 'all':
+        vulns = vulns.filter(
+            Q(web_app__subdomain__domain__hostname=domain_filter) |
+            Q(endpoint__web_app__subdomain__domain__hostname=domain_filter) |
+            Q(parameter__endpoint__web_app__subdomain__domain__hostname=domain_filter)
+        )
+
+    # Apply Hostname Filter
+    host_query = request.GET.get('host', '').strip()
+    if host_query:
+        vulns = vulns.filter(
+            Q(web_app__subdomain__hostname__icontains=host_query) |
+            Q(endpoint__web_app__subdomain__hostname__icontains=host_query) |
+            Q(parameter__endpoint__web_app__subdomain__hostname__icontains=host_query)
+        )
+
     # Apply Severity Filter
     severity_filter = request.GET.get('severity', 'all').lower()
     if severity_filter != 'all':
@@ -920,4 +957,19 @@ def scan_vuln(request):
 
     return render(request, 'scan_vuln.html')
 
+
+def error_400(request, exception):
+    return render(request, 'errors/400.html', status=400)
+
+
+def error_403(request, exception):
+    return render(request, 'errors/403.html', status=403)
+
+
+def error_404(request, exception):
+    return render(request, 'errors/404.html', status=404)
+
+
+def error_500(request):
+    return render(request, 'errors/500.html', status=500)
 

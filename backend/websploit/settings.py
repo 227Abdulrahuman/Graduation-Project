@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 
 
+import os
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 # BASE_DIR is /backend/
@@ -21,12 +22,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-f!!cutv&go03cfb6!g7txl(kr8ayb_b96iwagimesq)ks=q-ck'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-f!!cutv&go03cfb6!g7txl(kr8ayb_b96iwagimesq)ks=q-ck')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = ['172.28.124.202', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '172.28.124.202,localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -58,7 +58,7 @@ ROOT_URLCONF = 'websploit.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

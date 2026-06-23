@@ -1,0 +1,448 @@
+{% extends "base.html" %}
+
+{% block title %}{{ target.name }} — Web Sploit{% endblock %}
+
+{% block extra_styles %}
+  /* ── Header ── */
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .target-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .target-icon-large {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-sm);
+    background: rgba(0, 212, 255, 0.08);
+    border: 1px solid var(--accent-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-primary);
+    flex-shrink: 0;
+  }
+
+  .page-title {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+  }
+
+  .target-meta {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .target-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ── Tabs (now links) ── */
+  .tabs-container {
+    border-bottom: 1px solid var(--border-mid);
+    margin-bottom: 24px;
+    display: flex;
+    gap: 32px;
+  }
+
+  .tab-link {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 0 0 16px 0;
+    position: relative;
+    transition: color var(--transition);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .tab-link:hover {
+    color: var(--text-primary);
+  }
+
+  .tab-link.active {
+    color: var(--accent-primary);
+  }
+
+  .tab-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent-primary);
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+  }
+
+  .tab-badge {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-dim);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    margin-left: 8px;
+    color: var(--text-secondary);
+  }
+
+  .tab-link.active .tab-badge {
+    border-color: rgba(0, 212, 255, 0.3);
+    color: var(--accent-primary);
+  }
+
+  /* ── Toolbar ── */
+  .table-toolbar {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .toolbar-input, .toolbar-select {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-dim);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 14px;
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    outline: none;
+    transition: border-color var(--transition);
+    min-width: 180px;
+  }
+
+  .toolbar-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  .toolbar-select option {
+    background: var(--bg-surface, #1a1b26);
+    color: var(--text-primary);
+  }
+
+  .toolbar-input:focus, .toolbar-select:focus {
+    border-color: var(--accent-primary);
+  }
+
+  .toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid var(--border-dim);
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--text-dim);
+    transition: all var(--transition);
+  }
+
+  .toolbar-btn:hover {
+    background: var(--bg-elevated);
+    border-color: var(--border-mid);
+    color: var(--text-primary);
+  }
+
+  /* ── Table ── */
+  .panel {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--bg-surface, rgba(255, 255, 255, 0.02));
+    border: 1px solid var(--border-mid);
+    border-radius: var(--radius-md);
+  }
+
+  .target-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+  }
+
+  .target-table thead tr { border-bottom: 1px solid var(--border-mid); }
+
+  .target-table th {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 16px 14px;
+    text-align: center;
+    white-space: nowrap;
+    background: rgba(0,0,0,0.2);
+  }
+
+  .target-table td {
+    padding: 16px 14px;
+    vertical-align: middle;
+    text-align: center;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-dim);
+  }
+
+  .target-table tbody tr:last-child td { border-bottom: none; }
+  .target-table tbody tr:hover { background: var(--bg-elevated); }
+
+  /* ── Status & Badges ── */
+  .status-code {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+  .status-code.success { color: var(--accent-green); background: rgba(0,255,157,0.1); }
+  .status-code.redirect { color: var(--accent-primary); background: rgba(0,212,255,0.1); }
+  .status-code.client-error { color: #ff9800; background: rgba(255,152,0,0.1); }
+  .status-code.server-error { color: var(--accent-red); background: rgba(255,59,92,0.1); }
+  .status-code.unknown { color: var(--text-dim); background: var(--bg-elevated); }
+
+  .tech-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-mid);
+    margin-right: 4px;
+    margin-bottom: 4px;
+    color: var(--text-secondary);
+  }
+
+  .text-muted { color: var(--text-dim); font-size: 14px; }
+  .font-mono { font-family: var(--font-mono); }
+
+  /* ── Pagination ── */
+  .pagination-wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 20px;
+    padding-bottom: 20px;
+  }
+
+  .page-btn {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid var(--border-dim);
+    color: var(--text-primary);
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all var(--transition);
+  }
+
+  .page-btn:hover:not(:disabled) {
+    background: rgba(0, 212, 255, 0.1);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+  }
+
+  .page-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+  /* ── Add Modal ── */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .modal-overlay.active { opacity: 1; pointer-events: auto; }
+
+  .modal-content {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-mid);
+    border-radius: var(--radius-md);
+    padding: 32px;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    transform: translateY(20px);
+    transition: transform 0.2s ease;
+  }
+  .modal-overlay.active .modal-content { transform: translateY(0); }
+
+  .modal-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    margin-top: 0;
+  }
+
+  .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+  .btn-cancel {
+    padding: 8px 16px; border-radius: var(--radius-sm);
+    font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+    cursor: pointer; background: transparent; border: 1px solid var(--border-mid); color: var(--text-dim);
+    transition: all var(--transition);
+  }
+  .btn-cancel:hover { background: var(--bg-elevated); color: var(--text-primary); }
+
+  .status-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 20px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  .status-text {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+
+  {% block page_styles %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="target-title-wrapper">
+    <div class="target-icon-large">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="22"/><line x1="2" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="22" y2="12"/>
+      </svg>
+    </div>
+    <div>
+      <h1 class="page-title">{{ target.name }}</h1>
+      <div class="target-meta">
+        {% if target.type %}<span>TYPE: {{ target.type }}</span> • {% endif %}
+        {% if target.platform %}<span>PLATFORM: {{ target.platform }}</span> • {% endif %}
+        <a href="{% url 'home' %}" style="color: var(--accent-primary); text-decoration: none;">&larr; Back to Targets</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tabs-container">
+  <a href="{% url 'target_subdomains' target.pk %}" class="tab-link {% if active_tab == 'subdomains' %}active{% endif %}">
+    Subdomains <span class="tab-badge" id="countBadge">{{ tab_count }}</span>
+  </a>
+  <a href="{% url 'target_webapps' target.pk %}" class="tab-link {% if active_tab == 'webapps' %}active{% endif %}">
+    Web Apps <span class="tab-badge" id="appCountBadge">0</span>
+  </a>
+  <a href="{% url 'target_vulnerabilities' target.pk %}" class="tab-link {% if active_tab == 'vulnerabilities' %}active{% endif %}">
+    Vulnerabilities <span class="tab-badge" id="vulnCountBadge">0</span>
+  </a>
+</div>
+
+{% block page_content %}{% endblock %}
+
+<script>
+  const targetId = "{{ target.pk }}";
+
+  function getQueryParam(name) {
+    return new URLSearchParams(window.location.search).get(name) || '';
+  }
+
+  function setQueryParams(params) {
+    const url = new URL(window.location);
+    Object.entries(params).forEach(([key, value]) => {
+      if (value && value !== 'all') {
+        url.searchParams.set(key, value);
+      } else {
+        url.searchParams.delete(key);
+      }
+    });
+    history.replaceState(null, '', url);
+  }
+
+  function renderPaginationUI(totalPages, currentPage, containerId, fetchFuncName) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    const prevDisabled = currentPage === 1 ? 'disabled' : '';
+    const nextDisabled = currentPage === totalPages ? 'disabled' : '';
+
+    container.innerHTML = `
+      <button class="page-btn" ${prevDisabled} onclick="${fetchFuncName}(${currentPage - 1})">
+        &larr; Prev
+      </button>
+      <span style="font-family: var(--font-mono); font-size: 13px; color: var(--text-dim); display: flex; align-items: center;">
+        Page <span style="color: var(--text-primary); margin: 0 4px;">${currentPage}</span> of ${totalPages}
+      </span>
+      <button class="page-btn" ${nextDisabled} onclick="${fetchFuncName}(${currentPage + 1})">
+        Next &rarr;
+      </button>
+    `;
+  }
+
+  // Fetch all tab counts on every page
+  async function fetchTabCounts() {
+    const [subRes, appRes, vulnRes] = await Promise.all([
+      fetch(`/api/targets/${targetId}/subdomains/?page=1`),
+      fetch(`/api/targets/${targetId}/webapps/?page=1`),
+      fetch(`/api/targets/${targetId}/vulnerabilities/?page=1`)
+    ]);
+    const [subData, appData, vulnData] = await Promise.all([subRes.json(), appRes.json(), vulnRes.json()]);
+
+    const countBadge = document.getElementById('countBadge');
+    const appBadge = document.getElementById('appCountBadge');
+    const vulnBadge = document.getElementById('vulnCountBadge');
+    if (countBadge) countBadge.innerText = subData.total_count;
+    if (appBadge) appBadge.innerText = appData.total_count;
+    if (vulnBadge) vulnBadge.innerText = vulnData.total_count;
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    fetchTabCounts();
+    if (typeof initPage === 'function') initPage();
+  });
+</script>
+
+{% block page_js %}{% endblock %}
+
+{% endblock %}

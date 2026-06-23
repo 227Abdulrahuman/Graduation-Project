@@ -1,0 +1,275 @@
+{% extends "target_base.html" %}
+
+{% block page_content %}
+
+<div class="table-toolbar">
+  <select id="domainFilterSub" class="toolbar-select" onchange="fetchSubdomains(1)">
+    <option value="all">Domain: All</option>
+    {% for dom in target.domains.all %}
+      <option value="{{ dom.hostname }}">{{ dom.hostname }}</option>
+    {% endfor %}
+  </select>
+
+  <select id="ipFilter" class="toolbar-select" onchange="fetchSubdomains(1)">
+    <option value="all">IP Address: All</option>
+    <option value="yes">Has IP</option>
+    <option value="no">No IP</option>
+  </select>
+
+  <select id="cnameFilter" class="toolbar-select" onchange="fetchSubdomains(1)">
+    <option value="all">CNAME: All</option>
+    <option value="yes">Has CNAME</option>
+    <option value="no">No CNAME</option>
+  </select>
+
+  <input type="text" id="hostSearchSub" class="toolbar-input" placeholder="Search Hostname..." onkeyup="debounceFetchSubdomains()">
+
+  <button class="btn-add" onclick="openAddModal()" style="margin-left: auto;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Add Subdomain
+  </button>
+</div>
+
+<div class="panel">
+  <table class="target-table">
+    <thead>
+      <tr>
+        <th style="width: 50px;">#</th>
+        <th>Hostname</th>
+        <th>IP Address</th>
+        <th>CNAME</th>
+      </tr>
+    </thead>
+    <tbody id="subdomainsTbody"></tbody>
+  </table>
+  <div id="subPagination" class="pagination-wrapper"></div>
+</div>
+
+<!-- ══════════════════ ADD SUBDOMAIN MODAL ══════════════════ -->
+<div id="addModal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 500px;">
+    <h3 class="modal-title">Add Subdomain</h3>
+
+    <div id="addModalForm">
+      <div class="form-group" style="margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px;">
+        <label style="font-family: var(--font-mono); font-size: 13px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-primary);">Domain *</label>
+        <select id="addSubDomainSelect" class="toolbar-select" style="width: 100%;">
+          {% for dom in target.domains.all %}
+            <option value="{{ dom.id }}">{{ dom.hostname }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px;">
+        <label style="font-family: var(--font-mono); font-size: 13px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-primary);">Subdomain Hostname *</label>
+        <input type="text" id="addSubHostname" class="toolbar-input" placeholder="e.g., sub.example.com" style="width: 100%;">
+      </div>
+
+      <div class="modal-actions" style="margin-top: 0;">
+        <button type="button" class="btn-cancel" onclick="closeAddModal()">Cancel</button>
+        <button type="button" class="ws-btn ws-btn--primary" onclick="submitAddItem()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add
+        </button>
+      </div>
+    </div>
+
+    <div id="addModalStatus" style="display: none; text-align: center;">
+      <div id="addModalSpinner" class="spinner" style="border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--accent-primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px auto;"></div>
+      <div id="addModalStatusIcon" class="status-icon" style="display: none;"></div>
+      <div id="addModalStatusText" class="status-text" style="font-family: var(--font-mono); font-size: 14px; color: var(--text-primary); margin-bottom: 12px;">Running...</div>
+      <div id="addModalTerminal" style="display: none; background: #0f0f15; border: 1px solid var(--border-mid); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 16px; text-align: left; height: 180px; overflow-y: auto; font-family: var(--font-mono); font-size: 12px; color: #a9b1d6;">
+        <ul id="addModalLogList" style="list-style: none; margin: 0; padding: 0;"></ul>
+      </div>
+      <button type="button" class="ws-btn ws-btn--primary" id="addModalDoneBtn" style="display: none;" onclick="closeAddModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block page_js %}
+<script>
+  let addModalTaskId = null;
+  let addModalPollInterval = null;
+  let addModalLastLogCount = 0;
+
+  let debounceTimer;
+  const debounceFetchSubdomains = (function() {
+    return function() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => fetchSubdomains(1), 300);
+    };
+  })();
+
+  function initPage() {
+    const domainFilter = document.getElementById('domainFilterSub');
+    const ipFilter = document.getElementById('ipFilter');
+    const cnameFilter = document.getElementById('cnameFilter');
+    const hostSearch = document.getElementById('hostSearchSub');
+
+    const qDomain = getQueryParam('domain');
+    const qIp = getQueryParam('ip');
+    const qCname = getQueryParam('cname');
+    const qHost = getQueryParam('host');
+    const qPage = getQueryParam('page') || '1';
+
+    if (qDomain) domainFilter.value = qDomain;
+    if (qIp) ipFilter.value = qIp;
+    if (qCname) cnameFilter.value = qCname;
+    if (qHost) hostSearch.value = qHost;
+
+    fetchSubdomains(parseInt(qPage));
+  }
+
+  async function fetchSubdomains(page) {
+    const domain = document.getElementById('domainFilterSub').value;
+    const ip = document.getElementById('ipFilter').value;
+    const cname = document.getElementById('cnameFilter').value;
+    const host = document.getElementById('hostSearchSub').value;
+
+    setQueryParams({ domain, ip, cname, host, page: page > 1 ? page : '' });
+
+    const params = new URLSearchParams({ page, domain, ip, cname, host });
+    const response = await fetch(`/api/targets/${targetId}/subdomains/?` + params.toString());
+    const data = await response.json();
+
+    document.getElementById('countBadge').innerText = data.total_count;
+
+    const tbody = document.getElementById('subdomainsTbody');
+    tbody.innerHTML = '';
+
+    if (data.results.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 40px;" class="text-muted">No subdomains match your filters.</td></tr>`;
+    } else {
+      data.results.forEach((sub, index) => {
+        const globalIndex = ((data.current_page - 1) * 500) + index + 1;
+        let ipHtml = sub.ip ? sub.ip : `<span class='text-muted'>—</span>`;
+        let cnameHtml = sub.cname ? sub.cname : `<span class='text-muted'>—</span>`;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="font-mono text-muted">${globalIndex}</td>
+          <td class="font-mono" style="color: var(--accent-primary);">
+            ${sub.hostname}<br>
+            <span style="font-size: 11px; color: var(--text-dim);">${sub.domain}</span>
+          </td>
+          <td class="font-mono">${ipHtml}</td>
+          <td class="font-mono">${cnameHtml}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    renderPaginationUI(data.total_pages, data.current_page, 'subPagination', 'fetchSubdomains');
+  }
+
+  function openAddModal() {
+    addModalTaskId = null;
+    addModalLastLogCount = 0;
+    document.getElementById('addModalForm').style.display = 'block';
+    document.getElementById('addModalStatus').style.display = 'none';
+    document.getElementById('addModalDoneBtn').style.display = 'none';
+    document.getElementById('addModalSpinner').style.display = 'block';
+    document.getElementById('addModalStatusIcon').style.display = 'none';
+    document.getElementById('addModalTerminal').style.display = 'none';
+    document.getElementById('addModalLogList').innerHTML = '';
+    document.getElementById('addModal').classList.add('active');
+  }
+
+  function closeAddModal() {
+    if (addModalPollInterval) { clearInterval(addModalPollInterval); addModalPollInterval = null; }
+    document.getElementById('addModal').classList.remove('active');
+    fetchSubdomains(parseInt(getQueryParam('page')) || 1);
+  }
+
+  async function submitAddItem() {
+    const hostname = document.getElementById('addSubHostname').value.trim();
+    const domainId = document.getElementById('addSubDomainSelect').value;
+    if (!hostname) { alert('Please enter a subdomain hostname.'); return; }
+    if (!domainId) { alert('Please select a domain.'); return; }
+
+    document.getElementById('addModalForm').style.display = 'none';
+    document.getElementById('addModalStatus').style.display = 'block';
+    document.getElementById('addModalStatusText').innerText = 'Starting...';
+    document.getElementById('addModalSpinner').style.display = 'block';
+    document.getElementById('addModalDoneBtn').style.display = 'none';
+
+    const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+    const response = await fetch(`/api/targets/${targetId}/add-subdomain/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrfToken },
+      body: new URLSearchParams({ hostname, domain_id: domainId })
+    });
+
+    if (!response.ok) { const data = await response.json(); showModalError(data.error || 'Failed to start task.'); return; }
+    const data = await response.json();
+    addModalTaskId = data.task_id;
+    pollTask(addModalTaskId);
+  }
+
+  function pollTask(taskId) {
+    addModalPollInterval = setInterval(async () => {
+      const response = await fetch(`/task-status/${taskId}/`);
+      const data = await response.json();
+
+      if ((data.state === 'PROGRESS' || data.state === 'SUCCESS') && data.logs) {
+        if (data.logs.length > addModalLastLogCount) {
+          const terminal = document.getElementById('addModalTerminal');
+          terminal.style.display = 'block';
+          const logList = document.getElementById('addModalLogList');
+          for (let i = addModalLastLogCount; i < data.logs.length; i++) {
+            const li = document.createElement('li');
+            li.textContent = '> ' + data.logs[i];
+            li.style.marginBottom = '4px';
+            li.style.wordWrap = 'break-word';
+            if (data.logs[i].includes('[+]')) li.style.color = 'var(--accent-green)';
+            else if (data.logs[i].includes('[-]')) li.style.color = 'var(--accent-red)';
+            else if (data.logs[i].includes('[*]')) li.style.color = 'var(--accent-primary)';
+            logList.appendChild(li);
+          }
+          addModalLastLogCount = data.logs.length;
+          terminal.scrollTop = terminal.scrollHeight;
+        }
+      }
+
+      if (data.state === 'PROGRESS' || data.state === 'PENDING' || data.state === 'STARTED') {
+        document.getElementById('addModalStatusText').innerText = 'Running...';
+      } else if (data.state === 'SUCCESS') {
+        clearInterval(addModalPollInterval); addModalPollInterval = null;
+        showModalSuccess('Completed successfully!');
+      } else if (data.state === 'FAILURE' || data.state === 'REVOKED') {
+        clearInterval(addModalPollInterval); addModalPollInterval = null;
+        showModalError(data.error || 'Task failed or was cancelled.');
+      }
+    }, 1500);
+  }
+
+  function showModalSuccess(message) {
+    document.getElementById('addModalSpinner').style.display = 'none';
+    const icon = document.getElementById('addModalStatusIcon');
+    icon.style.display = 'flex';
+    icon.style.background = 'rgba(0, 255, 157, 0.1)';
+    icon.style.color = 'var(--accent-green)';
+    icon.style.border = '1px solid rgba(0, 255, 157, 0.3)';
+    icon.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+    document.getElementById('addModalStatusText').innerHTML = `<span style="color: var(--accent-green);">${message}</span>`;
+    document.getElementById('addModalDoneBtn').style.display = 'inline-flex';
+  }
+
+  function showModalError(message) {
+    document.getElementById('addModalSpinner').style.display = 'none';
+    const icon = document.getElementById('addModalStatusIcon');
+    icon.style.display = 'flex';
+    icon.style.background = 'rgba(255, 59, 92, 0.1)';
+    icon.style.color = 'var(--accent-red)';
+    icon.style.border = '1px solid rgba(255, 59, 92, 0.3)';
+    icon.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+    document.getElementById('addModalStatusText').innerHTML = `<span style="color: var(--accent-red);">${message}</span>`;
+    document.getElementById('addModalDoneBtn').style.display = 'inline-flex';
+  }
+</script>
+{% endblock %}
