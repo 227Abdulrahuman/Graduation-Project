@@ -46,6 +46,7 @@ def generate_permutations(domain, chunk_size, multiplicity=3):
         Don't place the results inside "```"
         The multiplicity for generation is {multiplicity}
         For example if I gave you 100 subdomains and the multiplicity is 10 I want you to return 1000 potential subdomain.
+        Don't create scripts create scripts to generate permutations use your intelligence. 
         Here are the subdomains:
         {batch_content}
         """
