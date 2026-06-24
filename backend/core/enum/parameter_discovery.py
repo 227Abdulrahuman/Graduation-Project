@@ -10,10 +10,11 @@ from backend.core.utilities.loaders import load_html_urls_to_set
 
 def extract_parameters(url, auth_headers=None, logout=None):
     """
-    Takes a domain and extracts parameters from <input> and <script> and saves to the db.
+    Takes a url and extracts parameters from <input> and <script> and saves to the db.
     The target must be crawled first.
     """
     print(f"[*] Started extracting parameters for {url}")
+
 
     #Load target URLs.
     urls = load_html_urls_to_set(url,logout=logout)

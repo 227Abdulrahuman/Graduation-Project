@@ -462,6 +462,11 @@ def get_webapp_counts(webapp):
         'js_files': webapp.js_files.count(),
         'archives': webapp.subdomain.ArchivedURLs.count(),
         'client_routes': webapp.client_side_routes.count(),
+        'vulnerabilities': Vulnerability.objects.filter(
+            Q(web_app=webapp) |
+            Q(endpoint__web_app=webapp) |
+            Q(parameter__endpoint__web_app=webapp)
+        ).distinct().count(),
     }
 
 
@@ -523,6 +528,23 @@ def webapp_client_routes(request, pk):
         'active_tab': 'client_routes',
     }
     return render(request, 'webapp_client_routes.html', context)
+
+
+def webapp_vulnerabilities(request, pk):
+    webapp = get_object_or_404(WebApplication, pk=pk)
+    vulnerabilities = Vulnerability.objects.filter(
+        Q(web_app=webapp) |
+        Q(endpoint__web_app=webapp) |
+        Q(parameter__endpoint__web_app=webapp)
+    ).distinct().select_related('endpoint', 'parameter')
+
+    context = {
+        'webapp': webapp,
+        'vulnerabilities': vulnerabilities,
+        'counts': get_webapp_counts(webapp),
+        'active_tab': 'vulnerabilities',
+    }
+    return render(request, 'webapp_vulnerabilities.html', context)
 
 
 def webapp_delete(request, pk):

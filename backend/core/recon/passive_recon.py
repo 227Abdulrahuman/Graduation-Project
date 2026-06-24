@@ -14,8 +14,7 @@ django.setup()
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from backend.core.models import *
 
-# Registry — add new providers here; everything else (view, template) picks them up automatically.
-# auth: "api" = needs API key, "cookie" = needs cookie/session, "free" = no credentials
+
 PROVIDERS = [
     {"id": "virustotal",         "name": "VirusTotal",     "auth": "api",    "func": virustotal},
     {"id": "c99",                "name": "C99",            "auth": "free",   "func": c99},

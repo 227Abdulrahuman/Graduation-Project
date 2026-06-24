@@ -5,6 +5,7 @@ django.setup()
 from backend.core.models import *
 
 def crawl(web_app_url, target_page, auth_headers=None, logout=None):
+
     """
     Crawl a target webapp, and saves endpoints and parameters to the database.
     """

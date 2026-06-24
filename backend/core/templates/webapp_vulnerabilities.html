@@ -1,0 +1,121 @@
+{% extends "webapp_base.html" %}
+
+{% block section_title %}Vulnerabilities{% endblock %}
+
+{% block webapp_styles %}
+  .table-toolbar { display: flex; gap: 16px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+  .toolbar-input { background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-dim); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 14px; color: var(--text-primary); font-family: var(--font-sans); outline: none; transition: border-color var(--transition); min-width: 250px; }
+  .toolbar-input:focus { border-color: var(--accent-primary); }
+  .toolbar-select { background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-dim); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 14px; color: var(--text-primary); font-family: var(--font-sans); outline: none; cursor: pointer; }
+  .toolbar-select:focus { border-color: var(--accent-primary); }
+{% endblock %}
+
+{% block webapp_content %}
+<div class="table-toolbar">
+  <select id="severityFilter" class="toolbar-select" onchange="filterVulnerabilities()">
+    <option value="all">Severity: All</option>
+    <option value="critical">Critical</option>
+    <option value="high">High</option>
+    <option value="medium">Medium</option>
+    <option value="low">Low</option>
+    <option value="info">Info</option>
+  </select>
+  <input type="text" id="vulnSearch" class="toolbar-input" placeholder="Search vulnerabilities..." onkeyup="filterVulnerabilities()">
+</div>
+
+<div class="panel">
+  <table class="target-table">
+    <thead>
+      <tr>
+        <th style="width: 50px;">#</th>
+        <th>Vulnerability Name</th>
+        <th>Severity</th>
+        <th>Location</th>
+        <th>Endpoint</th>
+        <th>Parameter</th>
+        <th style="text-align: center;">Report</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for vuln in vulnerabilities %}
+        <tr class="vuln-row" data-severity="{{ vuln.severity|lower }}" data-name="{{ vuln.name|lower }}">
+          <td class="font-mono text-muted">{{ forloop.counter }}</td>
+          <td style="color: var(--text-primary); font-weight: 600;">{{ vuln.name }}</td>
+          <td>
+            {% if vuln.severity|upper == "CRITICAL" %}
+              <span class="status-code server-error">CRITICAL</span>
+            {% elif vuln.severity|upper == "HIGH" %}
+              <span class="status-code client-error">HIGH</span>
+            {% elif vuln.severity|upper == "MEDIUM" %}
+              <span class="status-code redirect">MEDIUM</span>
+            {% elif vuln.severity|upper == "LOW" %}
+              <span class="status-code success">LOW</span>
+            {% else %}
+              <span class="status-code unknown">{{ vuln.severity|upper }}</span>
+            {% endif %}
+          </td>
+          <td class="font-mono" style="word-break: break-all;">{{ vuln.location }}</td>
+          <td class="font-mono">
+            {% if vuln.endpoint %}
+              {{ vuln.endpoint.url }}
+            {% else %}
+              <span class="text-muted">&mdash;</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if vuln.parameter %}
+              <span class="tech-badge">{{ vuln.parameter.key }}</span>
+            {% else %}
+              <span class="text-muted">&mdash;</span>
+            {% endif %}
+          </td>
+          <td style="text-align: center;">
+            {% if vuln.report %}
+              <a href="{% url 'vuln_report' vuln.pk %}" class="ws-btn ws-btn--ghost" style="padding: 4px 10px; font-size: 12px;">View</a>
+            {% else %}
+              <span class="text-muted">&mdash;</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr id="emptyVulnRow">
+          <td colspan="7" style="text-align: center; padding: 40px;" class="text-muted">No vulnerabilities found for this web application.</td>
+        </tr>
+      {% endfor %}
+      <tr id="noMatchRow" style="display: none;">
+        <td colspan="7" style="text-align: center; padding: 40px;" class="text-muted">No vulnerabilities match your filters.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+  function filterVulnerabilities() {
+    const severityFilter = document.getElementById('severityFilter').value.toLowerCase();
+    const searchFilter = document.getElementById('vulnSearch').value.toLowerCase().trim();
+    const rows = document.querySelectorAll('.vuln-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+      const severity = row.dataset.severity;
+      const name = row.dataset.name;
+
+      const matchesSeverity = severityFilter === 'all' || severity === severityFilter;
+      const matchesSearch = name.includes(searchFilter);
+
+      if (matchesSeverity && matchesSearch) {
+        row.style.display = '';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    const emptyDbRow = document.getElementById('emptyVulnRow');
+    const noMatchRow = document.getElementById('noMatchRow');
+    if (!emptyDbRow && rows.length > 0) {
+      noMatchRow.style.display = visibleCount === 0 ? '' : 'none';
+    }
+  }
+</script>
+{% endblock %}

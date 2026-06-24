@@ -22,6 +22,7 @@ urlpatterns = [
     path('webapps/<int:pk>/js-files/', views.webapp_js_files, name='webapp_js_files'),
     path('webapps/<int:pk>/archives/', views.webapp_archives, name='webapp_archives'),
     path('webapps/<int:pk>/client-routes/', views.webapp_client_routes, name='webapp_client_routes'),
+    path('webapps/<int:pk>/vulnerabilities/', views.webapp_vulnerabilities, name='webapp_vulnerabilities'),
     path('webapps/<int:pk>/delete/', views.webapp_delete, name='webapp_delete'),
     path('webapps/<int:pk>/js/', views.view_js_file, name='view_js_file'),
     path('webapps/<int:pk>/js-viewer/', views.js_viewer, name='js_viewer'),

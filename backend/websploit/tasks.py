@@ -8,7 +8,6 @@ from backend.core.utilities.webapp_manual import add_webapp_manually
 from backend.core.scan.vuln_scan import vuln_scan
 from backend.core.fuzzer.directory_fuzzer import directory_fuzz
 
-# --- THIS IS YOUR EXISTING RECON LOGIC (UNTOUCHED) ---
 class LogCapture(io.StringIO):
     def __init__(self, task):
         super().__init__()
@@ -29,7 +28,6 @@ class LogCapture(io.StringIO):
         sys.__stdout__.write(text)
 
 
-# --- THIS IS THE MISSING CLASS FOR THE WEBAPP LOGIC ---
 class CeleryTaskLogHandler(logging.Handler):
     def __init__(self, task):
         super().__init__()

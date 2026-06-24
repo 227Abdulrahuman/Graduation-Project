@@ -185,6 +185,9 @@
   <a href="{% url 'webapp_client_routes' webapp.id %}" class="tab-link {% if active_tab == 'client_routes' %}active{% endif %}">
     Client Routes <span class="tab-badge">{{ counts.client_routes }}</span>
   </a>
+  <a href="{% url 'webapp_vulnerabilities' webapp.id %}" class="tab-link {% if active_tab == 'vulnerabilities' %}active{% endif %}">
+    Vulnerabilities <span class="tab-badge">{{ counts.vulnerabilities }}</span>
+  </a>
 </div>
 
 <div class="webapp-content">
