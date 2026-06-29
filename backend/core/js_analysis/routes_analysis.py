@@ -14,17 +14,20 @@ def analyze_routes(webapp_url, js_filename):
     output_dir = os.path.join('/work', 'output', subdomain, clean_webapp_url, 'js')
     os.makedirs(output_dir, exist_ok=True)
 
+    js_basename = os.path.splitext(js_filename)[0]
+    md_file_path = os.path.join(output_dir, f"{js_basename}_routes.md")
+    js_file_path = os.path.join(output_dir, js_filename)
+
     # Prepare Prompt
     prompt = f"""
-    Extract routes from  {output_dir}/{js_filename}
+    Extract routes from {js_file_path}
     Use jsluice to get the routes.
     ex: `jsluice urls <file.js> > <outputfile>`
-    
+
     Explain the purpose of each route.
 
-    Generate md report at {output_dir}
-    md report should STRICTLY FOLLOW THIS NAMING CONVENSION
-    nameofjsfile_routes.md example: main.js -> main_routes.md NOT main.js  -> main_routes.js.md
+    Write your findings as a markdown report to EXACTLY this path (do not change the filename):
+    {md_file_path}
     """
 
     from backend.core.agents.call_agent import call_agent, check_agent
@@ -32,9 +35,6 @@ def analyze_routes(webapp_url, js_filename):
     if not ok:
         raise RuntimeError(f"Agent check failed: {msg}")
     call_agent(prompt)
-
-    js_basename = os.path.splitext(js_filename)[0]
-    md_file_path = os.path.join(output_dir, f"{js_basename}_routes.md")
     if os.path.exists(md_file_path):
         with open(md_file_path, "r", encoding="utf-8") as f:
             summary_content = f.read()

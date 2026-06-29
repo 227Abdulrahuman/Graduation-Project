@@ -15,17 +15,20 @@ def generate_usage_summary(webapp_url, js_filename):
     os.makedirs(output_dir, exist_ok=True)
 
 
+    js_basename = os.path.splitext(js_filename)[0]
+    md_file_path = os.path.join(output_dir, f"{js_basename}_usage.md")
+    js_file_path = os.path.join(output_dir, js_filename)
+
     # Prepare Prompt
     prompt = f"""
-    For the js file: {output_dir}/{js_filename}
+    For the js file: {js_file_path}
     Explain the main functionalities of this file.
     Explain what functions does this file serve.
     Explain tech stack & Libraries used.
     Flag weather this is a third party script, a library script or a script developed by the developers of the app.
-    
-    Generate md report at {output_dir}
-    md report should STRICTLY FOLLOW THIS NAMING CONVENSION
-    nameofjsfile_usage.md example: main.js -> main_usage.md NOT main.js  -> main_usage.js.md
+
+    Write your findings as a markdown report to EXACTLY this path (do not change the filename):
+    {md_file_path}
     """
 
     from backend.core.agents.call_agent import call_agent, check_agent
@@ -33,9 +36,6 @@ def generate_usage_summary(webapp_url, js_filename):
     if not ok:
         raise RuntimeError(f"Agent check failed: {msg}")
     call_agent(prompt)
-
-    js_basename = os.path.splitext(js_filename)[0]
-    md_file_path = os.path.join(output_dir, f"{js_basename}_usage.md")
     if os.path.exists(md_file_path):
         with open(md_file_path, "r", encoding="utf-8") as f:
             summary_content = f.read()

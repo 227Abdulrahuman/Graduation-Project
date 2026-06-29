@@ -46,6 +46,12 @@ COPY . /work
 COPY core/bins/ /usr/local/bin
 RUN chmod +x /usr/local/bin/* 2>/dev/null || true
 
+RUN mkdir -p /opt/js-analyzer && \
+    cp /work/core/js_analysis/tools/JavaScript-Sinks-Analyzer/package*.json /opt/js-analyzer/ && \
+    cd /opt/js-analyzer && npm install
+
+ENV NODE_PATH=/opt/js-analyzer/node_modules
+
 EXPOSE 8000
 
 CMD ["python3", "backend/manage.py", "runserver", "0.0.0.0:8000"]

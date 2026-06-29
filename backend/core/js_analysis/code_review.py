@@ -14,23 +14,28 @@ def review_code(webapp_url, js_filename):
     output_dir = os.path.join('/work', 'output', subdomain, clean_webapp_url, 'js')
     os.makedirs(output_dir, exist_ok=True)
     
+    js_basename = os.path.splitext(js_filename)[0]
+    md_file_path = os.path.join(output_dir, f"{js_basename}_code_review.md")
+    js_file_path = os.path.join(output_dir, js_filename)
+
     # Prepare Prompt
     prompt = f"""
-    Find Client Side Vulnerabilities in {output_dir}/{js_filename}
+    Find Client Side Vulnerabilities in {js_file_path}
     You can use jsluice to get the AST of the file
     ex: `jsluice tree <file.js> > <outputfile>`
-    You can check for leaked cred using 
+    You can check for leaked cred using
     ex: `jsluice secrets <file.js> > <outputfile>`
-    
+
     Focus on client side bugs that have a clear source and a sink, that are reproduceable.
     Focus on bugs that can be exploited externally not by proxing victim traffic.
     You must attempt to find the map file for the js file.(Weather by Searching the file for location for map file, or by attempting to append .map at the end of the script and checking if it exists,. )
-    NOT BY CHANGING THE HTTP RESPONSE 
+    NOT BY CHANGING THE HTTP RESPONSE
 
+    Use the following tool to find dangerous sinks:
+    `node /work/backend/core/js_analysis/tools/JavaScript-Sinks-Analyzer/analyze.js <filePath>`
 
-    Generate md report at {output_dir}
-    md report should STRICTLY FOLLOW THIS NAMING CONVENSION
-    nameofjsfile_code_review.md example: main.js -> main_code_review.md NOT main.js  -> main_code_review.js.md
+    Write your findings as a markdown report to EXACTLY this path (do not change the filename):
+    {md_file_path}
     """
 
     from backend.core.agents.call_agent import call_agent, check_agent
@@ -38,9 +43,6 @@ def review_code(webapp_url, js_filename):
     if not ok:
         raise RuntimeError(f"Agent check failed: {msg}")
     call_agent(prompt)
-
-    js_basename = os.path.splitext(js_filename)[0]
-    md_file_path = os.path.join(output_dir, f"{js_basename}_code_review.md")
     if os.path.exists(md_file_path):
         with open(md_file_path, "r", encoding="utf-8") as f:
             summary_content = f.read()

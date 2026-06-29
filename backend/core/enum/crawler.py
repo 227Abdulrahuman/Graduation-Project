@@ -4,6 +4,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.websploit.settings")
 django.setup()
 from backend.core.models import *
 
+#https://example.com, https://example.com/admin
 def crawl(web_app_url, target_page, auth_headers=None, logout=None):
 
     """
