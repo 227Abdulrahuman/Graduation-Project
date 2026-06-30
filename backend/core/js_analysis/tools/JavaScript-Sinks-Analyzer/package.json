@@ -1,0 +1,26 @@
+{
+  "name": "test_js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "file.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@babel/generator": "^7.29.1",
+    "@babel/parser": "^7.29.2",
+    "@babel/traverse": "^7.29.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SayedReda1/JS-Sinks-Analyzer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SayedReda1/JS-Sinks-Analyzer/issues"
+  },
+  "homepage": "https://github.com/SayedReda1/JS-Sinks-Analyzer#readme"
+}

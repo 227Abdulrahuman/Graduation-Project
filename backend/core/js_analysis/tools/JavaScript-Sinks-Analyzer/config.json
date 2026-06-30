@@ -1,0 +1,27 @@
+{
+  "sinks": [
+    "eval",
+    "setTimeout",
+    "setInterval",
+    "Function",
+    "document.write",
+    "document.writeln",
+    "document.innerHTML",
+    "window.location.assign",
+    "window.location.replace",
+    "location",
+    "exec",
+    "spawn",
+    "execSync",
+    "system",
+    "html",
+    "append",
+    "prepend",
+    "after",
+    "replaceWith",
+    "open",
+    "window.open",
+    "postMessage",
+    "innerHTML"
+  ]
+}

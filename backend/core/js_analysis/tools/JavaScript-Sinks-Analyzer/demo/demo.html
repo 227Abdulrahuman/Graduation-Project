@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Page</title>
+  <script>
+    var x = document.location.hash;
+    eval(x);
+  </script>
+</head>
+<body>
+  <div onclick="document.write(userInput)">Click me</div>
+  <script>
+    var payload = window.name;
+    document.getElementById("output").innerHTML = payload;
+  </script>
+</body>
+</html>
