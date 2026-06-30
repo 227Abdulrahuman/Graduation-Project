@@ -1,7 +1,7 @@
 import os, subprocess, shlex
 
 
-CLAUDE_BIN = "/root/.local/bin/claude"
+CLAUDE_BIN = "/usr/bin/claude"
 
 AGENT_CONFIGS = {
     "gemini": {
