@@ -39,7 +39,6 @@ class CeleryTaskLogHandler(logging.Handler):
         if any(marker in msg for marker in ["[*]", "[+]", "[-]"]):
             self.logs.append(msg)
             self.task.update_state(state='PROGRESS', meta={'logs': self.logs})
-# ------------------------------------------------------
 
 
 @shared_task(bind=True)
@@ -72,20 +71,16 @@ def recon_task(self, domain, chunk_size=None, multiplicity=3, providers=None):
 
 @shared_task(bind=True)
 def webapp_task(self, url, auth_headers=None, logout=None):
-    # Hook into the logger
     logger = logging.getLogger()
     log_handler = CeleryTaskLogHandler(self)
     log_handler.setFormatter(logging.Formatter('%(message)s'))
     logger.addHandler(log_handler)
 
     try:
-        # Run the webapp analysis
         result = analyze_webapp(url, auth_headers=auth_headers, logout=logout)
 
-        # Return the result AND the final logs array
         return {'status': 'SUCCESS', 'result': result, 'logs': log_handler.logs}
     finally:
-        # Clean up the logger when done
         logger.removeHandler(log_handler)
 
 
@@ -232,7 +227,6 @@ def add_webapp_task(self, url):
 
         print(f"[*] Running httpx on {url}")
 
-        # Write URL to a temp file for httpx -l
         with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
             f.write(url + '\n')
             temp_path = f.name
