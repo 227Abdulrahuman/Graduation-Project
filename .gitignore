@@ -1,7 +1,4 @@
 __pycache__/
-backend/core/migrations/*
-backend/core/migrations
-backend/core/migrations/
 backend/custom_migrations/
 
 output
