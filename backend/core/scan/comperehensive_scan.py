@@ -1,17 +1,16 @@
 from backend.core.scan.XSS.xss import xss_scan
+from backend.core.scan.path_traversal.path_traversal import path_traversal_scan
 from backend.core.scan.SQLi.sqli import sqli_scan
 from backend.core.scan.open_redirect.open_redirect import open_redirect_scan
-from backend.core.scan.path_traversal.path_traversal import path_traversal_scan
-from urllib.parse import urlparse
-import os
-from backend.core.utilities.declutter import *
+from backend.core.utilities.declutter import declutter_urls
 from backend.core.utilities.loaders import *
-from backend.core.models import *
+from backend.core.utilities.url_operations import  count_path_parts
+from urllib.parse import urlparse
 from backend.core.utilities.url_operations import *
 
 
-
 def vuln_scan_init(url, logout=None):
+
     """
     Prepare the URLs and Parameters Combinations for scanning.
     """
@@ -74,25 +73,22 @@ def vuln_scan_init(url, logout=None):
             for param in parameters:
                 file.write(f"{u}?{param.key}=https://www.google.com/\n")
 
-def vuln_scan(url, auth_headers=None, logout=None, run_xss=True, run_sqli=True, run_open_redirect=True, run_path_traversal=True):
-    """
-    Runs selected vulnerability scans against the given URL.
-    """
-    vuln_scan_init(url, logout=logout)
+
+
+def comprehensive_scan(url, auth_headers=None, logout=None):
+
 
     url = url.strip()
     parsed_url = urlparse(url)
-    clean_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+    url = f"{parsed_url.scheme}://{parsed_url.netloc}"
 
-    if run_xss:
+    from backend.core.scan.webapp_analysis import can_connect
+    if not can_connect(url):
+        return
 
-        xss_scan(clean_url, auth_headers=auth_headers)
+    comprehensive_scan_init(url,logout=logout)
 
-    if run_sqli:
-        sqli_scan(clean_url, auth_headers=auth_headers)
-
-    if run_open_redirect:
-        open_redirect_scan(clean_url, auth_headers=auth_headers)
-
-    if run_path_traversal:
-        path_traversal_scan(clean_url, auth_headers=auth_headers)
+    xss_scan(url,auth_headers=auth_headers)
+    open_redirect_scan(url, auth_headers=auth_headers)
+    sqli_scan(url, auth_headers=auth_headers)
+    path_traversal_scan(url, auth_headers=auth_headers)

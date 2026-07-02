@@ -8,6 +8,7 @@ django.setup()
 
 from backend.core.models import WebApplication, ClientSideRoute
 
+
 def extract_client_side_routes(webapp_url):
     """
     Extracts client-side routes from downloaded JS files using jsluice.

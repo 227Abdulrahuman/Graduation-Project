@@ -19,6 +19,9 @@ def analyze_webapp(url, auth_headers=None, logout=None):
     # Strip port number if it exists in netloc
     full_hostname = parsed_url.hostname or parsed_url.netloc.split(':')[0]
 
+    # Check Connection
+    if not can_connect(clean_url):
+        return
 
     try:
         web_app = WebApplication.objects.get(url=clean_url)
@@ -29,10 +32,6 @@ def analyze_webapp(url, auth_headers=None, logout=None):
     web_app.analyzed = True
     web_app.save()
 
-
-    #Check Connection
-    if not can_connect(clean_url):
-        return
 
 
     #Crawl Target URL

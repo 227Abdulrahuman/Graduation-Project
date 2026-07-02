@@ -85,7 +85,7 @@ def webapp_task(self, url, auth_headers=None, logout=None):
 
 
 @shared_task(bind=True)
-def vuln_scan_task(self, url, auth_headers=None, run_xss=True, run_sqli=True, run_open_redirect=True, run_path_traversal=True):
+def vuln_scan_task(self, url, auth_headers=None, logout=None, run_xss=True, run_sqli=True, run_open_redirect=True, run_path_traversal=True):
     old_stdout = sys.stdout
     capture = LogCapture(self)
     sys.stdout = capture
@@ -94,6 +94,7 @@ def vuln_scan_task(self, url, auth_headers=None, run_xss=True, run_sqli=True, ru
         result = vuln_scan(
             url,
             auth_headers=auth_headers,
+            logout=logout,
             run_xss=run_xss,
             run_sqli=run_sqli,
             run_open_redirect=run_open_redirect,

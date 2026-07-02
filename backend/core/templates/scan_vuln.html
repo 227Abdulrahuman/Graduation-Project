@@ -64,6 +64,12 @@
       </div>
 
       <div class="form-group">
+        <label for="logout">Logout Keyword / Path (Optional)</label>
+        <input type="text" id="logout" name="logout" placeholder="e.g., /logout or signout">
+        <span style="font-size: 12px; color: var(--text-dim); margin-top: 4px;">Prevent the scan from hitting URLs that would invalidate the session.</span>
+      </div>
+
+      <div class="form-group">
         <label for="auth_headers">Custom Headers (Optional)</label>
         <textarea id="auth_headers" name="auth_headers" placeholder="Authorization: Bearer eyJhbGci...&#10;Cookie: session_id=123abc..."></textarea>
         <span style="font-size: 12px; color: var(--text-dim); margin-top: 4px;">Enter one header per line.</span>
@@ -144,6 +150,7 @@
     document.getElementById('status-text').innerText = 'Starting Vulnerability Scan...';
 
     const url = document.getElementById('url').value;
+    const logout = document.getElementById('logout').value;
     const authHeaders = document.getElementById('auth_headers').value;
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
@@ -156,6 +163,7 @@
       },
       body: new URLSearchParams({
         url: url,
+        logout: logout,
         auth_headers: authHeaders,
         run_xss: formData.has('run_xss') ? '1' : '0',
         run_sqli: formData.has('run_sqli') ? '1' : '0',

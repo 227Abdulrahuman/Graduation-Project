@@ -48,3 +48,4 @@ def extract_parameters(url, auth_headers=None, logout=None):
             )
 
     print(f"[+] Done extracting parameters for {url}")
+

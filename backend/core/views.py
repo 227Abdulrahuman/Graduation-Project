@@ -1,17 +1,11 @@
-from django.shortcuts import render, redirect,get_object_or_404
-from django.db.models import Count, Q
-from backend.core.models import *
+
 from celery.result import AsyncResult
 from backend.websploit.tasks import recon_task
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
-import os
 
-from django.shortcuts import render
-from django.db.models import Count, Q, F
-from backend.core.models import Target
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Count, Q
@@ -20,18 +14,16 @@ from backend.core.models import *
 
 
 def home_view(request):
-    # 1. Base annotations for the domains, subdomains, and web apps
+
     targets_qs = Target.objects.annotate(
         domain_count=Count('domains', distinct=True),
         subdomain_count=Count('domains__subdomains', distinct=True),
         webapp_count=Count('domains__subdomains__webapps', distinct=True),
     )
 
-    # Evaluate the queryset into a list so we can dynamically attach properties
     target_list = list(targets_qs)
     target_dict = {t.id: t for t in target_list}
 
-    # Initialize zero-state counters for all targets
     for t in target_list:
         t.vuln_count = 0
         t.vuln_critical = 0
@@ -39,7 +31,6 @@ def home_view(request):
         t.vuln_medium = 0
         t.vuln_low = 0
 
-    # 2. Fetch all vulnerabilities and dynamically climb the hierarchy to find their Target ID
     vulns = Vulnerability.objects.annotate(
         resolved_target_id=Coalesce(
             'web_app__subdomain__domain__target_id',
@@ -48,7 +39,6 @@ def home_view(request):
         )
     ).filter(resolved_target_id__in=target_dict.keys()).values('resolved_target_id', 'severity')
 
-    # 3. Tally them up safely in Python (ignoring case sensitivity)
     for v in vulns:
         t_id = v['resolved_target_id']
         sev = (v['severity'] or '').lower()
@@ -68,10 +58,8 @@ def home_view(request):
 
 
 def webapps_list(request):
-    # Only get analyzed web apps
     apps = WebApplication.objects.filter(analyzed=True).select_related('subdomain__domain__target')
 
-    # Filtering logic
     target_id = request.GET.get('target')
     domain_id = request.GET.get('domain')
     title_search = request.GET.get('title', '').strip()
@@ -83,7 +71,6 @@ def webapps_list(request):
     if title_search:
         apps = apps.filter(title__icontains=title_search)
 
-    # For filter dropdowns
     targets = Target.objects.all()
 
     if target_id and target_id != 'all':
@@ -118,10 +105,9 @@ def target_add(request):
         target_type = request.POST.get('type')
         platform = request.POST.get('platform')
         program_url = request.POST.get('program_url')
-        domains_raw = request.POST.get('domains')  # Get the raw text area input
+        domains_raw = request.POST.get('domains')
 
         if name:
-            # Create the Target
             target = Target.objects.create(
                 name=name,
                 type=target_type,
@@ -129,14 +115,11 @@ def target_add(request):
                 program_url=program_url
             )
 
-            # Process and attach domains if any were provided
             if domains_raw:
-                # Split by newlines to allow pasting multiple domains
                 domain_lines = domains_raw.splitlines()
                 for line in domain_lines:
                     hostname = line.strip()
                     if hostname:
-                        # Create a Domain linked to this specific Target
                         Domain.objects.create(target=target, hostname=hostname)
 
             return redirect('home')
@@ -146,14 +129,12 @@ def target_add(request):
 
 
 def target_delete(request, pk):
-    # Ensure it's a POST request for security so users can't delete by just typing the URL
     if request.method == 'POST':
         target = get_object_or_404(Target, pk=pk)
         target.delete()
-    return redirect('home') # Adjust 'home' if your URL name is different
+    return redirect('home')
 
 
-# --- UPDATED: Target Detail View ---
 def target_detail(request, pk):
     return redirect('target_subdomains', pk=pk)
 
@@ -182,12 +163,10 @@ def target_vulnerabilities(request, pk):
     })
 
 
-# --- NEW: Backend API for Subdomains ---
 def api_target_subdomains(request, pk):
     target = get_object_or_404(Target, pk=pk)
     subs = Subdomain.objects.filter(domain__target=target).select_related('domain')
 
-    # Apply Filters
     domain_filter = request.GET.get('domain', 'all')
     if domain_filter != 'all':
         subs = subs.filter(domain__hostname=domain_filter)
@@ -208,15 +187,12 @@ def api_target_subdomains(request, pk):
     if host_search:
         subs = subs.filter(hostname__icontains=host_search)
 
-    # Distinct and order for consistent pagination
     subs = subs.distinct().order_by('hostname')
 
-    # Paginate
     paginator = Paginator(subs, 500)
     page_num = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_num)
 
-    # Serialize
     data = []
     for s in page_obj:
         data.append({
@@ -234,12 +210,10 @@ def api_target_subdomains(request, pk):
     })
 
 
-# --- NEW: Backend API for Web Apps ---
 def api_target_webapps(request, pk):
     target = get_object_or_404(Target, pk=pk)
     apps = WebApplication.objects.filter(subdomain__domain__target=target).select_related('subdomain__domain')
 
-    # Apply Filters
     domain_filter = request.GET.get('domain', 'all')
     if domain_filter != 'all':
         apps = apps.filter(subdomain__domain__hostname=domain_filter)
@@ -266,19 +240,16 @@ def api_target_webapps(request, pk):
     elif tested_filter == 'no':
         apps = apps.filter(tested=False)
 
-    # Sorting
     sort_order = request.GET.get('sort', 'desc')
     if sort_order == 'asc':
         apps = apps.order_by('status_code', 'url')
     else:
         apps = apps.order_by('-status_code', 'url')
 
-    # Paginate
     paginator = Paginator(apps, 500)
     page_num = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_num)
 
-    # Serialize
     data = []
     for a in page_obj:
         data.append({
@@ -310,7 +281,6 @@ def api_webapp_toggle_tested(request, pk):
 
 @require_POST
 def api_add_subdomain(request, pk):
-    """Launch a Celery task to run dnsx on a single hostname and insert into DB."""
     target = get_object_or_404(Target, pk=pk)
     hostname = request.POST.get('hostname', '').strip()
     domain_id = request.POST.get('domain_id', '').strip()
@@ -320,7 +290,6 @@ def api_add_subdomain(request, pk):
     if not domain_id:
         return JsonResponse({'error': 'Domain is required'}, status=400)
 
-    # Verify the domain belongs to this target
     domain = get_object_or_404(Domain, id=domain_id, target=target)
 
     task = add_subdomain_task.delay(hostname, domain.id)
@@ -329,7 +298,6 @@ def api_add_subdomain(request, pk):
 
 @require_POST
 def api_add_webapp(request, pk):
-    """Launch a Celery task to run httpx on a single URL and insert into DB."""
     target = get_object_or_404(Target, pk=pk)
     url = request.POST.get('url', '').strip()
 
@@ -344,7 +312,6 @@ import os
 from backend.core.recon.passive_recon import PROVIDERS as RECON_PROVIDERS
 
 def _provider_meta():
-    """Strip the func reference before passing providers to a template."""
     return [{"id": p["id"], "name": p["name"], "auth": p["auth"]} for p in RECON_PROVIDERS]
 
 def scan_recon(request):
@@ -371,11 +338,9 @@ def check_task_status(request, task_id):
     response_data = {'state': task.state}
 
     if task.state == 'PROGRESS':
-        # Grab the live logs from the meta dict we set in LogCapture
         response_data['logs'] = task.info.get('logs', [])
 
     elif task.state == 'SUCCESS':
-        # Task returned our custom dict {'status': 'SUCCESS', 'result': ..., 'logs': ...}
         response_data['result'] = task.result.get('result')
         response_data['logs'] = task.result.get('logs', [])
 
@@ -388,7 +353,6 @@ def target_edit(request, pk):
     if request.method == 'POST':
         target = get_object_or_404(Target, pk=pk)
 
-        # 1. Update basic target info
         name = request.POST.get('name')
         if name:
             target.name = name
@@ -399,30 +363,23 @@ def target_edit(request, pk):
 
         target.save()
 
-        # 2. Handle Domains (Add/Remove)
         domains_raw = request.POST.get('domains')
         if domains_raw is not None:
-            # Clean up the submitted list into a set of lowercase strings
             submitted_domains = {
                 line.strip().lower()
                 for line in domains_raw.splitlines()
                 if line.strip()
             }
 
-            # Get the currently saved domains for this target
             existing_domain_objs = target.domains.all()
             existing_domain_names = {d.hostname.lower() for d in existing_domain_objs}
 
-            # Find domains to ADD (in submitted, but not in existing)
             domains_to_add = submitted_domains - existing_domain_names
             for d_name in domains_to_add:
                 Domain.objects.create(target=target, hostname=d_name)
 
-            # Find domains to REMOVE (in existing, but not in submitted)
             domains_to_remove = existing_domain_names - submitted_domains
             if domains_to_remove:
-                # Because of your models.CASCADE setup, deleting these will
-                # also automatically clean up related Subdomains and WebApps
                 target.domains.filter(hostname__in=domains_to_remove).delete()
 
     return redirect('home')
@@ -437,7 +394,6 @@ def scan_webapp(request):
         logout = request.POST.get('logout')
         auth_headers_raw = request.POST.get('auth_headers')
 
-        # Convert the textarea input into a list of strings
         auth_headers = []
         if auth_headers_raw:
             auth_headers = [
@@ -446,7 +402,6 @@ def scan_webapp(request):
                 if line.strip()
             ]
 
-        # If logout is empty string, set to None
         if not logout:
             logout = None
 
@@ -488,7 +443,6 @@ def webapp_js_files(request, pk):
     js_files = list(webapp.js_files.values_list('name', flat=True))
     
     if not js_files:
-        # Fallback for legacy filesystem files
         subdomain = webapp.subdomain.hostname
         clean_webapp_url = webapp.url.replace("://", "_").replace("/", "_").replace(".", "_").replace(":", "_")
         js_dir = os.path.join('/work', 'output', subdomain, clean_webapp_url, 'js')
@@ -550,17 +504,14 @@ def webapp_vulnerabilities(request, pk):
 def webapp_delete(request, pk):
     if request.method == 'POST':
         webapp = get_object_or_404(WebApplication, pk=pk)
-        
-        # Delete associated data generated during analysis
+
         webapp.endpoint.all().delete()
         webapp.js_files.all().delete()
         webapp.client_side_routes.all().delete()
         webapp.vulnerabilities.all().delete()
-        
-        # ArchivedURLs are linked to the subdomain
+
         webapp.subdomain.ArchivedURLs.all().delete()
-        
-        # Reset analyzed state instead of deleting the webapp
+
         webapp.analyzed = False
         webapp.save()
         
@@ -574,12 +525,10 @@ def view_js_file(request, pk):
     if not filename:
         return JsonResponse({'error': 'No filename provided'}, status=400)
 
-    # Try database first
     js_obj = webapp.js_files.filter(name=filename).first()
     if js_obj:
         return JsonResponse({'content': js_obj.content, 'filename': filename})
 
-    # Fallback to filesystem
     subdomain = webapp.subdomain.hostname
     clean_webapp_url = webapp.url.replace("://", "_").replace("/", "_").replace(".", "_").replace(":", "_")
     js_dir = os.path.join('/work', 'output', subdomain, clean_webapp_url, 'js')
@@ -606,12 +555,10 @@ def js_viewer(request, pk):
     if not filename:
         return redirect('webapp_detail', pk=pk)
 
-    # Try database first
     js_obj = webapp.js_files.filter(name=filename).first()
     if js_obj:
         content = js_obj.content
     else:
-        # Fallback to filesystem
         subdomain = webapp.subdomain.hostname
         clean_webapp_url = webapp.url.replace("://", "_").replace("/", "_").replace(".", "_").replace(":", "_")
         js_dir = os.path.join('/work', 'output', subdomain, clean_webapp_url, 'js')
@@ -822,7 +769,6 @@ def js_code_review_status(request, pk):
 def cancel_task(request, task_id):
     if request.method == 'POST':
         task = AsyncResult(task_id)
-        # terminate=True forcefully kills the worker process executing the task
         task.revoke(terminate=True)
         return JsonResponse({'status': 'success', 'message': 'Task cancelled'})
 
@@ -832,7 +778,6 @@ def cancel_task(request, task_id):
 def api_target_vulnerabilities(request, pk):
     target = get_object_or_404(Target, pk=pk)
 
-    # Use Q objects to find vulns attached at ANY level (WebApp, EndPoint, or Parameter)
     vulns = Vulnerability.objects.filter(
         Q(web_app__subdomain__domain__target=target) |
         Q(endpoint__web_app__subdomain__domain__target=target) |
@@ -843,7 +788,6 @@ def api_target_vulnerabilities(request, pk):
         'parameter__endpoint__web_app'
     ).distinct()
 
-    # Apply Domain Filter
     domain_filter = request.GET.get('domain', 'all').strip()
     if domain_filter and domain_filter != 'all':
         vulns = vulns.filter(
@@ -852,7 +796,6 @@ def api_target_vulnerabilities(request, pk):
             Q(parameter__endpoint__web_app__subdomain__domain__hostname=domain_filter)
         )
 
-    # Apply Hostname Filter
     host_query = request.GET.get('host', '').strip()
     if host_query:
         vulns = vulns.filter(
@@ -861,28 +804,24 @@ def api_target_vulnerabilities(request, pk):
             Q(parameter__endpoint__web_app__subdomain__hostname__icontains=host_query)
         )
 
-    # Apply Severity Filter
     severity_filter = request.GET.get('severity', 'all').lower()
     if severity_filter != 'all':
         vulns = vulns.filter(severity__iexact=severity_filter)
 
-    # Apply Search Filter
     search_query = request.GET.get('search', '').strip()
     if search_query:
         vulns = vulns.filter(name__icontains=search_query)
 
-    # Order the results
     vulns = vulns.order_by('name')
 
-    # Paginate
     paginator = Paginator(vulns, 500)
     page_num = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_num)
 
-    # Serialize Data for JSON Response
+
     data = []
     for v in page_obj:
-        # Dynamically resolve hierarchy upwards
+
         resolved_web_app = "—"
         resolved_endpoint = "—"
         resolved_param = "—"
@@ -956,11 +895,15 @@ def scan_dir_fuzz(request):
 def scan_vuln(request):
     if request.method == 'POST':
         url = request.POST.get('url')
+        logout = request.POST.get('logout')
         auth_headers_raw = request.POST.get('auth_headers')
 
         auth_headers = []
         if auth_headers_raw:
             auth_headers = [line.strip() for line in auth_headers_raw.splitlines() if line.strip()]
+
+        if not logout:
+            logout = None
 
         run_xss = request.POST.get('run_xss') == '1'
         run_sqli = request.POST.get('run_sqli') == '1'
@@ -970,6 +913,7 @@ def scan_vuln(request):
         task = vuln_scan_task.delay(
             url,
             auth_headers=auth_headers,
+            logout=logout,
             run_xss=run_xss,
             run_sqli=run_sqli,
             run_open_redirect=run_open_redirect,
