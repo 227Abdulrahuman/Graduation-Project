@@ -162,6 +162,9 @@ When I give you a web app to hack on you can get all the info related to it from
 If you found new data that are not in the database you can insert it into the database using `/work/backend/manage.py`
 When you find a vulnerability make sure to add it into the database as well generate .md report for it in the report attribute.
 
+Take care when inserting a vulnerability it should take only one of the following severity values Low, Medium, High, Critical case-sensitive.
+If you found a vulnerability for the target that is in the database but doesn't have a report generate a report for it.
+
 
 
 ## Hunting Techniques 

@@ -78,11 +78,13 @@ def vuln_scan(url, auth_headers=None, logout=None, run_xss=True, run_sqli=True, 
     """
     Runs selected vulnerability scans against the given URL.
     """
-    vuln_scan_init(url, logout=logout)
 
     url = url.strip()
     parsed_url = urlparse(url)
     clean_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+
+    vuln_scan_init(clean_url, logout=logout)
+
 
     if run_xss:
 
