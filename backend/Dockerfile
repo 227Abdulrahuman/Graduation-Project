@@ -55,9 +55,7 @@ RUN mkdir -p /opt/js-analyzer && \
 
 ENV NODE_PATH=/opt/js-analyzer/node_modules
 
-# Create entrypoint via printf to guarantee LF line endings on all host OSes.
-# No-args = Django server (automator); args = exec them directly (celery, etc.)
-# This avoids SQLite locking from concurrent migrations across services.
+
 RUN printf '#!/bin/bash\nset -e\nif [ $# -eq 0 ]; then\n  echo "[entrypoint] Running database migrations..."\n  python3 backend/manage.py migrate --noinput\n  echo "[entrypoint] Starting Django server..."\n  exec python3 backend/manage.py runserver 0.0.0.0:8000\nelse\n  exec "$@"\nfi\n' > /entrypoint.sh \
     && chmod +x /entrypoint.sh
 
