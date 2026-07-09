@@ -1,42 +1,29 @@
-# Web Sploit 
-A bug bounty automation framework that automates enumeration and vulnerability discovery for web applications.
+# Setup
 
-### Subdomain Enumeration Module
+### Clone the repo
+`git clone https://github.com/227Abdulrahuman/Web-Sploit`
+### Create .env file in the repo directory
 
-<img width="1516" height="720" alt="image" src="https://github.com/user-attachments/assets/534533fc-9796-40c3-bd89-cc64ceb363e3" />
+```
+CHAOS_KEY="" # Get it from https://chaos.projectdiscovery.io/
+DIGITALYAMA_KEY="" # Get it from https://digitalyama.com/
+SHODAN_KEY="" # Get it from https://www.shodan.io/
+VIRUSTOTAL_KEY="" # Get it from https://www.virustotal.com/
 
-#### Passive Subdomains Enumeration
-Collect subdomains from various DNS data providers.
+#The AI agent that will be used for hacking example: AGENT="claude" MODEL="claude-sonnet-4-6"
+# Supported AI Agents [codex, claude, deepcode=claude with deepseek API, xicode=claude with Xiaomi Mimo API]
+AGENT=""
+MODEL=""
+IS_SANDBOX=1
 
-Free Sources:
-- anubis
-- commoncrawl
-- crtsh
-- digitorus
-- hackertarget
-- rapiddns
-- sitedossier
-- threatcrowd
-- waybackarchive
-- hudsonrock
 
-Paid Sources:
-- c99
-- security trails
-- virus total
-- choas
-- shodan
-- digital yama
-- pugrecon
-- dns dumpster
+XICODE_TOKEN="" #Xiaomi Mimo api key
+DEEPCODE_TOKEN="" # Deepseek API Key
 
-#### Active Subdomains Enumeration 
-Generate permutations using Gemini.
-Brute forces to check for live ones.
+DJANGO_DEBUG=False
+PYTHONUNBUFFERED=1
+```
 
-#### Web fingerprinting 
 
-For live subdomains, fingerprint web applications (URL, Status Code, Content Length and Tech Stack).
-
-#### DNS Enumeration 
-Get CNAMEs & IPs for live targets
+### Run container
+`sudo docker compose up`
