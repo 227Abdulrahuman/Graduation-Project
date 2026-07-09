@@ -3,7 +3,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.websploit.settings")
 django.setup()
 from backend.core.models import *
 
-vstotal_key = os.getenv("VIRUSTOTALARCHIVE_KEY")
+vstotal_key = os.getenv("VIRUSTOTAL_KEY")
 
 
 def fetch_virusl_total(subdomain):
